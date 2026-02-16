@@ -6,4 +6,4 @@ pages_build_output_dir = ".vercel/output/static"
 [[d1_databases]]
 binding = "DB"
 database_name = "vindecoder-db"
-database_id = "your-database-id-here"
+database_id = "649b6539-a86f-4952-adcc-669da7139af4"
