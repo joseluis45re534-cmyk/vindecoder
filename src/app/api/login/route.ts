@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyPassword, createToken } from '@/lib/auth';
 
-export const runtime = 'edge';
+// export const runtime = 'edge'; // Removed for debugging
 
 export async function POST(request: NextRequest) {
     try {
@@ -83,8 +83,9 @@ export async function POST(request: NextRequest) {
         return response;
     } catch (error) {
         console.error('Login error:', error);
+        console.error('Error stack:', error instanceof Error ? error.stack : 'No stack');
         return NextResponse.json(
-            { error: 'Internal server error' },
+            { error: error instanceof Error ? error.message : 'Internal server error' },
             { status: 500 }
         );
     }
