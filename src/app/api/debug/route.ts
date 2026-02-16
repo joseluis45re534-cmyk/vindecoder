@@ -4,6 +4,7 @@ import { hashPassword } from '@/lib/auth';
 export const runtime = 'edge';
 
 export async function GET(request: NextRequest) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const results: any = {
         checks: {},
         env: {},
@@ -30,11 +31,14 @@ export async function GET(request: NextRequest) {
             results.checks.db_connection = 'Found binding';
             try {
                 // Try a simple query
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 const { results: rows } = await db.prepare('SELECT 1 as val').all();
                 results.checks.db_query = 'Success';
-                results.checks.db_val = rows[0]?.val;
-            } catch (e: any) {
-                results.checks.db_query = `Failed: ${e.message}`;
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                results.checks.db_val = (rows[0] as any)?.val;
+            } catch (e: unknown) {
+                const message = e instanceof Error ? e.message : 'Unknown error';
+                results.checks.db_query = `Failed: ${message}`;
             }
         } else {
             results.checks.db_connection = 'MISSING BINDING (DB)';
@@ -42,18 +46,20 @@ export async function GET(request: NextRequest) {
 
         // Check 4: Crypto / bcryptjs
         try {
-            const hash = await hashPassword('test');
+            await hashPassword('test');
             results.checks.crypto = 'Success (bcryptjs works)';
-        } catch (e: any) {
-            results.checks.crypto = `Failed: ${e.message}`;
+        } catch (e: unknown) {
+            const message = e instanceof Error ? e.message : 'Unknown error';
+            results.checks.crypto = `Failed: ${message}`;
         }
 
         return NextResponse.json(results);
-    } catch (error: any) {
+    } catch (error: unknown) {
+        const err = error instanceof Error ? error : new Error(String(error));
         return NextResponse.json({
             error: 'Debug failed',
-            message: error.message,
-            stack: error.stack,
+            message: err.message,
+            stack: err.stack,
         }, { status: 500 });
     }
 }
