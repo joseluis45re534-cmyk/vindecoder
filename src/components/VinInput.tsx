@@ -16,7 +16,7 @@ export function VinInput({ className }: VinInputProps) {
     const [isLoading, setIsLoading] = useState(false);
     const router = useRouter();
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setError(null);
         setIsLoading(true);
@@ -33,12 +33,33 @@ export function VinInput({ className }: VinInputProps) {
             localStorage.setItem("currentVin", vin.toUpperCase());
         }
 
-        // Simulate API check delay
-        setTimeout(() => {
-            setIsLoading(false);
-            // Navigate to checkout or report ready page (simulated)
-            router.push(`/vin-check?vin=${vin.toUpperCase()}`);
-        }, 800);
+        // Try to save to database via API
+        try {
+            const response = await fetch("/api/save-vin", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ vin: vin.toUpperCase() }),
+            });
+
+            // If unauthorized, redirect to login
+            if (response.status === 401) {
+                router.push(`/login?redirect=/vin-check?vin=${vin.toUpperCase()}`);
+                return;
+            }
+
+            // Continue to VIN check page regardless of API result
+            // (for backward compatibility with mock mode)
+            setTimeout(() => {
+                setIsLoading(false);
+                router.push(`/vin-check?vin=${vin.toUpperCase()}`);
+            }, 800);
+        } catch {
+            // If API fails, still proceed (for local development)
+            setTimeout(() => {
+                setIsLoading(false);
+                router.push(`/vin-check?vin=${vin.toUpperCase()}`);
+            }, 800);
+        }
     };
 
     return (
