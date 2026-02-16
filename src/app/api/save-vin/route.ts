@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getAuthUser } from '@/lib/auth-middleware';
 import { validateVin } from '@/lib/vin-validation';
 
-// export const runtime = 'edge';
+export const runtime = 'edge';
 
 export async function POST(request: NextRequest) {
     try {
