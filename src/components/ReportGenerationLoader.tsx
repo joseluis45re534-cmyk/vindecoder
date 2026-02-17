@@ -29,6 +29,7 @@ export function ReportGenerationLoader({ vinRequestId }: ReportGenerationLoaderP
 
                 // Refresh the page to show the generated report (handled by Server Component)
                 router.refresh();
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
             } catch (err: any) {
                 console.error(err);
                 setError(err.message || "Failed to generate report. Please contact support.");
