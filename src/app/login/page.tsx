@@ -27,7 +27,8 @@ export default function LoginPage() {
                 body: JSON.stringify({ email, password }),
             });
 
-            const data = await response.json();
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const data = (await response.json()) as any;
 
             if (!response.ok) {
                 throw new Error(data.error || "Login failed");

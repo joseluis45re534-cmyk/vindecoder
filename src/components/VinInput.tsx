@@ -47,11 +47,13 @@ export function VinInput({ className }: VinInputProps) {
             }
 
             if (!response.ok) {
-                const data = await response.json();
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                const data = (await response.json()) as any;
                 throw new Error(data.error || "Failed to save VIN");
             }
 
-            const data = await response.json();
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const data = (await response.json()) as any;
             const vinRequestId = data.vinRequest?.id;
 
             if (vinRequestId) {
@@ -63,7 +65,8 @@ export function VinInput({ className }: VinInputProps) {
                 });
 
                 if (checkoutResponse.ok) {
-                    const session = await checkoutResponse.json();
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    const session = (await checkoutResponse.json()) as any;
                     if (session.url) {
                         window.location.href = session.url;
                         return;
