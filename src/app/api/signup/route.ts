@@ -5,7 +5,8 @@ export const runtime = 'edge';
 
 export async function POST(request: NextRequest) {
     try {
-        const { email, password } = await request.json();
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const { email, password, confirmPassword } = (await request.json()) as any;
 
         // Validation
         if (!email || !password) {

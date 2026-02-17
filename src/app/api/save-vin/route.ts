@@ -16,7 +16,8 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        const { vin } = await request.json();
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const { vin } = (await request.json()) as any;
 
         // Validate VIN
         const validation = validateVin(vin);
