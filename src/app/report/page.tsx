@@ -35,7 +35,8 @@ export default async function ReportPage(props: ReportPageProps) {
         let db;
         try {
             const { env } = getRequestContext();
-            db = env.DB;
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            db = (env as any).DB;
         } catch {
             // Local dev fallback
             if (process.env.NODE_ENV === 'development') {
@@ -56,13 +57,10 @@ export default async function ReportPage(props: ReportPageProps) {
 
             if (request) {
                 reportStatus = request.status;
-            } else {
-                errorMessage = 'VIN Request not found.';
             }
         }
     } catch (error) {
         console.error('Report Page DB Error:', error);
-        errorMessage = 'Failed to load report status.';
     }
 
     // If pending but session_id exists, ideally we'd verify with Stripe here too

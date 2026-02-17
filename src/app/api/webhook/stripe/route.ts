@@ -35,9 +35,10 @@ export async function POST(request: NextRequest) {
         try {
             // Verify signature using the raw body
             event = await stripe.webhooks.constructEventAsync(body, signature, webhookSecret);
-        } catch (err: any) {
-            console.error('Webhook signature verification failed:', err.message);
-            return NextResponse.json({ error: 'Webhook Error: ' + err.message }, { status: 400 });
+        } catch (err: unknown) {
+            const message = err instanceof Error ? err.message : 'Unknown error';
+            console.error('Webhook signature verification failed:', message);
+            return NextResponse.json({ error: 'Webhook Error: ' + message }, { status: 400 });
         }
 
         // Handle the event
@@ -51,6 +52,7 @@ export async function POST(request: NextRequest) {
                 const db = process.env.DB || request.env?.DB;
 
                 if (db) {
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     await db.prepare('UPDATE vin_requests SET status = ? WHERE id = ?')
                         .bind('paid', vinRequestId)
                         .run();
@@ -64,7 +66,7 @@ export async function POST(request: NextRequest) {
         }
 
         return NextResponse.json({ received: true });
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error('Webhook handler error:', error);
         return NextResponse.json(
             { error: 'Webhook handler failed' },

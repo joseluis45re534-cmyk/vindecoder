@@ -21,7 +21,8 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
-        const { vinRequestId, vin } = await request.json();
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const { vinRequestId, vin } = (await request.json()) as any;
 
         if (!vinRequestId || !vin) {
             return NextResponse.json({ error: 'Missing VIN request ID or VIN' }, { status: 400 });
@@ -65,10 +66,11 @@ export async function POST(request: NextRequest) {
         });
 
         return NextResponse.json({ url: session.url, sessionId: session.id });
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error('Stripe Checkout Error:', error);
+        const message = error instanceof Error ? error.message : 'Unknown error';
         return NextResponse.json(
-            { error: error.message || 'Failed to create checkout session' },
+            { error: message || 'Failed to create checkout session' },
             { status: 500 }
         );
     }
