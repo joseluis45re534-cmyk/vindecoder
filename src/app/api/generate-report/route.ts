@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAuthUserServer } from '@/lib/auth-server';
-import { CloudflareEnv } from '@/lib/db';
+import { getRequestContext } from '@cloudflare/next-on-pages';
 
 export const runtime = 'edge';
 
@@ -62,7 +62,8 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: 'VIN Request ID is required' }, { status: 400 });
         }
 
-        const env = process.env as unknown as CloudflareEnv;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const { env } = getRequestContext();
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const db = (env as any).DB;
 
