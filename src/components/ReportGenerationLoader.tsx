@@ -22,14 +22,16 @@ export function ReportGenerationLoader({ vinRequestId }: ReportGenerationLoaderP
                 });
 
                 if (!response.ok) {
-                    throw new Error("Failed to generate report");
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    const data = (await response.json()) as any;
+                    throw new Error(data.error || `Error ${response.status}: Failed to generate report`);
                 }
 
                 // Refresh the page to show the generated report (handled by Server Component)
                 router.refresh();
-            } catch (err) {
+            } catch (err: any) {
                 console.error(err);
-                setError("Failed to generate report. Please contact support.");
+                setError(err.message || "Failed to generate report. Please contact support.");
             }
         };
 
