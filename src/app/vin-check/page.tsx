@@ -17,6 +17,7 @@ function VinCheckContent() {
     const [status, setStatus] = useState<"input" | "analyzing" | "found" | "error">("input");
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const [reportData, setReportData] = useState<any>(null); // Dummy data
+    const [isCheckoutLoading, setIsCheckoutLoading] = useState(false);
 
     useEffect(() => {
         if (vinParam) {
@@ -47,6 +48,49 @@ function VinCheckContent() {
             });
             setStatus("found");
         }, 2500);
+    };
+
+    const handleCheckout = async () => {
+        setIsCheckoutLoading(true);
+        try {
+            // 1. Save VIN to database (or get existing ID)
+            const saveResponse = await fetch("/api/save-vin", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ vin }),
+            });
+
+            if (!saveResponse.ok) {
+                throw new Error("Failed to initialize checkout");
+            }
+
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const saveData = (await saveResponse.json()) as any;
+            const vinRequestId = saveData.vinRequest?.id;
+
+            if (vinRequestId) {
+                // 2. Create Stripe Checkout Session
+                const checkoutResponse = await fetch("/api/create-checkout-session", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ vinRequestId, vin }),
+                });
+
+                if (checkoutResponse.ok) {
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    const session = (await checkoutResponse.json()) as any;
+                    if (session.url) {
+                        window.location.href = session.url;
+                        return;
+                    }
+                }
+            }
+        } catch (error) {
+            console.error("Checkout failed:", error);
+            // Could add error toast here
+        } finally {
+            setIsCheckoutLoading(false);
+        }
     };
 
     return (
@@ -119,7 +163,13 @@ function VinCheckContent() {
                             </div>
 
                             <div className="pt-4">
-                                <Button className="w-full h-14 text-lg" size="lg">
+                                <Button
+                                    className="w-full h-14 text-lg"
+                                    size="lg"
+                                    onClick={handleCheckout}
+                                    disabled={isCheckoutLoading}
+                                >
+                                    {isCheckoutLoading ? <Loader2 className="h-5 w-5 animate-spin mr-2" /> : <Lock className="h-4 w-4 mr-2" />}
                                     Unlock Full Report - $29.99
                                 </Button>
                                 <p className="text-center text-xs text-muted-foreground mt-3 flex items-center justify-center">

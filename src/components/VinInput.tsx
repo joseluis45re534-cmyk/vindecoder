@@ -52,33 +52,8 @@ export function VinInput({ className }: VinInputProps) {
                 throw new Error(data.error || "Failed to save VIN");
             }
 
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const data = (await response.json()) as any;
-            const vinRequestId = data.vinRequest?.id;
-
-            if (vinRequestId) {
-                // Create Stripe Checkout Session
-                const checkoutResponse = await fetch("/api/create-checkout-session", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ vinRequestId, vin: vin.toUpperCase() }),
-                });
-
-                if (checkoutResponse.ok) {
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    const session = (await checkoutResponse.json()) as any;
-                    if (session.url) {
-                        window.location.href = session.url;
-                        return;
-                    }
-                } else {
-                    console.error("Failed to create checkout session");
-                    // Fallback to old behavior if stripe fails (e.g. key missing)
-                    router.push(`/vin-check?vin=${vin.toUpperCase()}`);
-                }
-            } else {
-                router.push(`/vin-check?vin=${vin.toUpperCase()}`);
-            }
+            // Redirect to VIN check page for preview
+            router.push(`/vin-check?vin=${vin.toUpperCase()}`);
         } catch (err) {
             console.error(err);
             // Fallback
