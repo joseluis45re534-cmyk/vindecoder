@@ -41,24 +41,45 @@ export function VinInput({ className }: VinInputProps) {
                 body: JSON.stringify({ vin: vin.toUpperCase() }),
             });
 
-            // If unauthorized, redirect to login
             if (response.status === 401) {
                 router.push(`/login?redirect=/vin-check?vin=${vin.toUpperCase()}`);
                 return;
             }
 
-            // Continue to VIN check page regardless of API result
-            // (for backward compatibility with mock mode)
-            setTimeout(() => {
-                setIsLoading(false);
+            if (!response.ok) {
+                const data = await response.json();
+                throw new Error(data.error || "Failed to save VIN");
+            }
+
+            const data = await response.json();
+            const vinRequestId = data.vinRequest?.id;
+
+            if (vinRequestId) {
+                // Create Stripe Checkout Session
+                const checkoutResponse = await fetch("/api/create-checkout-session", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ vinRequestId, vin: vin.toUpperCase() }),
+                });
+
+                if (checkoutResponse.ok) {
+                    const session = await checkoutResponse.json();
+                    if (session.url) {
+                        window.location.href = session.url;
+                        return;
+                    }
+                } else {
+                    console.error("Failed to create checkout session");
+                    // Fallback to old behavior if stripe fails (e.g. key missing)
+                    router.push(`/vin-check?vin=${vin.toUpperCase()}`);
+                }
+            } else {
                 router.push(`/vin-check?vin=${vin.toUpperCase()}`);
-            }, 800);
-        } catch {
-            // If API fails, still proceed (for local development)
-            setTimeout(() => {
-                setIsLoading(false);
-                router.push(`/vin-check?vin=${vin.toUpperCase()}`);
-            }, 800);
+            }
+        } catch (err) {
+            console.error(err);
+            // Fallback
+            router.push(`/vin-check?vin=${vin.toUpperCase()}`);
         }
     };
 
