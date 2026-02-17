@@ -27,7 +27,6 @@ export default async function ReportPage(props: ReportPageProps) {
     }
 
     let reportStatus = 'pending';
-    let errorMessage = null;
 
     // Check database status
     try {
