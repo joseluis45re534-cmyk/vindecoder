@@ -66,6 +66,7 @@ export default async function ReportPage(props: ReportPageProps) {
                 const reportRecord: any = await db.prepare(
                     'SELECT report_data FROM vin_reports WHERE vin_request_id = ?'
                 )
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     .bind((vinRequest as any).id)
                     .first();
 
@@ -120,6 +121,7 @@ export default async function ReportPage(props: ReportPageProps) {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         return (
             <div className="min-h-screen bg-background pt-24 pb-12 px-4">
+                {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                 <ReportGenerationLoader vinRequestId={(vinRequest as any).id} />
             </div>
         );

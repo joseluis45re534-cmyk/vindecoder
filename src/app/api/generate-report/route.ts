@@ -6,7 +6,7 @@ export const runtime = 'edge';
 
 // Mock Data Generator
 const generateMockReport = (vin: string) => {
-    const recordsFound = Math.floor(Math.random() * 5) + 1;
+    // const recordsFound = Math.floor(Math.random() * 5) + 1;
     const isStolen = Math.random() < 0.05; // 5% chance
     const isWrittenOff = Math.random() < 0.1; // 10% chance
     const financeOwing = Math.random() < 0.15; // 15% chance

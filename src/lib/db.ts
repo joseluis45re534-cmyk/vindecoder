@@ -2,8 +2,8 @@
 // In Cloudflare Pages/Workers, the DB binding is automatically available
 // via the request context or env
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export interface CloudflareEnv {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     DB: any;
 }
 
