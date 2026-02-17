@@ -48,46 +48,77 @@ const generateMockReport = (vin: string) => {
 };
 
 export async function POST(request: NextRequest) {
+    console.log("Generate Report API Called");
     try {
         // 1. Verify Authentication
+        console.log("Verifying Auth...");
         const user = await getAuthUserServer();
         if (!user) {
+            console.log("Auth Failed");
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
+        console.log("Auth Success:", user.userId);
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const { vinRequestId } = (await request.json()) as any;
+        // Parse Request
+        let vinRequestId;
+        try {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const body = (await request.json()) as any;
+            vinRequestId = body.vinRequestId;
+            console.log("Request ID:", vinRequestId);
+        } catch (e) {
+            console.error("JSON Parse Error:", e);
+            return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 });
+        }
 
         if (!vinRequestId) {
             return NextResponse.json({ error: 'VIN Request ID is required' }, { status: 400 });
         }
 
+        // DB Connection
+        console.log("Getting Context...");
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const { env } = getRequestContext();
+        if (!env) {
+            console.error("Env is null");
+            return NextResponse.json({ error: 'Environment Context Missing' }, { status: 500 });
+        }
+
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const db = (env as any).DB;
+        if (!db) {
+            console.error("DB binding missing");
+            return NextResponse.json({ error: 'Database Binding Missing' }, { status: 500 });
+        }
+        console.log("DB Binding Found");
 
         // 2. Verify VIN Request exists and is paid
+        console.log("Querying VIN Request...");
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const vinRequest: any = await db.prepare(
             'SELECT * FROM vin_requests WHERE id = ? AND user_id = ?'
         ).bind(vinRequestId, user.userId).first();
+
+        console.log("VIN Request Result:", vinRequest);
 
         if (!vinRequest) {
             return NextResponse.json({ error: 'VIN Request not found' }, { status: 404 });
         }
 
         if (vinRequest.status !== 'paid') {
+            console.log("Status not paid:", vinRequest.status);
             return NextResponse.json({ error: 'Payment required to generate report' }, { status: 402 });
         }
 
         // 3. Check if report already exists
+        console.log("Checking Existing Report...");
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const existingReport: any = await db.prepare(
             'SELECT * FROM vin_reports WHERE vin_request_id = ?'
         ).bind(vinRequestId).first();
 
         if (existingReport) {
+            console.log("Report Exists");
             return NextResponse.json({
                 success: true,
                 report: JSON.parse(existingReport.report_data),
@@ -96,13 +127,16 @@ export async function POST(request: NextRequest) {
         }
 
         // 4. Generate Mock Data
+        console.log("Generating Data...");
         const reportData = generateMockReport(vinRequest.vin_number);
         const reportJson = JSON.stringify(reportData);
 
         // 5. Store in Database
+        console.log("Providing Report...");
         await db.prepare(
             'INSERT INTO vin_reports (vin_request_id, report_data) VALUES (?, ?)'
         ).bind(vinRequestId, reportJson).run();
+        console.log("Report Saved");
 
         return NextResponse.json({
             success: true,
@@ -110,8 +144,13 @@ export async function POST(request: NextRequest) {
             isNew: true
         });
 
-    } catch (error) {
+    } catch (error: any) {
         console.error('Report generation error:', error);
-        return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+        // RETURN ERROR DETAILS IN RESPONSE FOR DEBUGGING
+        return NextResponse.json({
+            error: 'Internal Server Error',
+            details: error.message,
+            stack: error.stack
+        }, { status: 500 });
     }
 }
