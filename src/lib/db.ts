@@ -2,9 +2,9 @@
 // In Cloudflare Pages/Workers, the DB binding is automatically available
 // via the request context or env
 
-export interface Env {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    DB: any; // D1Database type is available in Cloudflare Workers runtime
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export interface CloudflareEnv {
+    DB: any;
 }
 
 // Helper type for user

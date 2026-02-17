@@ -19,3 +19,14 @@ CREATE TABLE IF NOT EXISTS vin_requests (
 -- Index for faster lookups
 CREATE INDEX IF NOT EXISTS idx_vin_requests_user_id ON vin_requests(user_id);
 CREATE INDEX IF NOT EXISTS idx_vin_requests_status ON vin_requests(status);
+
+-- VIN Reports table
+CREATE TABLE IF NOT EXISTS vin_reports (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    vin_request_id INTEGER NOT NULL,
+    report_data TEXT NOT NULL, -- JSON string
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (vin_request_id) REFERENCES vin_requests(id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_vin_reports_request_id ON vin_reports(vin_request_id);
