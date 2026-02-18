@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
+import { ReportView, ReportData } from "@/components/ReportView";
 
 interface ReportGenerationLoaderProps {
     vinRequestId: number;
@@ -11,6 +12,7 @@ interface ReportGenerationLoaderProps {
 export function ReportGenerationLoader({ vinRequestId }: ReportGenerationLoaderProps) {
     const router = useRouter();
     const [error, setError] = useState<string | null>(null);
+    const [report, setReport] = useState<ReportData | null>(null);
 
     useEffect(() => {
         const generate = async () => {
@@ -29,7 +31,14 @@ export function ReportGenerationLoader({ vinRequestId }: ReportGenerationLoaderP
                     throw new Error(detailedError);
                 }
 
-                // Refresh the page to show the generated report (handled by Server Component)
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                const result = (await response.json()) as any;
+
+                if (result.success && result.report) {
+                    setReport(result.report);
+                }
+
+                // Refresh the page to show the generated report (handled by Server Component) - keeping this for production sync
                 router.refresh();
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
             } catch (err: any) {
@@ -47,6 +56,10 @@ export function ReportGenerationLoader({ vinRequestId }: ReportGenerationLoaderP
                 <p>{error}</p>
             </div>
         );
+    }
+
+    if (report) {
+        return <ReportView report={report} />;
     }
 
     return (

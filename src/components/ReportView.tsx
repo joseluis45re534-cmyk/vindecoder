@@ -4,7 +4,7 @@ import { CheckCircle2, AlertCircle, FileText, Download, Printer } from "lucide-r
 import { Button } from "@/components/ui/button";
 
 // Only defining types for the mock data structure we use
-interface ReportData {
+export interface ReportData {
     vin: string;
     reportDate: string;
     vehicleDetails: {
@@ -42,6 +42,10 @@ interface ReportViewProps {
 }
 
 export function ReportView({ report }: ReportViewProps) {
+    const handlePrint = () => {
+        window.print();
+    };
+
     const isStolenClear = report.ppsr.stolen.includes("NO") && report.nevdis.stolen === "CLEAR";
     const isWrittenOffClear = report.ppsr.writtenOff.includes("NO") && report.nevdis.writtenOff === "CLEAR";
     const isFinanceClear = report.ppsr.finance.includes("NO");
@@ -59,11 +63,11 @@ export function ReportView({ report }: ReportViewProps) {
                     <p className="text-muted-foreground mt-1 font-mono">VIN: {report.vin}</p>
                     <p className="text-xs text-muted-foreground mt-1">Generated: {new Date(report.reportDate).toLocaleDateString()}</p>
                 </div>
-                <div className="flex gap-2">
-                    <Button variant="outline" size="sm">
-                        <Download className="h-4 w-4 mr-2" /> PDF
+                <div className="flex gap-2 print:hidden">
+                    <Button variant="outline" size="sm" onClick={handlePrint}>
+                        <Download className="h-4 w-4 mr-2" /> Save as PDF
                     </Button>
-                    <Button size="sm">
+                    <Button size="sm" onClick={handlePrint}>
                         <Printer className="h-4 w-4 mr-2" /> Print
                     </Button>
                 </div>

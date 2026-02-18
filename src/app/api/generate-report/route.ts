@@ -77,17 +77,29 @@ export async function POST(request: NextRequest) {
 
         // DB Connection
         console.log("Getting Context...");
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const { env } = getRequestContext();
-        if (!env) {
-            console.error("Env is null");
-            return NextResponse.json({ error: 'Environment Context Missing' }, { status: 500 });
+        let db;
+        try {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const { env } = getRequestContext();
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            if (env) db = (env as any).DB;
+        } catch (e) {
+            console.warn("Context not available (likely local dev)", e);
         }
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const db = (env as any).DB;
+        // --- LOCAL DEV FALLBACK ---
         if (!db) {
-            console.error("DB binding missing");
+            if (process.env.NODE_ENV === 'development') {
+                console.log("Running in LOCAL DEV mode - Mocking Response");
+                const mockReport = generateMockReport("MOCK-VIN-12345"); // Use a placeholder VIN or derive if possible, but request ID is number
+                return NextResponse.json({
+                    success: true,
+                    report: mockReport,
+                    isNew: true
+                });
+            }
+
+            console.error("DB binding missing in production");
             return NextResponse.json({ error: 'Database Binding Missing' }, { status: 500 });
         }
         console.log("DB Binding Found");
@@ -146,7 +158,6 @@ export async function POST(request: NextRequest) {
 
     } catch (error: any) {
         console.error('Report generation error:', error);
-        // RETURN ERROR DETAILS IN RESPONSE FOR DEBUGGING
         return NextResponse.json({
             error: 'Internal Server Error',
             details: error.message,
