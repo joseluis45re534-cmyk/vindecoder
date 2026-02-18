@@ -156,12 +156,12 @@ export async function POST(request: NextRequest) {
             isNew: true
         });
 
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error('Report generation error:', error);
         return NextResponse.json({
             error: 'Internal Server Error',
-            details: error.message,
-            stack: error.stack
+            details: error instanceof Error ? error.message : String(error),
+            stack: error instanceof Error ? error.stack : undefined
         }, { status: 500 });
     }
 }
