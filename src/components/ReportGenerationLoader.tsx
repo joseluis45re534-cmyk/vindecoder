@@ -24,7 +24,9 @@ export function ReportGenerationLoader({ vinRequestId }: ReportGenerationLoaderP
                 if (!response.ok) {
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     const data = (await response.json()) as any;
-                    throw new Error(data.error || `Error ${response.status}: Failed to generate report`);
+                    const errorMessage = data.error || `Error ${response.status}: Failed to generate report`;
+                    const detailedError = data.details ? `${errorMessage}: ${data.details}` : errorMessage;
+                    throw new Error(detailedError);
                 }
 
                 // Refresh the page to show the generated report (handled by Server Component)
