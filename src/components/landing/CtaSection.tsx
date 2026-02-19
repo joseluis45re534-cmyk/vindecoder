@@ -43,7 +43,7 @@ export function CtaSection() {
                     viewport={{ once: true }}
                     className="mb-8 inline-block"
                 >
-                    <span className="bg-red-500/10 text-red-600 px-4 py-2 rounded-full font-bold text-sm border border-red-500/20 animate-pulse flex items-center gap-2">
+                    <span className="bg-red-500/10 text-red-600 dark:text-red-400 px-4 py-2 rounded-full font-bold text-sm border border-red-500/20 animate-pulse flex items-center gap-2">
                         <span className="relative flex h-3 w-3">
                             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
                             <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>

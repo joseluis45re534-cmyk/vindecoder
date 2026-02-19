@@ -51,7 +51,7 @@ export function HeroSection() {
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.5 }}
-                        className="mb-6 inline-flex items-center rounded-full border bg-background/50 backdrop-blur-sm px-3 py-1 text-sm font-medium text-muted-foreground shadow-sm ring-1 ring-inset ring-gray-200/20"
+                        className="mb-6 inline-flex items-center rounded-full border bg-background/50 backdrop-blur-sm px-3 py-1 text-sm font-medium text-muted-foreground shadow-sm ring-1 ring-inset ring-border/20"
                     >
                         <Shield className="mr-2 h-4 w-4 text-primary animate-pulse" />
                         Trusted by 50,000+ Australians
@@ -116,7 +116,7 @@ export function HeroSection() {
                     <motion.div
                         animate={{ rotateY: [-5, 5, -5], rotateX: [2, -2, 2] }}
                         transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
-                        className="relative z-10 w-full aspect-[4/3] bg-gradient-to-br from-gray-900 to-black rounded-2xl border border-gray-800 shadow-2xl overflow-hidden group"
+                        className="relative z-10 w-full aspect-[4/3] bg-gradient-to-br from-gray-100 to-white dark:from-gray-900 dark:to-black rounded-2xl border border-border/50 shadow-2xl overflow-hidden group"
                     >
                         {/* Placeholder Car UI */}
                         <div className="absolute inset-0 flex items-center justify-center opacity-30">
@@ -132,7 +132,7 @@ export function HeroSection() {
 
                         {/* UI Overlay */}
                         <div className="absolute top-4 left-4 right-4 flex justify-between items-center">
-                            <div className={`flex items-center gap-2 bg-black/50 backdrop-blur px-3 py-1 rounded-full text-xs font-mono border ${isScanning ? 'text-primary border-primary/20' : 'text-gray-500 border-gray-500/20'}`}>
+                            <div className={`flex items-center gap-2 backdrop-blur px-3 py-1 rounded-full text-xs font-mono border ${isScanning ? 'text-primary border-primary/20 bg-background/80' : 'text-muted-foreground border-border/50 bg-background/50'}`}>
                                 <span className={`w-2 h-2 rounded-full ${isScanning ? 'bg-primary animate-pulse' : 'bg-gray-500'}`} />
                                 {isScanning ? 'SYSTEM ONLINE' : 'STANDBY'}
                             </div>
@@ -140,7 +140,7 @@ export function HeroSection() {
                         </div>
 
 
-                        <div className="absolute bottom-4 left-4 text-xs font-mono text-gray-400">
+                        <div className="absolute bottom-4 left-4 text-xs font-mono text-muted-foreground">
                             &gt; PPSR: CONNECTED<br />
                             &gt; NEVDIS: CONNECTED<br />
                             &gt; ENCRYPTION: 256-BIT
