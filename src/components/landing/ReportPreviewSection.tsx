@@ -1,31 +1,41 @@
 "use client";
 
-import { motion } from "framer-motion";
-import { CheckCircle2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { motion, AnimatePresence } from "framer-motion";
+import { CheckCircle2, Lock } from "lucide-react";
+import { useState } from "react";
 
 const features = [
     {
-        title: "PPSR Certificate",
-        desc: "Official government certificate verifying finance owing and encumbrance status."
+        title: "Finance Owing",
+        desc: "Check if the vehicle is encumbered by a loan.",
+        status: "CLEAR",
+        color: "text-green-500"
     },
     {
-        title: "Stolen Status Check",
-        desc: "Verify if the vehicle has been reported as stolen to police."
+        title: "Stolen Status",
+        desc: "Verify if the vehicle is recorded as stolen.",
+        status: "CLEAR",
+        color: "text-green-500"
     },
     {
-        title: "Written-Off History",
-        desc: "Check if the car has been in a major accident or flooded and repaired."
+        title: "Written-Off",
+        desc: "Has the car been in a major accident?",
+        status: "CLEAR",
+        color: "text-green-500"
     },
     {
-        title: "Registration Details",
-        desc: "Confirm registration status, expiry date, and plate details."
+        title: "Registration",
+        desc: "Current registration status and expiry.",
+        status: "ACTIVE",
+        color: "text-blue-500"
     }
 ];
 
 export function ReportPreviewSection() {
+    const [hoverIndex, setHoverIndex] = useState<number | null>(null);
+
     return (
-        <section className="py-24 border-y border-border/50 overflow-hidden">
+        <section className="py-24 border-y border-border/50 overflow-hidden bg-background">
             <div className="container">
                 <div className="flex flex-col items-center text-center mb-16">
                     <motion.h2
@@ -34,82 +44,86 @@ export function ReportPreviewSection() {
                         viewport={{ once: true }}
                         className="text-3xl font-bold tracking-tight sm:text-4xl mb-4"
                     >
-                        What&apos;s Inside The Report?
+                        Interactive Report Preview
                     </motion.h2>
-                    <motion.p
-                        initial={{ opacity: 0, y: 20 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: true }}
-                        transition={{ delay: 0.1 }}
-                        className="text-muted-foreground max-w-2xl text-lg"
-                    >
-                        Don&apos;t risk buying a lemon. Our reports reveal the critical hidden history of used cars.
-                    </motion.p>
+                    <p className="text-muted-foreground max-w-2xl text-lg">
+                        Hover over the report sections to see what&apos;s covered.
+                    </p>
                 </div>
 
-                <div className="relative mx-auto max-w-5xl rounded-2xl border bg-card p-2 md:p-4 shadow-2xl">
-                    <div className="absolute -top-12 -left-12 -z-10 h-[300px] w-[300px] bg-primary/20 blur-[100px] rounded-full opacity-50 animate-pulse" />
-                    <div className="absolute -bottom-12 -right-12 -z-10 h-[300px] w-[300px] bg-accent/20 blur-[100px] rounded-full opacity-50 animate-pulse delay-700" />
+                <div className="flex flex-col lg:flex-row gap-12 items-center">
+                    {/* Mock Report UI */}
+                    <motion.div
+                        initial={{ opacity: 0, x: -50 }}
+                        whileInView={{ opacity: 1, x: 0 }}
+                        viewport={{ once: true }}
+                        transition={{ duration: 0.8 }}
+                        className="w-full lg:w-1/2 bg-white text-slate-800 rounded-3xl shadow-2xl overflow-hidden border border-slate-200 relative"
+                    >
+                        <div className="bg-slate-900 text-white p-6 flex justify-between items-center">
+                            <div className="font-bold flex items-center gap-2">
+                                <Lock className="w-4 h-4 text-green-400" />
+                                VINDecoder Report
+                            </div>
+                            <div className="text-xs bg-slate-800 px-2 py-1 rounded">SECURE</div>
+                        </div>
 
-                    <div className="grid md:grid-cols-2 gap-8 p-6 md:p-10">
-                        <div className="space-y-6">
+                        <div className="p-6 space-y-4">
                             {features.map((feature, i) => (
                                 <motion.div
                                     key={i}
-                                    initial={{ opacity: 0, x: -20 }}
-                                    whileInView={{ opacity: 1, x: 0 }}
-                                    viewport={{ once: true }}
-                                    transition={{ delay: i * 0.1 }}
-                                    className="flex items-start gap-4 p-3 rounded-lg hover:bg-muted/50 transition-colors cursor-default"
+                                    onHoverStart={() => setHoverIndex(i)}
+                                    onHoverEnd={() => setHoverIndex(null)}
+                                    className={`p-4 rounded-xl border transition-all duration-300 cursor-pointer ${hoverIndex === i ? 'bg-slate-50 border-primary shadow-md scale-[1.02]' : 'bg-white border-slate-100'}`}
                                 >
-                                    <CheckCircle2 className="h-6 w-6 text-accent shrink-0 mt-1" />
-                                    <div>
-                                        <h4 className="font-semibold text-lg">{feature.title}</h4>
-                                        <p className="text-sm text-muted-foreground">{feature.desc}</p>
+                                    <div className="flex justify-between items-center mb-2">
+                                        <h4 className="font-semibold text-slate-700">{feature.title}</h4>
+                                        <div className={`flex items-center gap-1 text-sm font-bold ${feature.color}`}>
+                                            <CheckCircle2 className="w-4 h-4" />
+                                            {feature.status}
+                                        </div>
                                     </div>
+                                    <AnimatePresence>
+                                        {hoverIndex === i && (
+                                            <motion.p
+                                                initial={{ height: 0, opacity: 0 }}
+                                                animate={{ height: "auto", opacity: 1 }}
+                                                exit={{ height: 0, opacity: 0 }}
+                                                className="text-sm text-slate-500 overflow-hidden"
+                                            >
+                                                {feature.desc}
+                                            </motion.p>
+                                        )}
+                                    </AnimatePresence>
                                 </motion.div>
                             ))}
                         </div>
+                    </motion.div>
 
-                        {/* Visual Placeholder for Report */}
-                        <motion.div
-                            initial={{ opacity: 0, scale: 0.9, rotate: 2 }}
-                            whileInView={{ opacity: 1, scale: 1, rotate: 0 }}
-                            viewport={{ once: true }}
-                            transition={{ type: "spring", stiffness: 50, delay: 0.2 }}
-                            className="relative rounded-lg border bg-muted/10 p-6 flex flex-col gap-4 overflow-hidden"
-                            whileHover={{ scale: 1.02, rotate: 1 }}
-                        >
-                            {/* Scanline effect */}
+                    {/* Feature List */}
+                    <div className="w-full lg:w-1/2 space-y-8">
+                        {features.map((feature, i) => (
                             <motion.div
-                                animate={{ top: ["0%", "100%"] }}
-                                transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
-                                className="absolute left-0 right-0 h-1 bg-primary/20 z-10 box-shadow-[0_0_10px_rgba(59,130,246,0.5)]"
-                            />
-
-                            <div className="flex items-center justify-between border-b pb-4">
-                                <div className="h-6 w-32 bg-primary/20 rounded animate-pulse" />
-                                <div className="h-8 w-20 bg-accent/20 rounded-full animate-pulse" />
-                            </div>
-                            <div className="space-y-3">
-                                <div className="h-4 w-full bg-muted/40 rounded" />
-                                <div className="h-4 w-3/4 bg-muted/40 rounded" />
-                                <div className="h-4 w-5/6 bg-muted/40 rounded" />
-                            </div>
-                            <div className="mt-4 grid grid-cols-2 gap-4">
-                                <div className="h-24 bg-card rounded border p-4 flex flex-col justify-center gap-2">
-                                    <div className="h-2 w-16 bg-muted/40 rounded" />
-                                    <div className="h-6 w-8 bg-green-500/20 rounded-full" />
+                                key={i}
+                                initial={{ opacity: 0, x: 50 }}
+                                whileInView={{ opacity: 1, x: 0 }}
+                                viewport={{ once: true }}
+                                transition={{ delay: i * 0.1 }}
+                                className={`flex items-start gap-4 p-4 rounded-xl transition-colors duration-300 ${hoverIndex === i ? 'bg-primary/5' : ''}`}
+                            >
+                                <div className={`mt-1 p-2 rounded-full ${hoverIndex === i ? 'bg-primary text-white' : 'bg-muted text-muted-foreground'}`}>
+                                    <CheckCircle2 className="w-5 h-5" />
                                 </div>
-                                <div className="h-24 bg-card rounded border p-4 flex flex-col justify-center gap-2">
-                                    <div className="h-2 w-16 bg-muted/40 rounded" />
-                                    <div className="h-6 w-8 bg-green-500/20 rounded-full" />
+                                <div>
+                                    <h3 className={`text-xl font-bold transition-colors ${hoverIndex === i ? 'text-primary' : 'text-foreground'}`}>
+                                        {feature.title}
+                                    </h3>
+                                    <p className="text-muted-foreground mt-2">
+                                        {feature.desc}
+                                    </p>
                                 </div>
-                            </div>
-                            <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-card to-transparent flex items-end justify-center pb-6">
-                                <Button variant="outline" className="pointer-events-none opacity-80 backdrop-blur-sm">View Full Detail</Button>
-                            </div>
-                        </motion.div>
+                            </motion.div>
+                        ))}
                     </div>
                 </div>
             </div>

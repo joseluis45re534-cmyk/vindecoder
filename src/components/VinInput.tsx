@@ -6,9 +6,12 @@ import { motion, useAnimation } from "framer-motion";
 
 interface VinInputProps {
     className?: string;
+    onScanStart?: () => void;
+    onScanComplete?: () => void;
 }
 
-export function VinInput({ className }: VinInputProps) {
+export function VinInput({ className, onScanStart, onScanComplete }: VinInputProps) {
+
     const [vin, setVin] = useState("");
     const [error, setError] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(false);
@@ -32,6 +35,13 @@ export function VinInput({ className }: VinInputProps) {
             return;
         }
 
+        // Notify parent to start scanning animation
+        if (onScanStart) {
+            onScanStart();
+            // Simulate scanning delay
+            await new Promise(resolve => setTimeout(resolve, 2000));
+        }
+
         // Save to local storage
         if (typeof window !== "undefined") {
             localStorage.setItem("currentVin", vin.toUpperCase());
@@ -44,6 +54,8 @@ export function VinInput({ className }: VinInputProps) {
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ vin: vin.toUpperCase() }),
             });
+
+            if (onScanComplete) onScanComplete();
 
             if (response.status === 401) {
                 router.push(`/login?redirect=/vin-check?vin=${vin.toUpperCase()}`);
@@ -60,6 +72,7 @@ export function VinInput({ className }: VinInputProps) {
             router.push(`/vin-check?vin=${vin.toUpperCase()}`);
         } catch (err) {
             console.error(err);
+            if (onScanComplete) onScanComplete();
             // Fallback
             router.push(`/vin-check?vin=${vin.toUpperCase()}`);
         }
