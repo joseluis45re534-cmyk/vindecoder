@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { ShieldCheck, LogOut } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
+import { ModeToggle } from "@/components/theme-toggle";
 
 export function Header() {
     const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -51,6 +52,7 @@ export function Header() {
                 </nav>
 
                 <div className="flex items-center gap-4">
+                    <ModeToggle />
                     {isLoggedIn ? (
                         <Button variant="outline" onClick={handleLogout}>
                             <LogOut className="h-4 w-4 mr-2" />
