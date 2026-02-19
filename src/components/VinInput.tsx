@@ -1,20 +1,19 @@
-"use client";
-
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { validateVin } from "@/lib/vin-validation";
-import { Loader2 } from "lucide-react";
+import { Loader2, Search } from "lucide-react"; // Import Search icon
+import { motion, useAnimation } from "framer-motion";
 
 interface VinInputProps {
-    className?: string; // Add className prop for flexibility
+    className?: string;
 }
-
 
 export function VinInput({ className }: VinInputProps) {
     const [vin, setVin] = useState("");
     const [error, setError] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(false);
     const router = useRouter();
+    const controls = useAnimation();
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -25,6 +24,11 @@ export function VinInput({ className }: VinInputProps) {
         if (!validation.isValid) {
             setError(validation.error || "Invalid VIN");
             setIsLoading(false);
+            // Trigger Shake Animation
+            controls.start({
+                x: [0, -10, 10, -10, 10, 0],
+                transition: { duration: 0.4 }
+            });
             return;
         }
 
@@ -63,9 +67,16 @@ export function VinInput({ className }: VinInputProps) {
 
     return (
         <div className={`w-full max-w-md mx-auto ${className}`}>
-            <form onSubmit={handleSubmit} className="flex flex-col gap-2">
+            <motion.form
+                onSubmit={handleSubmit}
+                className="flex flex-col gap-2 relative"
+                animate={controls}
+            >
                 <label htmlFor="vin-input" className="sr-only">Enter VIN</label>
-                <div className="relative flex items-center">
+                <div className="relative flex items-center group">
+                    <div className="absolute left-3 text-muted-foreground group-focus-within:text-primary transition-colors duration-300">
+                        <Search className="h-5 w-5" />
+                    </div>
                     <input
                         id="vin-input"
                         type="text"
@@ -75,21 +86,29 @@ export function VinInput({ className }: VinInputProps) {
                             setVin(e.target.value.toUpperCase());
                             if (error) setError(null);
                         }}
-                        className="flex h-12 w-full rounded-md border border-input bg-background px-3 py-2 text-lg ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                        className="flex h-14 w-full rounded-full border border-input bg-background/80 backdrop-blur-sm px-10 py-2 text-lg shadow-sm transition-all duration-300 placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:border-primary focus-visible:shadow-[0_0_20px_rgba(var(--primary),0.3)] disabled:cursor-not-allowed disabled:opacity-50"
                         maxLength={17}
                     />
                     <button
                         type="submit"
                         disabled={isLoading || vin.length === 0}
-                        className="absolute right-1 top-1 bottom-1 px-4 bg-primary text-primary-foreground font-medium rounded-sm hover:bg-primary/90 disabled:opacity-50 disabled:pointer-events-none transition-colors"
+                        className="absolute right-2 top-2 bottom-2 px-6 bg-primary text-primary-foreground font-medium rounded-full hover:bg-primary/90 disabled:opacity-50 disabled:pointer-events-none transition-all duration-300 shadow-md hover:shadow-lg hover:scale-105 active:scale-95"
                     >
                         {isLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : "Check"}
                     </button>
                 </div>
-                {error && <p className="text-sm text-destructive font-medium px-1">{error}</p>}
-            </form>
-            <p className="text-xs text-muted-foreground mt-2 text-center">
-                We check 100+ databases instantly.
+                {error && (
+                    <motion.p
+                        initial={{ opacity: 0, y: -5 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="text-sm text-destructive font-medium px-4"
+                    >
+                        {error}
+                    </motion.p>
+                )}
+            </motion.form>
+            <p className="text-xs text-muted-foreground mt-3 text-center opacity-80">
+                🔒 Secure 256-bit encrypted search
             </p>
         </div>
     );
