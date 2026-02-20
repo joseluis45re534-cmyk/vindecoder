@@ -1,5 +1,7 @@
 "use client";
 
+export const runtime = "edge";
+
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { FileText, Loader2, Clock, CheckCircle2, ArrowRight } from "lucide-react";
