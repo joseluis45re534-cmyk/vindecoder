@@ -99,7 +99,7 @@ export function VinInput({ className, onScanStart, onScanComplete }: VinInputPro
                             setVin(e.target.value.toUpperCase());
                             if (error) setError(null);
                         }}
-                        className="flex h-14 w-full rounded-full border border-input bg-background/80 backdrop-blur-sm px-10 py-2 text-lg shadow-sm transition-all duration-300 placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:border-primary focus-visible:shadow-[0_0_20px_rgba(var(--primary),0.3)] disabled:cursor-not-allowed disabled:opacity-50"
+                        className="flex h-14 w-full rounded-full border border-input bg-background/80 backdrop-blur-sm px-10 py-2 text-lg shadow-sm transition-all duration-300 placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:border-primary focus-visible:shadow-lg dark:focus-visible:shadow-[0_0_20px_rgba(var(--primary),0.3)] disabled:cursor-not-allowed disabled:opacity-50"
                         maxLength={17}
                     />
                     <button

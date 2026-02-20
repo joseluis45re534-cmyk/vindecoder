@@ -85,7 +85,7 @@ export function HeroSection() {
                         className="w-full max-w-xl"
                     >
                         <VinInput
-                            className="shadow-2xl shadow-primary/10 lg:mx-0"
+                            className="shadow-2xl shadow-black/5 dark:shadow-primary/10 lg:mx-0"
                             onScanStart={() => setIsScanning(true)}
                             onScanComplete={() => setIsScanning(false)}
                         />

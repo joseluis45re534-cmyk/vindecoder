@@ -71,7 +71,7 @@ export function CtaSection() {
                     transition={{ type: "spring", stiffness: 100, damping: 10 }}
                     className="max-w-md mx-auto"
                 >
-                    <VinInput className="shadow-2xl shadow-primary/20" />
+                    <VinInput className="shadow-2xl shadow-black/5 dark:shadow-primary/20" />
                 </motion.div>
             </div>
         </section>
