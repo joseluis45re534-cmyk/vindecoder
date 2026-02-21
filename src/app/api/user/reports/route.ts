@@ -20,12 +20,11 @@ export async function GET(req: NextRequest) {
         const { results: reports } = await db.prepare(
             `SELECT 
                 vr.id, 
-                vr.vin, 
+                vr.vin_number AS vin, 
                 vr.status, 
                 vr.created_at,
-                rep.pdf_url
+                null AS pdf_url
              FROM vin_requests vr
-             LEFT JOIN vin_reports rep ON vr.vin = rep.vin
              WHERE vr.user_id = ?
              ORDER BY vr.created_at DESC`
         ).bind(user.userId).all();
