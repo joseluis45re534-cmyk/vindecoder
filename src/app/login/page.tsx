@@ -34,8 +34,10 @@ export default function LoginPage() {
                 throw new Error(data.error || "Login failed");
             }
 
-            // Redirect to VIN check page after successful login
-            router.push("/vin-check");
+            // Redirect to original destination or VIN check page
+            const params = new URLSearchParams(window.location.search);
+            const redirectUrl = params.get("redirect") || "/dashboard";
+            router.push(redirectUrl);
         } catch (err) {
             setError(err instanceof Error ? err.message : 'Login failed');
         } finally {
