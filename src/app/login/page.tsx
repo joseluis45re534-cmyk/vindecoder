@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
@@ -14,6 +14,29 @@ export default function LoginPage() {
     const [error, setError] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(false);
     const router = useRouter();
+
+    useEffect(() => {
+        // Check if user is already logged in
+        const checkAuth = async () => {
+            try {
+                const response = await fetch("/api/save-vin", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ vin: "TEST" }),
+                });
+
+                if (response.status !== 401) {
+                    // User is logged in, redirect them away from the login page
+                    const params = new URLSearchParams(window.location.search);
+                    const redirectUrl = params.get("redirect") || "/dashboard";
+                    router.push(redirectUrl);
+                }
+            } catch {
+                // Ignore error, stay on login page
+            }
+        };
+        checkAuth();
+    }, [router]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
