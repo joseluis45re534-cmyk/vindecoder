@@ -19,13 +19,9 @@ export default function SignupPage() {
     useEffect(() => {
         const checkAuth = async () => {
             try {
-                const response = await fetch("/api/save-vin", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ vin: "TEST" }),
-                });
+                const response = await fetch("/api/user/reports");
 
-                if (response.status !== 401) {
+                if (response.ok) {
                     const params = new URLSearchParams(window.location.search);
                     const redirectUrl = params.get("redirect") || "/dashboard";
                     router.push(redirectUrl);

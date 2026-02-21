@@ -37,7 +37,7 @@ import { cookies } from 'next/headers';
 
 export async function getSession() {
     const cookieStore = await cookies();
-    const token = cookieStore.get('token')?.value;
+    const token = cookieStore.get('auth-token')?.value;
     if (!token) return null;
     return await verifyToken(token);
 }
