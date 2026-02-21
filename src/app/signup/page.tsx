@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
@@ -15,6 +15,27 @@ export default function SignupPage() {
     const [error, setError] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(false);
     const router = useRouter();
+
+    useEffect(() => {
+        const checkAuth = async () => {
+            try {
+                const response = await fetch("/api/save-vin", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ vin: "TEST" }),
+                });
+
+                if (response.status !== 401) {
+                    const params = new URLSearchParams(window.location.search);
+                    const redirectUrl = params.get("redirect") || "/dashboard";
+                    router.push(redirectUrl);
+                }
+            } catch {
+                // Ignore
+            }
+        };
+        checkAuth();
+    }, [router]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -46,8 +67,10 @@ export default function SignupPage() {
                 throw new Error(data.error || "Signup failed");
             }
 
-            // Redirect to VIN check page after successful signup
-            router.push("/vin-check");
+            // Redirect to dashboard after successful signup
+            const params = new URLSearchParams(window.location.search);
+            const redirectUrl = params.get("redirect") || "/dashboard";
+            router.push(redirectUrl);
         } catch (err) {
             setError(err instanceof Error ? err.message : 'Signup failed');
         } finally {
