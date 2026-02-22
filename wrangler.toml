@@ -9,5 +9,5 @@ database_name = "vindecoder-db"
 database_id = "649b6539-a86f-4952-adcc-669da7139af4"
 
 [[kv_namespaces]]
-binding = "CONFIG_KV"
-id = "c422879f-0925-46aa-a77a-24cd345fd17b"
+binding = "vinadmin"
+id = "ecc41fd1f5fe414083334cbb1fc9a26c"
