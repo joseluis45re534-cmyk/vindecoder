@@ -2,6 +2,7 @@ export const runtime = "edge";
 
 import { NextResponse } from "next/server";
 import { SignJWT } from "jose";
+import { getRequestContext } from "@cloudflare/next-on-pages";
 
 export async function POST(req: Request) {
     try {
@@ -9,8 +10,17 @@ export async function POST(req: Request) {
         const body = (await req.json()) as any;
         const { email, password } = body;
 
-        const ADMIN_EMAIL = process.env.ADMIN_EMAIL;
-        const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
+        let ADMIN_EMAIL = process.env.ADMIN_EMAIL;
+        let ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
+
+        try {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const { env } = getRequestContext() as any;
+            if (env?.ADMIN_EMAIL) ADMIN_EMAIL = env.ADMIN_EMAIL;
+            if (env?.ADMIN_PASSWORD) ADMIN_PASSWORD = env.ADMIN_PASSWORD;
+        } catch {
+            console.warn("Context not available inline");
+        }
 
         if (!ADMIN_EMAIL || !ADMIN_PASSWORD) {
             console.error("Missing ADMIN_EMAIL or ADMIN_PASSWORD in environment variables");
