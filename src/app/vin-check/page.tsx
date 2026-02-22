@@ -18,6 +18,17 @@ function VinCheckContent() {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const [reportData, setReportData] = useState<any>(null); // Dummy data
     const [isCheckoutLoading, setIsCheckoutLoading] = useState(false);
+    const [reportPrice, setReportPrice] = useState("$29.99");
+
+    useEffect(() => {
+        fetch("/api/config")
+            .then((res) => res.json())
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            .then((data: any) => {
+                if (data.reportPriceDollars) setReportPrice(`$${data.reportPriceDollars}`);
+            })
+            .catch(() => { });
+    }, []);
 
     useEffect(() => {
         if (vinParam) {
@@ -170,7 +181,7 @@ function VinCheckContent() {
                                     disabled={isCheckoutLoading}
                                 >
                                     {isCheckoutLoading ? <Loader2 className="h-5 w-5 animate-spin mr-2" /> : <Lock className="h-4 w-4 mr-2" />}
-                                    Unlock Full Report - $29.99
+                                    Unlock Full Report - {reportPrice}
                                 </Button>
                                 <p className="text-center text-xs text-muted-foreground mt-3 flex items-center justify-center">
                                     <Lock className="h-3 w-3 mr-1" /> Secure 256-bit SSL Payment

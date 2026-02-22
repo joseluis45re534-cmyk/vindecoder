@@ -5,7 +5,7 @@ import { CheckCircle2 } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { PageReveal } from "@/components/ui/PageReveal";
-import { MouseEvent } from "react";
+import { MouseEvent, useEffect, useState } from "react";
 
 const features = [
     "Official PPSR Check",
@@ -18,6 +18,20 @@ const features = [
 ];
 
 export function PricingSection() {
+    const [price, setPrice] = useState("29.99");
+
+    useEffect(() => {
+        fetch("/api/config")
+            .then((res) => res.json())
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            .then((data: any) => {
+                if (data.reportPriceDollars) setPrice(data.reportPriceDollars);
+            })
+            .catch(() => { }); // fallback to default
+    }, []);
+
+    const [dollars, cents] = price.split(".");
+
     return (
         <section className="py-24 bg-background text-foreground relative overflow-hidden">
             {/* Background Mesh (Simulated) */}
@@ -46,7 +60,7 @@ export function PricingSection() {
 
                                 <h3 className="text-xl font-semibold tracking-tight text-foreground">Full History Report</h3>
                                 <div className="mt-4 flex items-baseline text-5xl font-extrabold text-foreground">
-                                    $29<span className="text-lg font-medium text-muted-foreground ml-1">.99</span>
+                                    ${dollars}<span className="text-lg font-medium text-muted-foreground ml-1">.{cents}</span>
                                 </div>
                                 <p className="mt-2 text-sm text-muted-foreground">One-time payment. Instant access.</p>
 
