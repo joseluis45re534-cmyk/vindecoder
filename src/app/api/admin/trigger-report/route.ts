@@ -61,7 +61,7 @@ export async function POST(request: NextRequest) {
             const { env } = getRequestContext();
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             if (env) db = (env as any).DB;
-        } catch (e) {
+        } catch {
             console.warn("Context not available inline");
         }
 

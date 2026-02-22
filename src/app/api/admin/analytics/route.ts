@@ -1,9 +1,9 @@
 export const runtime = "edge";
 
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { getRequestContext } from "@cloudflare/next-on-pages";
 
-export async function GET(request: NextRequest) {
+export async function GET() {
     try {
         let db;
         try {
@@ -11,7 +11,7 @@ export async function GET(request: NextRequest) {
             const { env } = getRequestContext();
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             if (env) db = (env as any).DB;
-        } catch (e) {
+        } catch {
             console.warn("Context not available inline");
         }
 

@@ -3,7 +3,7 @@ export const runtime = "edge";
 import { NextRequest, NextResponse } from "next/server";
 import { getRequestContext } from "@cloudflare/next-on-pages";
 
-export async function GET(request: NextRequest) {
+export async function GET() {
     try {
         let kv;
         try {
@@ -11,7 +11,7 @@ export async function GET(request: NextRequest) {
             const { env } = getRequestContext();
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             if (env) kv = (env as any).CONFIG_KV;
-        } catch (e) {
+        } catch {
             console.warn("Context not available inline");
         }
 
@@ -44,7 +44,7 @@ export async function POST(request: NextRequest) {
             const { env } = getRequestContext();
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             if (env) kv = (env as any).CONFIG_KV;
-        } catch (e) {
+        } catch {
             console.warn("Context not available inline");
         }
 
