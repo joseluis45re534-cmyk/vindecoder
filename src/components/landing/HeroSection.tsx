@@ -4,7 +4,8 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { Shield, ArrowRight, ScanLine, Zap } from "lucide-react";
 import { VinInput } from "@/components/VinInput";
-import { FloatingParticles } from "@/components/ui/effects/FloatingParticles";
+import { FloatingParticles } from "@/components/ui/FloatingParticles";
+import { PageReveal } from "@/components/ui/PageReveal";
 
 export function HeroSection() {
     const [isScanning, setIsScanning] = useState(false);
@@ -47,62 +48,43 @@ export function HeroSection() {
             <div className="container relative z-10 grid lg:grid-cols-2 gap-12 items-center">
                 {/* Text Content */}
                 <div className="text-center lg:text-left flex flex-col items-center lg:items-start">
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.5 }}
-                        className="mb-6 inline-flex items-center rounded-full border bg-background/50 backdrop-blur-sm px-3 py-1 text-sm font-medium text-muted-foreground shadow-sm ring-1 ring-inset ring-border/20"
-                    >
-                        <Shield className="mr-2 h-4 w-4 text-primary animate-pulse" />
-                        Trusted by 50,000+ Australians
-                    </motion.div>
+                    <PageReveal direction="up" delay={0}>
+                        <div className="mb-6 inline-flex items-center rounded-full border bg-background/50 backdrop-blur-sm px-3 py-1 text-sm font-medium text-muted-foreground shadow-sm ring-1 ring-inset ring-border/20">
+                            <Shield className="mr-2 h-4 w-4 text-primary animate-pulse" />
+                            Trusted by 50,000+ Australians
+                        </div>
+                    </PageReveal>
 
-                    <motion.h1
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.5, delay: 0.1 }}
-                        className="mb-6 max-w-4xl text-4xl font-extrabold tracking-tight sm:text-5xl md:text-6xl lg:text-7xl"
-                    >
-                        Instant Australian <br />
-                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-primary/80 to-accent bg-300% animate-gradient">
-                            Vehicle History Reports
-                        </span>
-                    </motion.h1>
+                    <PageReveal direction="up" delay={0.1}>
+                        <h1 className="mb-6 max-w-4xl text-4xl font-extrabold tracking-tight sm:text-5xl md:text-6xl lg:text-7xl">
+                            Instant Australian <br />
+                            <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-primary/80 to-accent bg-300% animate-gradient">
+                                Vehicle History Reports
+                            </span>
+                        </h1>
+                    </PageReveal>
 
-                    <motion.p
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.5, delay: 0.2 }}
-                        className="mb-10 max-w-2xl text-lg text-muted-foreground sm:text-xl"
-                    >
-                        Check any VIN instantly. Uncover finance owing, stolen status, write-offs, odometer rollbacks, and more.
-                    </motion.p>
+                    <PageReveal direction="up" delay={0.2}>
+                        <p className="mb-10 max-w-2xl text-lg text-muted-foreground sm:text-xl">
+                            Check any VIN instantly. Uncover finance owing, stolen status, write-offs, odometer rollbacks, and more.
+                        </p>
+                    </PageReveal>
 
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.5, delay: 0.3 }}
-                        className="w-full max-w-xl"
-                    >
+                    <PageReveal direction="up" delay={0.3} className="w-full max-w-xl">
                         <VinInput
                             className="shadow-2xl shadow-black/5 dark:shadow-primary/10 lg:mx-0"
                             onScanStart={() => setIsScanning(true)}
                             onScanComplete={() => setIsScanning(false)}
                         />
-                    </motion.div>
+                    </PageReveal>
 
-
-                    <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        transition={{ delay: 0.8 }}
-                        className="mt-8 flex items-center gap-4 text-sm text-muted-foreground justify-center lg:justify-start w-full"
-                    >
-                        <span className="flex items-center"><ArrowRight className="h-3 w-3 mr-1 text-primary" /> Instant Delivery</span>
-
-                        <span className="w-1 h-1 bg-muted-foreground/30 rounded-full" />
-                        <span className="flex items-center"><ArrowRight className="h-3 w-3 mr-1 text-primary" /> Official Data</span>
-                    </motion.div>
+                    <PageReveal direction="none" delay={0.8}>
+                        <div className="mt-8 flex items-center gap-4 text-sm text-muted-foreground justify-center lg:justify-start w-full">
+                            <span className="flex items-center"><ArrowRight className="h-3 w-3 mr-1 text-primary" /> Instant Delivery</span>
+                            <span className="w-1 h-1 bg-muted-foreground/30 rounded-full" />
+                            <span className="flex items-center"><ArrowRight className="h-3 w-3 mr-1 text-primary" /> Official Data</span>
+                        </div>
+                    </PageReveal>
                 </div>
 
                 {/* 3D Scanning Visual */}

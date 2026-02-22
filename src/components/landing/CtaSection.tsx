@@ -3,6 +3,7 @@
 import { motion, useInView } from "framer-motion";
 import { VinInput } from "@/components/VinInput";
 import { useEffect, useRef, useState } from "react";
+import { PageReveal } from "@/components/ui/PageReveal";
 
 export function CtaSection() {
     const [count, setCount] = useState(0);
@@ -52,23 +53,21 @@ export function CtaSection() {
                     </span>
                 </motion.div>
 
-                <motion.h2
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    className="text-3xl md:text-5xl font-bold mb-6 tracking-tight"
-                >
-                    Ready to check a vehicle?
-                </motion.h2>
-                <div className="text-lg text-muted-foreground mb-10 max-w-2xl mx-auto">
-                    Don&apos;t take risks with your next car purchase. Get the facts instantly with Australia&apos;s most trusted VIN decoder.
-                </div>
+                <PageReveal direction="up" delay={0.1}>
+                    <h2 className="text-3xl md:text-5xl font-bold mb-6 tracking-tight">
+                        Ready to check a vehicle?
+                    </h2>
+                    <div className="text-lg text-muted-foreground mb-10 max-w-2xl mx-auto">
+                        Don&apos;t take risks with your next car purchase. Get the facts instantly with Australia&apos;s most trusted VIN decoder.
+                    </div>
+                </PageReveal>
 
                 <motion.div
                     initial={{ opacity: 0, y: 50 }}
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }}
-                    transition={{ type: "spring", stiffness: 100, damping: 10 }}
+                    transition={{ type: "spring", stiffness: 100, damping: 10, delay: 0.2 }}
+                    whileHover={{ scale: 1.02, y: -5 }}
                     className="max-w-md mx-auto"
                 >
                     <VinInput className="shadow-2xl shadow-black/5 dark:shadow-primary/20" />

@@ -54,18 +54,32 @@ export function HowItWorksSection() {
                             )}
 
                             <motion.div
-                                initial={{ opacity: 0, rotateY: 90 }}
-                                whileInView={{ opacity: 1, rotateY: 0 }}
-                                viewport={{ once: true }}
-                                transition={{ delay: i * 0.2, type: "spring", stiffness: 50 }}
-                                whileHover={{ scale: 1.05, rotateX: 5 }}
-                                className="flex flex-col items-center text-center p-8 bg-background rounded-2xl border shadow-sm hover:shadow-xl transition-all duration-300 h-full"
+                                initial={{ opacity: 0, rotateY: 90, z: -100 }}
+                                whileInView={{ opacity: 1, rotateY: 0, z: 0 }}
+                                viewport={{ once: true, margin: "-50px" }}
+                                transition={{
+                                    delay: i * 0.15,
+                                    type: "spring",
+                                    stiffness: 100,
+                                    damping: 20
+                                }}
+                                whileHover={{
+                                    scale: 1.05,
+                                    rotateX: 10,
+                                    rotateY: -5,
+                                    boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.25)"
+                                }}
+                                className="flex flex-col items-center text-center p-8 bg-background rounded-2xl border shadow-sm hover:border-primary/50 transition-colors duration-300 h-full relative z-10"
+                                style={{ transformStyle: "preserve-3d" }}
                             >
-                                <div className={`w-16 h-16 rounded-2xl ${step.bg} ${step.color} flex items-center justify-center mb-6 shadow-inner`}>
+                                <motion.div
+                                    className={`w-16 h-16 rounded-2xl ${step.bg} ${step.color} flex items-center justify-center mb-6 shadow-inner`}
+                                    style={{ transform: "translateZ(30px)" }}
+                                >
                                     <step.icon className="w-8 h-8" />
-                                </div>
-                                <h3 className="text-xl font-bold mb-3">{step.title}</h3>
-                                <p className="text-muted-foreground text-sm">{step.desc}</p>
+                                </motion.div>
+                                <h3 className="text-xl font-bold mb-3" style={{ transform: "translateZ(20px)" }}>{step.title}</h3>
+                                <p className="text-muted-foreground text-sm" style={{ transform: "translateZ(10px)" }}>{step.desc}</p>
                             </motion.div>
                         </div>
                     ))}

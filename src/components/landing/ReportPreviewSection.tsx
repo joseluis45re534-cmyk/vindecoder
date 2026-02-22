@@ -3,6 +3,7 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { CheckCircle2, Lock } from "lucide-react";
 import { useState } from "react";
+import { PageReveal } from "@/components/ui/PageReveal";
 
 const features = [
     {
@@ -37,19 +38,16 @@ export function ReportPreviewSection() {
     return (
         <section className="py-24 border-y border-border/50 overflow-hidden bg-background">
             <div className="container">
-                <div className="flex flex-col items-center text-center mb-16">
-                    <motion.h2
-                        initial={{ opacity: 0, y: 20 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: true }}
-                        className="text-3xl font-bold tracking-tight sm:text-4xl mb-4"
-                    >
-                        Interactive Report Preview
-                    </motion.h2>
-                    <p className="text-muted-foreground max-w-2xl text-lg">
-                        Hover over the report sections to see what&apos;s covered.
-                    </p>
-                </div>
+                <PageReveal direction="up">
+                    <div className="flex flex-col items-center text-center mb-16">
+                        <h2 className="text-3xl font-bold tracking-tight sm:text-4xl mb-4">
+                            Interactive Report Preview
+                        </h2>
+                        <p className="text-muted-foreground max-w-2xl text-lg">
+                            Hover over the report sections to see what&apos;s covered.
+                        </p>
+                    </div>
+                </PageReveal>
 
                 <div className="flex flex-col lg:flex-row gap-12 items-center">
                     {/* Mock Report UI */}

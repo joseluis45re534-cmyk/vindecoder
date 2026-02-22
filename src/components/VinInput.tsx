@@ -3,6 +3,7 @@ import { useRouter } from "next/navigation";
 import { validateVin } from "@/lib/vin-validation";
 import { Loader2, Search } from "lucide-react"; // Import Search icon
 import { motion, useAnimation } from "framer-motion";
+import { LoadingOverlay } from "@/components/ui/LoadingOverlay";
 
 interface VinInputProps {
     className?: string;
@@ -123,6 +124,7 @@ export function VinInput({ className, onScanStart, onScanComplete }: VinInputPro
             <p className="text-xs text-muted-foreground mt-3 text-center opacity-80">
                 🔒 Secure 256-bit encrypted search
             </p>
+            <LoadingOverlay isVisible={isLoading} text="Searching VIN Database..." />
         </div>
     );
 }

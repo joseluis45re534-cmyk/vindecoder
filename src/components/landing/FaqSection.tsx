@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronDown } from "lucide-react";
+import { PageReveal } from "@/components/ui/PageReveal";
 
 const faqs = [
     { q: "How long does it take to get the report?", a: "Reports are generated instantly after payment validation. You will receive an email with the download link within seconds." },
@@ -21,43 +22,47 @@ export function FaqSection() {
     return (
         <section className="py-20 border-t bg-background">
             <div className="container max-w-4xl">
-                <div className="text-center mb-12">
-                    <h2 className="text-3xl font-bold mb-4">Frequently Asked Questions</h2>
-                    <p className="text-muted-foreground">Everything you need to know about our vehicle history reports.</p>
-                </div>
+                <PageReveal direction="up">
+                    <div className="text-center mb-12">
+                        <h2 className="text-3xl font-bold mb-4">Frequently Asked Questions</h2>
+                        <p className="text-muted-foreground">Everything you need to know about our vehicle history reports.</p>
+                    </div>
+                </PageReveal>
 
-                <div className="space-y-4">
-                    {faqs.map((faq, i) => (
-                        <div key={i} className="rounded-lg border bg-card overflow-hidden">
-                            <button
-                                onClick={() => toggleFaq(i)}
-                                className="flex w-full items-center justify-between p-6 text-left font-medium transition-colors hover:bg-muted/50"
-                            >
-                                <span>{faq.q}</span>
-                                <motion.div
-                                    animate={{ rotate: activeIndex === i ? 180 : 0 }}
-                                    transition={{ duration: 0.2 }}
+                <PageReveal direction="up" delay={0.2}>
+                    <div className="space-y-4">
+                        {faqs.map((faq, i) => (
+                            <div key={i} className="rounded-lg border bg-card overflow-hidden">
+                                <button
+                                    onClick={() => toggleFaq(i)}
+                                    className="flex w-full items-center justify-between p-6 text-left font-medium transition-colors hover:bg-muted/50"
                                 >
-                                    <ChevronDown className="h-5 w-5 text-muted-foreground" />
-                                </motion.div>
-                            </button>
-                            <AnimatePresence>
-                                {activeIndex === i && (
+                                    <span>{faq.q}</span>
                                     <motion.div
-                                        initial={{ height: 0, opacity: 0 }}
-                                        animate={{ height: "auto", opacity: 1 }}
-                                        exit={{ height: 0, opacity: 0 }}
-                                        transition={{ duration: 0.3, ease: "easeInOut" }}
+                                        animate={{ rotate: activeIndex === i ? 180 : 0 }}
+                                        transition={{ duration: 0.2 }}
                                     >
-                                        <div className="p-6 pt-0 text-muted-foreground">
-                                            {faq.a}
-                                        </div>
+                                        <ChevronDown className="h-5 w-5 text-muted-foreground" />
                                     </motion.div>
-                                )}
-                            </AnimatePresence>
-                        </div>
-                    ))}
-                </div>
+                                </button>
+                                <AnimatePresence>
+                                    {activeIndex === i && (
+                                        <motion.div
+                                            initial={{ height: 0, opacity: 0 }}
+                                            animate={{ height: "auto", opacity: 1 }}
+                                            exit={{ height: 0, opacity: 0 }}
+                                            transition={{ duration: 0.3, ease: "easeInOut" }}
+                                        >
+                                            <div className="p-6 pt-0 text-muted-foreground">
+                                                {faq.a}
+                                            </div>
+                                        </motion.div>
+                                    )}
+                                </AnimatePresence>
+                            </div>
+                        ))}
+                    </div>
+                </PageReveal>
             </div>
         </section>
     );
