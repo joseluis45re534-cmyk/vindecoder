@@ -1,6 +1,7 @@
 export const runtime = "edge";
 
 import { NextRequest, NextResponse } from "next/server";
+import { getRequestContext } from "@cloudflare/next-on-pages";
 
 // Mock Data Generator
 const generateMockReport = (vin: string) => {
@@ -54,8 +55,15 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
         }
 
-        // @ts-expect-error - DB is available in Cloudflare Pages context
-        const db = process.env.DB || request.env?.DB;
+        let db;
+        try {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const { env } = getRequestContext();
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            if (env) db = (env as any).DB;
+        } catch (e) {
+            console.warn("Context not available inline");
+        }
 
         if (!db) {
             return NextResponse.json({ error: "Database not available" }, { status: 500 });

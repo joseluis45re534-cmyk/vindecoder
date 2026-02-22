@@ -1,11 +1,19 @@
 export const runtime = "edge";
 
 import { NextRequest, NextResponse } from "next/server";
+import { getRequestContext } from "@cloudflare/next-on-pages";
 
 export async function GET(request: NextRequest) {
     try {
-        // @ts-expect-error - CONFIG_KV is available in Cloudflare Pages context
-        const kv = process.env.CONFIG_KV || request.env?.CONFIG_KV;
+        let kv;
+        try {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const { env } = getRequestContext();
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            if (env) kv = (env as any).CONFIG_KV;
+        } catch (e) {
+            console.warn("Context not available inline");
+        }
 
         if (!kv) {
             console.warn("CONFIG_KV binding not found. Falling back to defaults.");
@@ -30,8 +38,15 @@ export async function POST(request: NextRequest) {
     try {
         const body = await request.json();
 
-        // @ts-expect-error - CONFIG_KV is available in Cloudflare Pages context
-        const kv = process.env.CONFIG_KV || request.env?.CONFIG_KV;
+        let kv;
+        try {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const { env } = getRequestContext();
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            if (env) kv = (env as any).CONFIG_KV;
+        } catch (e) {
+            console.warn("Context not available inline");
+        }
 
         if (!kv) {
             return NextResponse.json({ error: "KV store not configured on server" }, { status: 500 });

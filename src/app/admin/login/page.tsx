@@ -34,7 +34,7 @@ export default function AdminLogin() {
             }
 
             // Redirect to admin dashboard
-            router.push("/admin");
+            router.push("/admin/dashboard");
             router.refresh();
         } catch (err: any) { // eslint-disable-line @typescript-eslint/no-explicit-any
             setError(err.message);

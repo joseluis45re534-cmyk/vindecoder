@@ -5,8 +5,13 @@ import { jwtVerify } from 'jose';
 export async function middleware(request: NextRequest) {
     const { pathname } = request.nextUrl;
 
-    // Protect /admin routes (except /admin/login)
-    if (pathname.startsWith('/admin') && pathname !== '/admin/login') {
+    // Exclude static assets and api
+    if (pathname.startsWith('/_next') || pathname.startsWith('/api') || pathname === '/admin/login') {
+        return NextResponse.next();
+    }
+
+    // Protect /admin routes
+    if (pathname.startsWith('/admin')) {
         const token = request.cookies.get('adminToken')?.value;
 
         if (!token) {

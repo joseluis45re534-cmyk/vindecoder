@@ -29,9 +29,9 @@ export default async function AdminLayout({
     }
 
     const navItems = [
-        { name: "Overview", href: "/admin", icon: LayoutDashboard },
-        { name: "All Requests", href: "/admin/requests", icon: FileText },
-        { name: "System Settings", href: "/admin/settings", icon: Settings },
+        { name: "Overview", href: "/admin/dashboard", icon: LayoutDashboard },
+        { name: "All Requests", href: "/admin/dashboard/requests", icon: FileText },
+        { name: "System Settings", href: "/admin/dashboard/settings", icon: Settings },
     ];
 
     return (
