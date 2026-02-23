@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
 import { getAuthUser } from '@/lib/auth-middleware';
+import { getRequestContext } from '@cloudflare/next-on-pages';
 
 export const runtime = 'edge';
 
@@ -35,6 +36,22 @@ export async function POST(request: NextRequest) {
 
         const stripe = getStripe(stripeKey);
 
+        // Fetch dynamic price from KV store
+        let reportPriceCent = 2999; // Default fallback $29.99
+        try {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const { env } = getRequestContext() as any;
+            if (env?.CONFIG_KV) {
+                const settingsJson = await env.CONFIG_KV.get("admin_settings");
+                if (settingsJson) {
+                    const settings = JSON.parse(settingsJson);
+                    if (settings.reportPriceCent) reportPriceCent = settings.reportPriceCent;
+                }
+            }
+        } catch {
+            // Fallback to default if KV not available
+        }
+
         // Use request.url to construct absolute success/cancel URLs
         const origin = new URL(request.url).origin;
 
@@ -48,7 +65,7 @@ export async function POST(request: NextRequest) {
                             name: `VIN History Report: ${vin}`,
                             description: 'Full vehicle history report including stolen status, finance check, and registration details.',
                         },
-                        unit_amount: 2900, // $29.00 AUD
+                        unit_amount: reportPriceCent,
                     },
                     quantity: 1,
                 },
