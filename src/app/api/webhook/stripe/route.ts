@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
+import { getRequestContext } from '@cloudflare/next-on-pages';
 
 export const runtime = 'edge';
 
@@ -48,8 +49,14 @@ export async function POST(request: NextRequest) {
 
             if (vinRequestId) {
                 // Update database
-                // @ts-expect-error - DB available in Cloudflare context
-                const db = process.env.DB || request.env?.DB;
+                let db;
+                try {
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    const { env } = getRequestContext() as any;
+                    if (env?.DB) db = env.DB;
+                } catch {
+                    db = process.env.DB;
+                }
 
                 if (db) {
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { hashPassword, createToken } from '@/lib/auth';
+import { getRequestContext } from '@cloudflare/next-on-pages';
 
 export const runtime = 'edge';
 
@@ -33,8 +34,14 @@ export async function POST(request: NextRequest) {
         }
 
         // Get D1 database from context
-        // @ts-expect-error - DB is available in Cloudflare Pages context
-        const db = process.env.DB || request.env?.DB;
+        let db;
+        try {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const { env } = getRequestContext() as any;
+            if (env?.DB) db = env.DB;
+        } catch {
+            db = process.env.DB;
+        }
 
         if (!db) {
             // For local development, return mock response

@@ -1,8 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAuthUser } from '@/lib/auth-middleware';
 import { validateVin } from '@/lib/vin-validation';
+import { getRequestContext } from '@cloudflare/next-on-pages';
 
 export const runtime = 'edge';
+
+const MAX_PENDING_PER_USER = 5;
 
 export async function POST(request: NextRequest) {
     try {
@@ -29,11 +32,16 @@ export async function POST(request: NextRequest) {
         }
 
         // Get D1 database from context
-        // @ts-expect-error - DB is available in Cloudflare Pages context
-        const db = process.env.DB || request.env?.DB;
+        let db;
+        try {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const { env } = getRequestContext() as any;
+            if (env?.DB) db = env.DB;
+        } catch {
+            db = process.env.DB;
+        }
 
         if (!db) {
-            // For local development, return mock response
             if (process.env.NODE_ENV === 'development') {
                 return NextResponse.json({
                     success: true,
@@ -49,6 +57,19 @@ export async function POST(request: NextRequest) {
             return NextResponse.json(
                 { error: 'Database not available' },
                 { status: 500 }
+            );
+        }
+
+        // Per-user VIN spam check: max pending requests
+        const pendingCount = await db
+            .prepare('SELECT COUNT(*) as cnt FROM vin_requests WHERE user_id = ? AND status = ?')
+            .bind(user.userId, 'pending')
+            .first();
+
+        if (pendingCount && (pendingCount as { cnt: number }).cnt >= MAX_PENDING_PER_USER) {
+            return NextResponse.json(
+                { error: `You have reached the maximum of ${MAX_PENDING_PER_USER} pending VIN requests. Please complete or cancel existing ones first.` },
+                { status: 429 }
             );
         }
 
