@@ -1,78 +1,77 @@
 "use client";
 
-import { motion, useInView } from "framer-motion";
-import { VinInput } from "@/components/VinInput";
-import { useEffect, useRef, useState } from "react";
-import { PageReveal } from "@/components/ui/PageReveal";
+import { motion } from "framer-motion";
+import Link from "next/link";
 
 export function CtaSection() {
-    const [count, setCount] = useState(0);
-    const ref = useRef(null);
-    const isInView = useInView(ref, { once: true });
-
-    useEffect(() => {
-        if (isInView) {
-            const end = 132;
-            const duration = 2000;
-            const startTime = performance.now();
-
-            const animate = (currentTime: number) => {
-                const elapsedTime = currentTime - startTime;
-                const progress = Math.min(elapsedTime / duration, 1);
-
-                setCount(Math.floor(progress * end));
-
-                if (progress < 1) {
-                    requestAnimationFrame(animate);
-                }
-            };
-
-            requestAnimationFrame(animate);
-        }
-    }, [isInView]);
-
     return (
-        <section className="py-24 bg-primary/5 text-center relative overflow-hidden" ref={ref}>
-            {/* Background decoration */}
-            <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20" />
-
-            <div className="container max-w-3xl relative z-10">
+        <section className="w-full px-4 py-16 md:px-10 lg:px-20 xl:px-40">
+            <motion.div
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.6 }}
+                className="relative overflow-hidden rounded-2xl bg-[#135bec] px-6 py-12 text-center shadow-xl md:px-12 md:py-20"
+            >
+                {/* Decorative background blobs */}
                 <motion.div
-                    initial={{ scale: 0.9, opacity: 0 }}
-                    whileInView={{ scale: 1, opacity: 1 }}
-                    transition={{ type: "spring", stiffness: 100 }}
-                    viewport={{ once: true }}
-                    className="mb-8 inline-block"
-                >
-                    <span className="bg-red-500/10 text-red-600 dark:text-red-400 px-4 py-2 rounded-full font-bold text-sm border border-red-500/20 animate-pulse flex items-center gap-2">
-                        <span className="relative flex h-3 w-3">
-                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-                            <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
-                        </span>
-                        {count} vehicle checks completed today
-                    </span>
-                </motion.div>
+                    animate={{ scale: [1, 1.15, 1], opacity: [0.4, 0.6, 0.4] }}
+                    transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }}
+                    className="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-white/10 blur-3xl"
+                />
+                <motion.div
+                    animate={{ scale: [1, 1.2, 1], opacity: [0.3, 0.5, 0.3] }}
+                    transition={{ duration: 9, repeat: Infinity, ease: "easeInOut", delay: 2 }}
+                    className="absolute -left-20 -bottom-20 h-64 w-64 rounded-full bg-black/10 blur-3xl"
+                />
 
-                <PageReveal direction="up" delay={0.1}>
-                    <h2 className="text-3xl md:text-5xl font-bold mb-6 tracking-tight">
+                <div className="relative z-10 mx-auto max-w-3xl">
+                    <motion.h2
+                        initial={{ opacity: 0, y: 20 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
+                        transition={{ duration: 0.5, delay: 0.1 }}
+                        className="mb-4 text-3xl font-black tracking-tight text-white md:text-4xl"
+                    >
                         Ready to check a vehicle?
-                    </h2>
-                    <div className="text-lg text-muted-foreground mb-10 max-w-2xl mx-auto">
-                        Don&apos;t take risks with your next car purchase. Get the facts instantly with Australia&apos;s most trusted VIN decoder.
-                    </div>
-                </PageReveal>
-
-                <motion.div
-                    initial={{ opacity: 0, y: 50 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ type: "spring", stiffness: 100, damping: 10, delay: 0.2 }}
-                    whileHover={{ scale: 1.02, y: -5 }}
-                    className="max-w-md mx-auto"
-                >
-                    <VinInput className="shadow-2xl shadow-black/5 dark:shadow-primary/20" />
-                </motion.div>
-            </div>
+                    </motion.h2>
+                    <motion.p
+                        initial={{ opacity: 0, y: 20 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
+                        transition={{ duration: 0.5, delay: 0.2 }}
+                        className="mb-8 text-lg text-white/90"
+                    >
+                        Don&apos;t risk buying a used car without knowing its full history. Get peace of mind today.
+                    </motion.p>
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
+                        transition={{ duration: 0.5, delay: 0.3 }}
+                        className="flex flex-col items-center justify-center gap-4 sm:flex-row"
+                    >
+                        <Link href="/vin-check">
+                            <motion.button
+                                whileHover={{ scale: 1.04 }}
+                                whileTap={{ scale: 0.97 }}
+                                className="h-12 w-full min-w-[160px] rounded-lg bg-white px-6 text-base font-bold text-[#135bec] shadow-lg hover:bg-gray-50 sm:w-auto transition-colors"
+                            >
+                                Get Started Now
+                            </motion.button>
+                        </Link>
+                        <Link href="/#pricing">
+                            <motion.button
+                                whileHover={{ scale: 1.04 }}
+                                whileTap={{ scale: 0.97 }}
+                                className="h-12 w-full min-w-[160px] rounded-lg border border-white/30 bg-transparent px-6 text-base font-bold text-white hover:bg-white/10 sm:w-auto transition-colors"
+                            >
+                                View Pricing
+                            </motion.button>
+                        </Link>
+                    </motion.div>
+                </div>
+            </motion.div>
         </section>
     );
 }

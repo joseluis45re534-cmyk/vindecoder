@@ -2,12 +2,11 @@ import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { HeroSection } from "@/components/landing/HeroSection";
 import { HowItWorksSection } from "@/components/landing/HowItWorksSection";
-import { ReportPreviewSection } from "@/components/landing/ReportPreviewSection";
+import { BenefitsSection } from "@/components/landing/BenefitsSection";
 import { PricingSection } from "@/components/landing/PricingSection";
 import { FaqSection } from "@/components/landing/FaqSection";
 import { CtaSection } from "@/components/landing/CtaSection";
 import { ScrollProgress } from "@/components/ui/effects/ScrollProgress";
-import { PageReveal } from "@/components/ui/effects/PageReveal";
 
 const jsonLd = {
   "@context": "https://schema.org",
@@ -53,7 +52,7 @@ const jsonLd = {
 
 export default function Home() {
   return (
-    <div className="flex min-h-screen flex-col overflow-x-hidden">
+    <div className="flex min-h-screen flex-col overflow-x-hidden bg-[#f6f6f8] dark:bg-[#101622]">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
@@ -61,16 +60,18 @@ export default function Home() {
       <ScrollProgress />
       <Header />
 
-      <PageReveal>
-        <main className="flex-1">
-          <HeroSection />
+      <main className="flex-1">
+        <HeroSection />
+        <div id="how-it-works">
           <HowItWorksSection />
-          <ReportPreviewSection />
+        </div>
+        <BenefitsSection />
+        <div id="pricing">
           <PricingSection />
-          <FaqSection />
-          <CtaSection />
-        </main>
-      </PageReveal>
+        </div>
+        <FaqSection />
+        <CtaSection />
+      </main>
 
       <Footer />
     </div>

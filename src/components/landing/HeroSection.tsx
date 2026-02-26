@@ -1,137 +1,130 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { motion } from "framer-motion";
-import { Shield, ArrowRight, ScanLine, Zap } from "lucide-react";
-import { VinInput } from "@/components/VinInput";
-import { FloatingParticles } from "@/components/ui/FloatingParticles";
-import { PageReveal } from "@/components/ui/PageReveal";
+import { useRouter } from "next/navigation";
+import { Search, CheckCircle } from "lucide-react";
+import Image from "next/image";
 
 export function HeroSection() {
-    const [isScanning, setIsScanning] = useState(false);
+    const [vin, setVin] = useState("");
+    const inputRef = useRef<HTMLInputElement>(null);
+    const router = useRouter();
+
+    const handleDecode = () => {
+        if (vin.trim().length > 0) {
+            router.push(`/vin-check?vin=${vin.trim().toUpperCase()}`);
+        } else {
+            inputRef.current?.focus();
+        }
+    };
 
     return (
-        <section className="relative overflow-hidden bg-background py-20 md:py-32 border-b border-border/50 min-h-[90vh] flex items-center justify-center">
-            {/* Animated Background Elements */}
-            <div className="absolute inset-0 z-0 overflow-hidden">
-                <div className="absolute inset-0 bg-gradient-to-b from-primary/5 via-background/50 to-background" />
-                <FloatingParticles />
-
-                {/* Large glow blobs */}
-                <motion.div
-                    animate={{
-                        scale: [1, 1.2, 1],
-                        opacity: [0.3, 0.5, 0.3],
-                    }}
-                    transition={{
-                        duration: 8,
-                        repeat: Infinity,
-                        ease: "easeInOut"
-                    }}
-                    className="absolute -top-[20%] -right-[10%] w-[600px] h-[600px] bg-primary/10 rounded-full blur-[120px]"
-                />
-                <motion.div
-                    animate={{
-                        scale: [1, 1.1, 1],
-                        opacity: [0.2, 0.4, 0.2],
-                    }}
-                    transition={{
-                        duration: 10,
-                        repeat: Infinity,
-                        ease: "easeInOut",
-                        delay: 2
-                    }}
-                    className="absolute -bottom-[20%] -left-[10%] w-[500px] h-[500px] bg-accent/10 rounded-full blur-[100px]"
-                />
-            </div>
-
-            <div className="container relative z-10 grid lg:grid-cols-2 gap-12 items-center">
-                {/* Text Content */}
-                <div className="text-center lg:text-left flex flex-col items-center lg:items-start">
-                    <PageReveal direction="up" delay={0}>
-                        <div className="mb-6 inline-flex items-center rounded-full border bg-background/50 backdrop-blur-sm px-3 py-1 text-sm font-medium text-muted-foreground shadow-sm ring-1 ring-inset ring-border/20">
-                            <Shield className="mr-2 h-4 w-4 text-primary animate-pulse" />
-                            Trusted by 50,000+ Australians
-                        </div>
-                    </PageReveal>
-
-                    <PageReveal direction="up" delay={0.1}>
-                        <h1 className="mb-6 max-w-4xl text-4xl font-extrabold tracking-tight sm:text-5xl md:text-6xl lg:text-7xl">
-                            Instant Australian <br />
-                            <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-primary/80 to-accent bg-300% animate-gradient">
-                                Vehicle History Reports
-                            </span>
-                        </h1>
-                    </PageReveal>
-
-                    <PageReveal direction="up" delay={0.2}>
-                        <p className="mb-10 max-w-2xl text-lg text-muted-foreground sm:text-xl">
-                            Check any VIN instantly. Uncover finance owing, stolen status, write-offs, odometer rollbacks, and more.
-                        </p>
-                    </PageReveal>
-
-                    <PageReveal direction="up" delay={0.3} className="w-full max-w-xl">
-                        <VinInput
-                            className="shadow-2xl shadow-black/5 dark:shadow-primary/10 lg:mx-0"
-                            onScanStart={() => setIsScanning(true)}
-                            onScanComplete={() => setIsScanning(false)}
-                        />
-                    </PageReveal>
-
-                    <PageReveal direction="none" delay={0.8}>
-                        <div className="mt-8 flex items-center gap-4 text-sm text-muted-foreground justify-center lg:justify-start w-full">
-                            <span className="flex items-center"><ArrowRight className="h-3 w-3 mr-1 text-primary" /> Instant Delivery</span>
-                            <span className="w-1 h-1 bg-muted-foreground/30 rounded-full" />
-                            <span className="flex items-center"><ArrowRight className="h-3 w-3 mr-1 text-primary" /> Official Data</span>
-                        </div>
-                    </PageReveal>
+        <section className="w-full px-4 py-6 md:px-10 lg:px-20 xl:px-40">
+            <div className="relative overflow-hidden rounded-2xl bg-[#101622] py-16 px-6 md:py-24 md:px-12 shadow-2xl">
+                {/* Background Car Image with Overlay */}
+                <div className="absolute inset-0 z-0">
+                    <Image
+                        src="/hero-car.png"
+                        alt="Sleek modern car"
+                        fill
+                        className="object-cover opacity-40 mix-blend-overlay"
+                        priority
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-b from-transparent to-[#101622]/90" />
+                    <div className="absolute inset-0 bg-gradient-to-r from-[#135bec]/20 to-transparent" />
                 </div>
 
-                {/* 3D Scanning Visual */}
-                <motion.div
-                    initial={{ opacity: 0, scale: 0.8, rotateX: 10 }}
-                    animate={{ opacity: 1, scale: 1, rotateX: 0 }}
-                    transition={{ duration: 0.8, delay: 0.4 }}
-                    className="relative hidden lg:block"
-                    style={{ perspective: "1000px" }}
-                >
+                {/* Content */}
+                <div className="relative z-10 flex flex-col items-center gap-8 text-center">
+                    {/* Heading */}
                     <motion.div
-                        animate={{ rotateY: [-5, 5, -5], rotateX: [2, -2, 2] }}
-                        transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
-                        className="relative z-10 w-full aspect-[4/3] bg-gradient-to-br from-gray-100 to-white dark:from-gray-900 dark:to-black rounded-2xl border border-border/50 shadow-2xl overflow-hidden group"
+                        initial={{ opacity: 0, y: 30 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.6 }}
+                        className="max-w-3xl space-y-4"
                     >
-                        {/* Placeholder Car UI */}
-                        <div className="absolute inset-0 flex items-center justify-center opacity-30">
-                            <Zap className="w-64 h-64 text-primary" />
-                        </div>
-
-                        {/* Scanning Line */}
                         <motion.div
-                            animate={{ top: ["0%", "100%", "0%"] }}
-                            transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
-                            className="absolute left-0 right-0 h-1 bg-primary/80 box-shadow-[0_0_20px_rgba(59,130,246,0.8)] z-20"
-                        />
+                            initial={{ opacity: 0, scale: 0.9 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            transition={{ duration: 0.4, delay: 0.1 }}
+                            className="inline-flex items-center gap-2 rounded-full bg-[#135bec]/20 border border-[#135bec]/30 px-4 py-1.5 text-xs font-bold uppercase tracking-wider text-[#eef4ff]"
+                        >
+                            <span className="h-1.5 w-1.5 rounded-full bg-[#4ade80] animate-pulse" />
+                            Official PPSR Data Source
+                        </motion.div>
 
-                        {/* UI Overlay */}
-                        <div className="absolute top-4 left-4 right-4 flex justify-between items-center">
-                            <div className={`flex items-center gap-2 backdrop-blur px-3 py-1 rounded-full text-xs font-mono border ${isScanning ? 'text-primary border-primary/20 bg-background/80' : 'text-muted-foreground border-border/50 bg-background/50'}`}>
-                                <span className={`w-2 h-2 rounded-full ${isScanning ? 'bg-primary animate-pulse' : 'bg-gray-500'}`} />
-                                {isScanning ? 'SYSTEM ONLINE' : 'STANDBY'}
+                        <h1 className="text-4xl font-black leading-tight tracking-tight text-white md:text-5xl lg:text-6xl">
+                            Instant VIN Decoder &{" "}
+                            <span className="text-[#eef4ff]">
+                                Vehicle History
+                            </span>
+                        </h1>
+                        <p className="text-lg font-normal text-gray-300 md:text-xl">
+                            Unlock detailed vehicle specifications, accident history, and ownership
+                            records instantly with Australia&apos;s trusted database.
+                        </p>
+                    </motion.div>
+
+                    {/* VIN Search Bar */}
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.5, delay: 0.3 }}
+                        className="w-full max-w-2xl rounded-xl bg-white p-2 shadow-xl dark:bg-[#1a2230] dark:border dark:border-[#2d3748]"
+                    >
+                        <div className="flex flex-col gap-2 sm:flex-row">
+                            <div className="relative flex w-full items-center">
+                                <div className="absolute left-4 text-gray-400">
+                                    <Search className="h-5 w-5" />
+                                </div>
+                                <input
+                                    ref={inputRef}
+                                    type="text"
+                                    value={vin}
+                                    onChange={(e) => setVin(e.target.value.toUpperCase())}
+                                    onKeyDown={(e) => e.key === "Enter" && handleDecode()}
+                                    placeholder="Enter VIN (17 characters)"
+                                    maxLength={17}
+                                    className="h-12 w-full rounded-lg border-transparent bg-transparent pl-11 pr-4 text-base text-gray-900 placeholder-gray-400 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-[#135bec] dark:text-white dark:placeholder-gray-500 dark:focus:ring-[#135bec]"
+                                />
                             </div>
-                            <ScanLine className={`${isScanning ? 'text-primary/50' : 'text-gray-500/50'} w-6 h-6`} />
-                        </div>
-
-
-                        <div className="absolute bottom-4 left-4 text-xs font-mono text-muted-foreground">
-                            &gt; PPSR: CONNECTED<br />
-                            &gt; NEVDIS: CONNECTED<br />
-                            &gt; ENCRYPTION: 256-BIT
+                            <motion.button
+                                whileHover={{ scale: 1.02 }}
+                                whileTap={{ scale: 0.97 }}
+                                onClick={handleDecode}
+                                className="h-12 shrink-0 rounded-lg bg-[#135bec] px-8 text-base font-bold text-white shadow-md hover:bg-[#0e45b5] transition-colors"
+                            >
+                                Decode VIN
+                            </motion.button>
                         </div>
                     </motion.div>
 
-                    {/* Shadow */}
-                    <div className="absolute -bottom-10 left-10 right-10 h-8 bg-black/40 blur-xl rounded-[100%]" />
-                </motion.div>
+                    {/* Trust badges */}
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ duration: 0.5, delay: 0.5 }}
+                        className="flex flex-wrap items-center justify-center gap-4 text-sm text-gray-400"
+                    >
+                        <span className="flex items-center gap-1.5">
+                            <CheckCircle className="h-4 w-4 text-green-400" />
+                            Official PPSR Check
+                        </span>
+                        <span className="flex items-center gap-1.5">
+                            <CheckCircle className="h-4 w-4 text-green-400" />
+                            Stolen Vehicle Check
+                        </span>
+                        <span className="flex items-center gap-1.5">
+                            <CheckCircle className="h-4 w-4 text-green-400" />
+                            Finance Check
+                        </span>
+                        <span className="flex items-center gap-1.5">
+                            <CheckCircle className="h-4 w-4 text-green-400" />
+                            Instant PDF Report
+                        </span>
+                    </motion.div>
+                </div>
             </div>
         </section>
     );

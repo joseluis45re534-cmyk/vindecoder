@@ -1,89 +1,78 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Search, Server, FileText, ArrowRight } from "lucide-react";
+import { Keyboard, SearchCheck, FileText } from "lucide-react";
 
 const steps = [
     {
-        icon: Search,
+        icon: Keyboard,
+        number: "1",
         title: "Enter VIN",
-        desc: "Type in the 17-character VIN from your vehicle.",
-        color: "text-blue-500",
-        bg: "bg-blue-500/10"
+        description: "Input your vehicle's 17-digit Identification Number into our secure search bar.",
     },
     {
-        icon: Server,
-        title: "We Scan",
-        desc: "Our system checks PPSR, NEVDIS & Police records.",
-        color: "text-purple-500",
-        bg: "bg-purple-500/10"
+        icon: SearchCheck,
+        number: "2",
+        title: "Run Search",
+        description: "Our powerful algorithm scans millions of government and insurance records instantly.",
     },
     {
         icon: FileText,
+        number: "3",
         title: "Get Report",
-        desc: "Instantly download your comprehensive PDF report.",
-        color: "text-green-500",
-        bg: "bg-green-500/10"
-    }
+        description: "Receive a detailed history report including accidents, title status, and specs.",
+    },
 ];
 
 export function HowItWorksSection() {
     return (
-        <section className="py-24 bg-card relative z-10">
-            <div className="container">
-                <div className="text-center mb-16">
-                    <motion.h2
-                        initial={{ opacity: 0, y: 20 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: true }}
-                        className="text-3xl font-bold tracking-tight sm:text-4xl mb-4"
-                    >
-                        How It Works
-                    </motion.h2>
-                    <p className="text-muted-foreground">Three simple steps to peace of mind.</p>
-                </div>
+        <section className="w-full max-w-7xl mx-auto px-4 py-16 md:px-10 lg:px-40">
+            {/* Header */}
+            <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5 }}
+                className="mb-12 flex flex-col items-center text-center"
+            >
+                <span className="mb-3 rounded-full bg-[#135bec]/10 px-3 py-1 text-xs font-bold uppercase tracking-wider text-[#135bec] dark:bg-[#135bec]/20 dark:text-[#eef4ff]">
+                    Simple Process
+                </span>
+                <h2 className="text-3xl font-bold tracking-tight text-gray-900 dark:text-white md:text-4xl">
+                    How It Works
+                </h2>
+                <p className="mt-4 max-w-2xl text-gray-500 dark:text-gray-400">
+                    Get your comprehensive vehicle report in three simple steps.
+                </p>
+            </motion.div>
 
-                <div className="grid md:grid-cols-3 gap-8">
-                    {steps.map((step, i) => (
-                        <div key={i} className="relative group perspective-1000">
-                            {/* Connector Line */}
-                            {i < steps.length - 1 && (
-                                <div className="hidden md:block absolute top-1/2 -right-4 w-8 h-0.5 bg-border -z-10 transform -translate-y-1/2">
-                                    <ArrowRight className="absolute -right-3 -top-2.5 w-5 h-5 text-muted-foreground" />
-                                </div>
-                            )}
+            {/* Cards */}
+            <div className="grid gap-6 md:grid-cols-3">
+                {steps.map((step, i) => {
+                    const Icon = step.icon;
+                    return (
+                        <motion.div
+                            key={step.number}
+                            initial={{ opacity: 0, y: 30 }}
+                            whileInView={{ opacity: 1, y: 0 }}
+                            viewport={{ once: true }}
+                            transition={{ duration: 0.5, delay: i * 0.12 }}
+                            whileHover={{ y: -4 }}
+                            className="group relative overflow-hidden rounded-2xl border border-gray-200 bg-white p-8 transition-all hover:border-[#135bec]/50 hover:shadow-xl dark:border-[#2d3748] dark:bg-[#1a2230] dark:hover:border-[#135bec]/50"
+                        >
+                            {/* Glow accent on hover */}
+                            <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity bg-gradient-to-br from-[#135bec]/5 to-transparent rounded-2xl" />
 
-                            <motion.div
-                                initial={{ opacity: 0, rotateY: 90, z: -100 }}
-                                whileInView={{ opacity: 1, rotateY: 0, z: 0 }}
-                                viewport={{ once: true, margin: "-50px" }}
-                                transition={{
-                                    delay: i * 0.15,
-                                    type: "spring",
-                                    stiffness: 100,
-                                    damping: 20
-                                }}
-                                whileHover={{
-                                    scale: 1.05,
-                                    rotateX: 10,
-                                    rotateY: -5,
-                                    boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.25)"
-                                }}
-                                className="flex flex-col items-center text-center p-8 bg-background rounded-2xl border shadow-sm hover:border-primary/50 transition-colors duration-300 h-full relative z-10"
-                                style={{ transformStyle: "preserve-3d" }}
-                            >
-                                <motion.div
-                                    className={`w-16 h-16 rounded-2xl ${step.bg} ${step.color} flex items-center justify-center mb-6 shadow-inner`}
-                                    style={{ transform: "translateZ(30px)" }}
-                                >
-                                    <step.icon className="w-8 h-8" />
-                                </motion.div>
-                                <h3 className="text-xl font-bold mb-3" style={{ transform: "translateZ(20px)" }}>{step.title}</h3>
-                                <p className="text-muted-foreground text-sm" style={{ transform: "translateZ(10px)" }}>{step.desc}</p>
-                            </motion.div>
-                        </div>
-                    ))}
-                </div>
+                            <div className="mb-6 inline-flex h-14 w-14 items-center justify-center rounded-xl bg-[#135bec]/10 text-[#135bec] dark:bg-[#135bec]/20 dark:text-[#eef4ff] group-hover:bg-[#135bec] group-hover:text-white transition-colors">
+                                <Icon className="h-7 w-7" />
+                            </div>
+                            <h3 className="mb-3 text-xl font-bold text-gray-900 dark:text-white">
+                                {step.number}. {step.title}
+                            </h3>
+                            <p className="text-gray-500 dark:text-gray-400">{step.description}</p>
+                        </motion.div>
+                    );
+                })}
             </div>
         </section>
     );
