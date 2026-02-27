@@ -4,7 +4,6 @@ import { useState, useRef } from "react";
 import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
 import { Search, CheckCircle } from "lucide-react";
-import Image from "next/image";
 
 export function HeroSection() {
     const [vin, setVin] = useState("");
@@ -24,12 +23,11 @@ export function HeroSection() {
             <div className="relative overflow-hidden rounded-2xl bg-[#101622] py-16 px-6 md:py-24 md:px-12 shadow-2xl">
                 {/* Background Car Image with Overlay */}
                 <div className="absolute inset-0 z-0">
-                    <Image
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
                         src="/hero-car.png"
                         alt="Sleek modern car"
-                        fill
-                        className="object-cover opacity-40 mix-blend-overlay"
-                        priority
+                        className="absolute inset-0 h-full w-full object-cover opacity-40 mix-blend-overlay"
                     />
                     <div className="absolute inset-0 bg-gradient-to-b from-transparent to-[#101622]/90" />
                     <div className="absolute inset-0 bg-gradient-to-r from-[#135bec]/20 to-transparent" />

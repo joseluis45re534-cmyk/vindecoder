@@ -3,7 +3,6 @@
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
-import Image from "next/image";
 
 const benefits = [
     {
@@ -75,11 +74,10 @@ export function BenefitsSection() {
                                     transition={{ duration: 0.4 }}
                                     className="h-full w-full"
                                 >
-                                    <Image
+                                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                                    <img
                                         src={benefit.image}
                                         alt={benefit.alt}
-                                        width={640}
-                                        height={360}
                                         className="h-full w-full object-cover"
                                     />
                                 </motion.div>
