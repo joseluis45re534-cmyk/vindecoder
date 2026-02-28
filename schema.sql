@@ -30,3 +30,27 @@ CREATE TABLE IF NOT EXISTS vin_reports (
 );
 
 CREATE INDEX IF NOT EXISTS idx_vin_reports_request_id ON vin_reports(vin_request_id);
+
+-- Live Chat: Sessions
+CREATE TABLE IF NOT EXISTS chat_sessions (
+    id TEXT PRIMARY KEY,
+    visitor_name TEXT NOT NULL,
+    visitor_email TEXT,
+    status TEXT NOT NULL DEFAULT 'open',
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    last_message_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Live Chat: Messages
+CREATE TABLE IF NOT EXISTS chat_messages (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    session_id TEXT NOT NULL,
+    sender TEXT NOT NULL,
+    message TEXT NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (session_id) REFERENCES chat_sessions(id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_chat_messages_session ON chat_messages(session_id);
+CREATE INDEX IF NOT EXISTS idx_chat_sessions_status ON chat_sessions(status);
+

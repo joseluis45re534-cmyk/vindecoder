@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
 import { jwtVerify } from "jose";
 import Link from "next/link";
-import { LayoutDashboard, Settings, LogOut, FileText } from "lucide-react";
+import { LayoutDashboard, Settings, LogOut, FileText, MessageSquare } from "lucide-react";
 import { ModeToggle } from "@/components/theme-toggle";
 
 export default async function AdminLayout({
@@ -31,6 +31,7 @@ export default async function AdminLayout({
     const navItems = [
         { name: "Overview", href: "/admin/dashboard", icon: LayoutDashboard },
         { name: "All Requests", href: "/admin/dashboard/requests", icon: FileText },
+        { name: "Live Chat", href: "/admin/dashboard/chat", icon: MessageSquare },
         { name: "System Settings", href: "/admin/dashboard/settings", icon: Settings },
     ];
 

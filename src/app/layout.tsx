@@ -4,6 +4,7 @@ import "./globals.css";
 import { cn } from "@/lib/utils";
 import { ThemeProvider } from "@/components/theme-provider";
 import { ScrollProgress } from "@/components/ui/ScrollProgress";
+import { ChatWidget } from "@/components/chat/ChatWidget";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 
@@ -72,6 +73,7 @@ export default function RootLayout({
         >
           <ScrollProgress />
           {children}
+          <ChatWidget />
         </ThemeProvider>
       </body>
     </html>
