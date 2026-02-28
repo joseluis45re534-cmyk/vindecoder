@@ -13,6 +13,27 @@ function generateId(): string {
     ).join('');
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function ensureTables(db: any) {
+    await db.prepare(`CREATE TABLE IF NOT EXISTS chat_sessions (
+        id TEXT PRIMARY KEY,
+        visitor_name TEXT NOT NULL,
+        visitor_email TEXT,
+        status TEXT NOT NULL DEFAULT 'open',
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        last_message_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    )`).run();
+
+    await db.prepare(`CREATE TABLE IF NOT EXISTS chat_messages (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        session_id TEXT NOT NULL,
+        sender TEXT NOT NULL,
+        message TEXT NOT NULL,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (session_id) REFERENCES chat_sessions(id)
+    )`).run();
+}
+
 export async function POST(request: NextRequest) {
     try {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -27,13 +48,16 @@ export async function POST(request: NextRequest) {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const { env } = getRequestContext() as any;
             if (env?.DB) db = env.DB;
-        } catch { db = process.env.DB; }
+        } catch { /* not on Cloudflare */ }
 
         if (!db) {
-            // Local dev fallback
+            // Local dev fallback — no DB available
             const id = generateId();
-            return NextResponse.json({ session_id: id, visitor_name });
+            return NextResponse.json({ session_id: id, visitor_name: visitor_name.trim() });
         }
+
+        // Auto-create tables if they don't exist yet
+        await ensureTables(db);
 
         const id = generateId();
         await db.prepare(
@@ -43,6 +67,7 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ session_id: id, visitor_name: visitor_name.trim() });
     } catch (error) {
         console.error('Chat session error:', error);
-        return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+        const msg = error instanceof Error ? error.message : String(error);
+        return NextResponse.json({ error: msg || 'Internal server error' }, { status: 500 });
     }
 }

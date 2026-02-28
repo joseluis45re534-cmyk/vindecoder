@@ -49,7 +49,8 @@ export async function GET(request: NextRequest) {
         return NextResponse.json({ messages: messages.results, session });
     } catch (error) {
         console.error('Chat get messages error:', error);
-        return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+        const msg = error instanceof Error ? error.message : String(error);
+        return NextResponse.json({ error: msg }, { status: 500 });
     }
 }
 
@@ -98,6 +99,7 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ success: true });
     } catch (error) {
         console.error('Chat send message error:', error);
-        return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+        const msg = error instanceof Error ? error.message : String(error);
+        return NextResponse.json({ error: msg }, { status: 500 });
     }
 }
