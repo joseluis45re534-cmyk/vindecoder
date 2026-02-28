@@ -31,6 +31,7 @@ export function ChatWidget() {
     const [input, setInput] = useState("");
     const [isSending, setIsSending] = useState(false);
     const [isStarting, setIsStarting] = useState(false);
+    const [startError, setStartError] = useState("");
     const [unreadCount, setUnreadCount] = useState(0);
     const bottomRef = useRef<HTMLDivElement>(null);
     const lastSeenCount = useRef(0);
@@ -97,19 +98,24 @@ export function ChatWidget() {
         e.preventDefault();
         if (!visitorName.trim()) return;
         setIsStarting(true);
+        setStartError("");
         try {
             const res = await fetch("/api/chat/session", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ visitor_name: visitorName, visitor_email: visitorEmail }),
             });
-            const data = await res.json() as { session_id: string };
+            const data = await res.json() as { session_id: string; error?: string };
             if (data.session_id) {
                 localStorage.setItem(STORAGE_KEY, data.session_id);
                 localStorage.setItem(VISITOR_NAME_KEY, visitorName);
                 setSessionId(data.session_id);
                 setPhase("chat");
+            } else {
+                setStartError(data.error || "Could not start chat. Please try again.");
             }
+        } catch {
+            setStartError("Network error. Please check your connection.");
         } finally {
             setIsStarting(false);
         }
@@ -176,9 +182,14 @@ export function ChatWidget() {
                                     <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">We typically reply within a few minutes</p>
                                 </div>
                                 <form onSubmit={startChat} className="w-full space-y-3">
+                                    {startError && (
+                                        <div className="rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 px-3 py-2 text-xs text-red-600 dark:text-red-400">
+                                            {startError}
+                                        </div>
+                                    )}
                                     <input
                                         value={visitorName}
-                                        onChange={e => setVisitorName(e.target.value)}
+                                        onChange={e => { setVisitorName(e.target.value); setStartError(""); }}
                                         placeholder="Your name *"
                                         required
                                         className="w-full rounded-lg border border-gray-200 dark:border-[#2d3748] bg-gray-50 dark:bg-[#101622] px-3 py-2.5 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#135bec]"
@@ -220,8 +231,8 @@ export function ChatWidget() {
                                             className={`flex ${msg.sender === "visitor" ? "justify-end" : "justify-start"}`}
                                         >
                                             <div className={`max-w-[75%] rounded-2xl px-3 py-2 text-sm ${msg.sender === "visitor"
-                                                    ? "bg-[#135bec] text-white rounded-tr-none"
-                                                    : "bg-gray-100 dark:bg-[#101622] text-gray-800 dark:text-gray-200 rounded-tl-none"
+                                                ? "bg-[#135bec] text-white rounded-tr-none"
+                                                : "bg-gray-100 dark:bg-[#101622] text-gray-800 dark:text-gray-200 rounded-tl-none"
                                                 }`}>
                                                 {msg.message}
                                             </div>

@@ -10,6 +10,8 @@ const RATE_LIMITED_ROUTES: Record<string, { maxRequests: number; windowMs: numbe
     '/api/save-vin': { maxRequests: 10, windowMs: 60_000 },    // 10 per minute
     '/api/create-checkout-session': { maxRequests: 5, windowMs: 60_000 }, // 5 per minute
     '/api/admin/login': { maxRequests: 3, windowMs: 60_000 },  // 3 per minute
+    '/api/chat/session': { maxRequests: 5, windowMs: 60_000 }, // 5 per minute
+    '/api/chat/messages': { maxRequests: 30, windowMs: 60_000 }, // 30 per minute
 };
 
 export async function middleware(request: NextRequest) {
