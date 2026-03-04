@@ -32,7 +32,10 @@ export async function POST(req: Request) {
         }
 
         // Generate JWT
-        const secret = new TextEncoder().encode(process.env.JWT_SECRET || 'dev-secret-key-change-in-production');
+        const secret = new TextEncoder().encode(process.env.JWT_SECRET);
+        if (!process.env.JWT_SECRET) {
+            return NextResponse.json({ error: 'Server configuration error' }, { status: 500 });
+        }
         console.log("Signing Admin JWT using secret key...");
         const alg = "HS256";
 

@@ -21,7 +21,7 @@ export default async function AdminLayout({
     }
 
     try {
-        const secret = new TextEncoder().encode(process.env.JWT_SECRET || 'dev-secret-key-change-in-production');
+        const secret = new TextEncoder().encode(process.env.JWT_SECRET);
         await jwtVerify(token, secret);
     } catch {
         // Ignored

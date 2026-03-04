@@ -2,8 +2,12 @@ import bcrypt from 'bcryptjs';
 import { SignJWT, jwtVerify } from 'jose';
 
 const JWT_SECRET = new TextEncoder().encode(
-    process.env.JWT_SECRET || 'your-secret-key-change-in-production'
+    process.env.JWT_SECRET
 );
+
+if (!process.env.JWT_SECRET) {
+    console.error('CRITICAL: JWT_SECRET environment variable is not set!');
+}
 
 export async function hashPassword(password: string): Promise<string> {
     return bcrypt.hash(password, 10);

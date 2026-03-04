@@ -14,8 +14,42 @@ const RATE_LIMITED_ROUTES: Record<string, { maxRequests: number; windowMs: numbe
     '/api/chat/messages': { maxRequests: 30, windowMs: 60_000 }, // 30 per minute
 };
 
+// POST/PUT/PATCH/DELETE routes that require CSRF origin check
+const CSRF_PROTECTED_METHODS = ['POST', 'PUT', 'PATCH', 'DELETE'];
+
+// Webhook routes that receive external requests (skip CSRF)
+const CSRF_EXEMPT_ROUTES = ['/api/webhook/stripe'];
+
 export async function middleware(request: NextRequest) {
     const { pathname } = request.nextUrl;
+
+    // --- CSRF: Origin validation for state-changing requests ---
+    if (
+        pathname.startsWith('/api') &&
+        CSRF_PROTECTED_METHODS.includes(request.method) &&
+        !CSRF_EXEMPT_ROUTES.some(r => pathname.startsWith(r))
+    ) {
+        const origin = request.headers.get('origin');
+        const host = request.headers.get('host');
+
+        // Allow if no origin (same-origin non-fetch requests) or if origin matches host
+        if (origin) {
+            try {
+                const originHost = new URL(origin).host;
+                if (originHost !== host) {
+                    return NextResponse.json(
+                        { error: 'Forbidden: cross-origin request blocked' },
+                        { status: 403 }
+                    );
+                }
+            } catch {
+                return NextResponse.json(
+                    { error: 'Forbidden: invalid origin' },
+                    { status: 403 }
+                );
+            }
+        }
+    }
 
     // --- Rate Limiting for sensitive API routes ---
     const rateLimitConfig = RATE_LIMITED_ROUTES[pathname];
@@ -60,14 +94,13 @@ export async function middleware(request: NextRequest) {
         }
 
         try {
-            const secret = new TextEncoder().encode(process.env.JWT_SECRET || 'dev-secret-key-change-in-production');
+            const secret = new TextEncoder().encode(process.env.JWT_SECRET);
             const { payload } = await jwtVerify(token, secret);
 
             if (payload.role !== 'admin') {
                 throw new Error("Invalid role");
             }
-        } catch (error) {
-            console.error("Admin token verification failed:", error);
+        } catch {
             const url = request.nextUrl.clone();
             url.pathname = '/admin/login';
 

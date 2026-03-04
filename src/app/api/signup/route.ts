@@ -53,8 +53,9 @@ export async function POST(request: NextRequest) {
                 });
                 response.cookies.set('auth-token', mockToken, {
                     httpOnly: true,
-                    secure: process.env.NODE_ENV !== 'development',
+                    secure: false,
                     sameSite: 'lax',
+                    path: '/',
                     maxAge: 60 * 60 * 24 * 7, // 7 days
                 });
                 return response;
@@ -100,8 +101,9 @@ export async function POST(request: NextRequest) {
 
         response.cookies.set('auth-token', token, {
             httpOnly: true,
-            secure: process.env.NODE_ENV !== 'development',
+            secure: process.env.NODE_ENV === 'production',
             sameSite: 'lax',
+            path: '/',
             maxAge: 60 * 60 * 24 * 7, // 7 days
         });
 
@@ -109,7 +111,7 @@ export async function POST(request: NextRequest) {
     } catch (error) {
         console.error('Signup error:', error);
         return NextResponse.json(
-            { error: error instanceof Error ? error.message : 'Unknown error', stack: error instanceof Error ? error.stack : undefined },
+            { error: 'An error occurred during signup. Please try again.' },
             { status: 500 }
         );
     }

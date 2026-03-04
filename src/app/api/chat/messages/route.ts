@@ -64,6 +64,10 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: 'session_id and message are required' }, { status: 400 });
         }
 
+        if (message.trim().length > 2000) {
+            return NextResponse.json({ error: 'Message is too long (max 2000 characters)' }, { status: 400 });
+        }
+
         let db;
         try {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any

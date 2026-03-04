@@ -30,8 +30,9 @@ export async function POST(request: NextRequest) {
                 });
                 response.cookies.set('auth-token', mockToken, {
                     httpOnly: true,
-                    secure: process.env.NODE_ENV !== 'development',
+                    secure: false,
                     sameSite: 'lax',
+                    path: '/',
                     maxAge: 60 * 60 * 24 * 7, // 7 days
                 });
                 return response;
@@ -76,8 +77,9 @@ export async function POST(request: NextRequest) {
 
         response.cookies.set('auth-token', token, {
             httpOnly: true,
-            secure: process.env.NODE_ENV !== 'development',
+            secure: process.env.NODE_ENV === 'production',
             sameSite: 'lax',
+            path: '/',
             maxAge: 60 * 60 * 24 * 7, // 7 days
         });
 

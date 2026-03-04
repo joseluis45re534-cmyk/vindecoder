@@ -2,8 +2,24 @@ export const runtime = "edge";
 
 import { NextRequest, NextResponse } from "next/server";
 import { getRequestContext } from "@cloudflare/next-on-pages";
+import { jwtVerify } from "jose";
 
-export async function GET() {
+async function isAdminAuthenticated(request: NextRequest): Promise<boolean> {
+    try {
+        const token = request.cookies.get('adminToken')?.value;
+        if (!token) return false;
+        const secret = new TextEncoder().encode(process.env.JWT_SECRET);
+        if (!secret.length) return false;
+        const { payload } = await jwtVerify(token, secret);
+        return payload.role === 'admin';
+    } catch { return false; }
+}
+
+export async function GET(request: NextRequest) {
+    if (!await isAdminAuthenticated(request)) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     try {
         let kv;
         try {
@@ -35,6 +51,10 @@ export async function GET() {
 }
 
 export async function POST(request: NextRequest) {
+    if (!await isAdminAuthenticated(request)) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     try {
         const body = await request.json();
 

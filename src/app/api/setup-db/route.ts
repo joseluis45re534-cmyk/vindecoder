@@ -1,10 +1,26 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getRequestContext } from '@cloudflare/next-on-pages';
+import { jwtVerify } from 'jose';
 
 export const runtime = 'edge';
 
+async function isAdminAuthenticated(request: NextRequest): Promise<boolean> {
+    try {
+        const token = request.cookies.get('adminToken')?.value;
+        if (!token) return false;
+        const secret = new TextEncoder().encode(process.env.JWT_SECRET);
+        if (!secret.length) return false;
+        const { payload } = await jwtVerify(token, secret);
+        return payload.role === 'admin';
+    } catch { return false; }
+}
+
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export async function GET(request: NextRequest) {
+    if (!await isAdminAuthenticated(request)) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     try {
         let db;
         try {
@@ -17,7 +33,6 @@ export async function GET(request: NextRequest) {
         }
 
         if (!db) {
-            // Mock for local dev
             if (process.env.NODE_ENV === 'development') {
                 return NextResponse.json({ message: 'Local dev mode (mock DB)' });
             }
@@ -41,7 +56,6 @@ export async function GET(request: NextRequest) {
             )`,
             `CREATE INDEX IF NOT EXISTS idx_vin_requests_user_id ON vin_requests(user_id)`,
             `CREATE INDEX IF NOT EXISTS idx_vin_requests_status ON vin_requests(status)`,
-            // NEW: Reports Table
             `CREATE TABLE IF NOT EXISTS vin_reports (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 vin_request_id INTEGER NOT NULL,
@@ -50,7 +64,6 @@ export async function GET(request: NextRequest) {
                 FOREIGN KEY (vin_request_id) REFERENCES vin_requests(id)
             )`,
             `CREATE INDEX IF NOT EXISTS idx_vin_reports_request_id ON vin_reports(vin_request_id)`,
-            // Live Chat tables
             `CREATE TABLE IF NOT EXISTS chat_sessions (
                 id TEXT PRIMARY KEY,
                 visitor_name TEXT NOT NULL,
@@ -81,6 +94,6 @@ export async function GET(request: NextRequest) {
         return NextResponse.json({ success: true, results });
     } catch (e: unknown) {
         const message = e instanceof Error ? e.message : 'Unknown error';
-        return NextResponse.json({ error: message, stack: (e as Error)?.stack }, { status: 500 });
+        return NextResponse.json({ error: message }, { status: 500 });
     }
 }
