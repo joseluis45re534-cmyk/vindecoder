@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Vehicle xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://regcheck.org.uk">
+  <vehicleJson>{
+  "Description": "HOLDEN ",
+  "RegistrationYear": "2014",
+  "CarMake": {
+    "CurrentTextValue": "HOLDEN"
+  },
+  "MakeDescription": {
+    "CurrentTextValue": "HOLDEN"
+  },
+  "CarModel": {
+    "CurrentTextValue": ""
+  },
+  "ModelDescription": {
+    "CurrentTextValue": ""
+  },
+  "Colour": "WHITE",
+  "VechileIdentificationNumber": "MMU156FK0EH646779",
+  "Engine": "BG3G142101034",
+  "Stolen": "",
+  "GoodsCarryingVehicle": "No",
+  "RegistrationSerialNumber": "144358",
+  "ComplianceDate": "09/2014",
+  "ImageUrl": "http://www.carregistrationapi.com/image.aspx/@SE9MREVOIA==",
+  "Expiry": "30/10/2018",
+  "State": "VIC"
+}</vehicleJson>
+  <vehicleData>
+    <Description>HOLDEN </Description>
+    <RegistrationYear>2014</RegistrationYear>
+    <CarMake>
+      <CurrentTextValue>HOLDEN</CurrentTextValue>
+    </CarMake>
+    <CarModel />
+  </vehicleData>
+</Vehicle>

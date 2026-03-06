@@ -3,7 +3,8 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
-import { ReportView, ReportData } from "@/components/ReportView";
+import { ReportView } from "@/components/ReportView";
+import type { StandardReport } from "@/lib/car-api";
 
 interface ReportGenerationLoaderProps {
     vinRequestId: number;
@@ -12,7 +13,7 @@ interface ReportGenerationLoaderProps {
 export function ReportGenerationLoader({ vinRequestId }: ReportGenerationLoaderProps) {
     const router = useRouter();
     const [error, setError] = useState<string | null>(null);
-    const [report, setReport] = useState<ReportData | null>(null);
+    const [report, setReport] = useState<StandardReport | null>(null);
 
     useEffect(() => {
         const generate = async () => {
