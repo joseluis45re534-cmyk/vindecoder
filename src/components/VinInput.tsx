@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { validateVin } from "@/lib/vin-validation";
+import { validateVinOrRego } from "@/lib/vin-validation";
 import { Loader2, Search } from "lucide-react"; // Import Search icon
 import { motion, useAnimation } from "framer-motion";
 import { LoadingOverlay } from "@/components/ui/LoadingOverlay";
@@ -24,7 +24,7 @@ export function VinInput({ className, onScanStart, onScanComplete }: VinInputPro
         setError(null);
         setIsLoading(true);
 
-        const validation = validateVin(vin);
+        const validation = validateVinOrRego(vin);
         if (!validation.isValid) {
             setError(validation.error || "Invalid VIN");
             setIsLoading(false);

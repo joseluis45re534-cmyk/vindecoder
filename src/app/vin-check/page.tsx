@@ -7,7 +7,7 @@ import { Footer } from "@/components/Footer";
 import { VinInput } from "@/components/VinInput";
 import { Button } from "@/components/ui/button";
 import { CheckCircle2, AlertCircle, Loader2, FileText, Lock, DollarSign } from "lucide-react";
-import { validateVin } from "@/lib/vin-validation";
+import { validateVinOrRego } from "@/lib/vin-validation";
 
 function VinCheckContent() {
     const searchParams = useSearchParams();
@@ -34,7 +34,7 @@ function VinCheckContent() {
         if (vinParam) {
             const cleanVin = vinParam.toUpperCase();
             setVin(cleanVin);
-            const validation = validateVin(cleanVin);
+            const validation = validateVinOrRego(cleanVin);
 
             if (validation.isValid) {
                 handleAnalyze(cleanVin);

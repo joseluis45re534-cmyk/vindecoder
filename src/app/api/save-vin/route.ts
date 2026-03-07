@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAuthUser } from '@/lib/auth-middleware';
-import { validateVin } from '@/lib/vin-validation';
+import { validateVinOrRego } from '@/lib/vin-validation';
 import { getRequestContext } from '@cloudflare/next-on-pages';
 
 export const runtime = 'edge';
@@ -23,7 +23,7 @@ export async function POST(request: NextRequest) {
         const { vin } = (await request.json()) as any;
 
         // Validate VIN
-        const validation = validateVin(vin);
+        const validation = validateVinOrRego(vin);
         if (!validation.isValid) {
             return NextResponse.json(
                 { error: validation.error || 'Invalid VIN' },
