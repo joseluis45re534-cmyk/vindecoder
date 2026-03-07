@@ -77,12 +77,32 @@ export async function POST(request: NextRequest) {
         // Fetch basic preview data from live API before saving
         let previewDataJson = null;
         try {
-            const liveData = await fetchLiveVehicleData(vin.toUpperCase());
+            let apiUser = undefined;
+            let apiPass = undefined;
+
+            try {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                const { env } = getRequestContext() as any;
+                if (env?.CONFIG_KV) {
+                    const settingsJson = await env.CONFIG_KV.get("admin_settings");
+                    if (settingsJson) {
+                        const settings = JSON.parse(settingsJson);
+                        apiUser = settings.carRegApiUser;
+                        apiPass = settings.carRegApiPass;
+                    }
+                }
+            } catch {
+                // Ignore KV errors
+            }
+
+            const liveData = await fetchLiveVehicleData(vin.toUpperCase(), 'NSW', apiUser, apiPass);
             if (liveData && liveData.vehicleInfo) {
                 previewDataJson = JSON.stringify({
                     make: liveData.vehicleInfo.make,
                     model: liveData.vehicleInfo.model,
-                    year: liveData.vehicleInfo.year
+                    year: liveData.vehicleInfo.year,
+                    image: liveData.images?.[0] || null,
+                    stolen: liveData.stolenCheck?.status === 'stolen'
                 });
             }
         } catch (apiErr) {

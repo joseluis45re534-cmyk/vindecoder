@@ -42,9 +42,9 @@ export interface StandardReport {
     images: string[];
 }
 
-export async function fetchLiveVehicleData(vinOrRego: string, state: string = 'NSW'): Promise<StandardReport | null> {
-    const user = process.env.CAR_REG_API_USER;
-    const pass = process.env.CAR_REG_API_PASS;
+export async function fetchLiveVehicleData(vinOrRego: string, state: string = 'NSW', apiUser?: string, apiPass?: string): Promise<StandardReport | null> {
+    const user = apiUser || process.env.CAR_REG_API_USER;
+    const pass = apiPass || process.env.CAR_REG_API_PASS;
 
     if (!user || !pass) {
         throw new Error('CAR_REG_API credentials are not configured');
@@ -52,17 +52,17 @@ export async function fetchLiveVehicleData(vinOrRego: string, state: string = 'N
 
     // Determine if input is a VIN (17 chars) or Registration (typically 6-8 chars)
     const isVin = vinOrRego.trim().length === 17;
-    
+
     // The API seems to prefer CheckAustralia for Rego. For VIN, we use CheckVIN if available, or just fallback to the unified endpoint. 
     // We'll use the main CheckAustralia by default and pass RegistrationNumber as per docs if it's a plate.
     // If it's a VIN, we use the CheckVIN endpoint (common in RegCheck APIs).
-    
+
     let url = '';
     if (isVin) {
-         // Using the typical RegCheck VIN endpoint
-         url = `https://www.carregistrationapi.com/api/reg.asmx/CheckVIN?VINNumber=${encodeURIComponent(vinOrRego)}&username=${encodeURIComponent(user)}&password=${encodeURIComponent(pass)}`;
+        // Using the typical RegCheck VIN endpoint
+        url = `https://www.carregistrationapi.com/api/reg.asmx/CheckVIN?VINNumber=${encodeURIComponent(vinOrRego)}&username=${encodeURIComponent(user)}&password=${encodeURIComponent(pass)}`;
     } else {
-         url = `https://www.carregistrationapi.com/api/reg.asmx/CheckAustralia?RegistrationNumber=${encodeURIComponent(vinOrRego)}&State=${encodeURIComponent(state)}&username=${encodeURIComponent(user)}&password=${encodeURIComponent(pass)}`;
+        url = `https://www.carregistrationapi.com/api/reg.asmx/CheckAustralia?RegistrationNumber=${encodeURIComponent(vinOrRego)}&State=${encodeURIComponent(state)}&username=${encodeURIComponent(user)}&password=${encodeURIComponent(pass)}`;
     }
 
     try {
@@ -73,11 +73,11 @@ export async function fetchLiveVehicleData(vinOrRego: string, state: string = 'N
         }
 
         const xmlText = await response.text();
-        
+
         // The API returns XML with a <vehicleJson> CDATA or text node inside it.
         // We'll extract it using a simple regex to avoid needing a heavy XML parser.
         const jsonMatch = xmlText.match(/<vehicleJson>([\s\S]*?)<\/vehicleJson>/);
-        
+
         if (!jsonMatch || !jsonMatch[1]) {
             console.error('CarRegAPI: Could not extract vehicleJson from response', xmlText.slice(0, 200));
             return null;

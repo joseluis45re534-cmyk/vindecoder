@@ -33,11 +33,11 @@ export async function GET(request: NextRequest) {
 
         if (!kv) {
             console.warn("CONFIG_KV binding not found. Falling back to defaults.");
-            return NextResponse.json({ settings: { reportPriceCent: 2999, stripePublicKey: "" } });
+            return NextResponse.json({ settings: { reportPriceCent: 2999, stripePublicKey: "", carRegApiUser: "", carRegApiPass: "" } });
         }
 
         const settingsJson = await kv.get("admin_settings");
-        let settings = { reportPriceCent: 2999, stripePublicKey: "" };
+        let settings = { reportPriceCent: 2999, stripePublicKey: "", carRegApiUser: "", carRegApiPass: "" };
 
         if (settingsJson) {
             settings = JSON.parse(settingsJson);

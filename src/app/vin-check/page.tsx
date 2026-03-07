@@ -73,6 +73,8 @@ function VinCheckContent() {
             let make = "Vehicle";
             let model = "Data Found";
             let year = "";
+            let image = null;
+            let stolen = false;
 
             if (saveData.vinRequest?.preview_data) {
                 try {
@@ -80,6 +82,8 @@ function VinCheckContent() {
                     make = preview.make || make;
                     model = preview.model || model;
                     year = preview.year || year;
+                    image = preview.image || null;
+                    stolen = preview.stolen || false;
                 } catch {
                     // Ignore parse error
                 }
@@ -89,9 +93,11 @@ function VinCheckContent() {
                 make,
                 model,
                 year,
+                image,
+                stolen,
                 vin: vinToAnalyze,
                 records: 5,
-                issues: 0
+                issues: stolen ? 1 : 0
             });
             setStatus("found");
 
@@ -163,7 +169,13 @@ function VinCheckContent() {
                                 Report Generated Successfully
                             </div>
                             <h2 className="text-2xl font-bold">{reportData?.year} {reportData?.make} {reportData?.model}</h2>
-                            <p className="font-mono text-muted-foreground mt-2">{vin}</p>
+                            <p className="font-mono text-muted-foreground mt-2 mb-4">{vin}</p>
+                            {reportData?.image && (
+                                <div className="mt-4 flex justify-center">
+                                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                                    <img src={reportData.image} alt={`${reportData.make} ${reportData.model}`} className="max-h-48 object-contain rounded-lg shadow-sm" />
+                                </div>
+                            )}
                         </div>
 
                         <div className="p-8 space-y-6">
@@ -185,7 +197,11 @@ function VinCheckContent() {
                                 </div>
                                 <div className="flex items-center justify-between py-2 border-b border-dashed">
                                     <span className="flex items-center text-muted-foreground"><AlertCircle className="h-4 w-4 mr-2" /> Stolen Check</span>
-                                    <span className="font-medium text-green-600 flex items-center"><CheckCircle2 className="h-4 w-4 mr-1" /> Ready</span>
+                                    {reportData?.stolen ? (
+                                        <span className="font-medium text-red-600 flex items-center"><AlertCircle className="h-4 w-4 mr-1" /> Stolen</span>
+                                    ) : (
+                                        <span className="font-medium text-green-600 flex items-center"><CheckCircle2 className="h-4 w-4 mr-1" /> Clear</span>
+                                    )}
                                 </div>
                                 <div className="flex items-center justify-between py-2 border-b border-dashed">
                                     <span className="flex items-center text-muted-foreground"><AlertCircle className="h-4 w-4 mr-2" /> Written-Off Check</span>

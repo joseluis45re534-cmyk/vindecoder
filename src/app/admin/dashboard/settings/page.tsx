@@ -9,12 +9,16 @@ import { Button } from "@/components/ui/button";
 interface AdminSettings {
     reportPriceCent: number;
     stripePublicKey: string;
+    carRegApiUser?: string;
+    carRegApiPass?: string;
 }
 
 export default function AdminSettingsPage() {
     const [settings, setSettings] = useState<AdminSettings>({
         reportPriceCent: 2999,
         stripePublicKey: "",
+        carRegApiUser: "",
+        carRegApiPass: "",
     });
     const [isLoading, setIsLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
@@ -115,6 +119,27 @@ export default function AdminSettingsPage() {
                                     value={settings.stripePublicKey}
                                     onChange={(e) => setSettings({ ...settings, stripePublicKey: e.target.value })}
                                     placeholder="pk_test_..."
+                                    className="w-full px-4 py-2 rounded-lg border bg-transparent focus:ring-2 focus:ring-primary outline-none font-mono text-sm"
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium mb-1">Car Registration API Username</label>
+                                <input
+                                    type="text"
+                                    value={settings.carRegApiUser || ""}
+                                    onChange={(e) => setSettings({ ...settings, carRegApiUser: e.target.value })}
+                                    placeholder="e.g. REVCHECKPRO"
+                                    className="w-full px-4 py-2 rounded-lg border bg-transparent focus:ring-2 focus:ring-primary outline-none font-mono text-sm"
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium mb-1">Car Registration API Password</label>
+                                <input
+                                    type="password"
+                                    value={settings.carRegApiPass || ""}
+                                    onChange={(e) => setSettings({ ...settings, carRegApiPass: e.target.value })}
                                     className="w-full px-4 py-2 rounded-lg border bg-transparent focus:ring-2 focus:ring-primary outline-none font-mono text-sm"
                                 />
                             </div>
