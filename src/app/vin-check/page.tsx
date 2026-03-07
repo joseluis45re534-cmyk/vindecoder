@@ -17,6 +17,7 @@ function VinCheckContent() {
     const [status, setStatus] = useState<"input" | "analyzing" | "found" | "error">("input");
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const [reportData, setReportData] = useState<any>(null); // Dummy data
+    const [vinRequestId, setVinRequestId] = useState<number | null>(null);
     const [isCheckoutLoading, setIsCheckoutLoading] = useState(false);
     const [reportPrice, setReportPrice] = useState("$29.99");
 
@@ -44,56 +45,79 @@ function VinCheckContent() {
         }
     }, [vinParam]);
 
-    const handleAnalyze = (vinToAnalyze: string) => {
+    const handleAnalyze = async (vinToAnalyze: string) => {
         setStatus("analyzing");
 
-        // Simulate API calls
-        setTimeout(() => {
+        try {
+            // Initiate the save-vin call immediately to fetch preview data
+            const saveResponse = await fetch("/api/save-vin", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ vin: vinToAnalyze }),
+            });
+
+            if (!saveResponse.ok) {
+                // If it fails (e.g. rate limit), stay on input or show error
+                setStatus("input");
+                return;
+            }
+
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const saveData = (await saveResponse.json()) as any;
+
+            // Set the ID in state so checkout can use it later without re-saving
+            if (saveData.vinRequest?.id) {
+                setVinRequestId(saveData.vinRequest.id);
+            }
+
+            let make = "Vehicle";
+            let model = "Data Found";
+            let year = "";
+
+            if (saveData.vinRequest?.preview_data) {
+                try {
+                    const preview = JSON.parse(saveData.vinRequest.preview_data);
+                    make = preview.make || make;
+                    model = preview.model || model;
+                    year = preview.year || year;
+                } catch {
+                    // Ignore parse error
+                }
+            }
+
             setReportData({
-                make: "Simulated Make",
-                model: "Simulated Model",
-                year: "2020",
+                make,
+                model,
+                year,
                 vin: vinToAnalyze,
                 records: 5,
                 issues: 0
             });
             setStatus("found");
-        }, 2500);
+
+        } catch (error) {
+            console.error("Analysis failed:", error);
+            setStatus("input");
+        }
     };
 
     const handleCheckout = async () => {
+        if (!vinRequestId) return;
         setIsCheckoutLoading(true);
         try {
-            // 1. Save VIN to database (or get existing ID)
-            const saveResponse = await fetch("/api/save-vin", {
+            // 2. Create Stripe Checkout Session directly using the already saved vinRequestId
+            const checkoutResponse = await fetch("/api/create-checkout-session", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ vin }),
+                body: JSON.stringify({ vinRequestId, vin }),
             });
 
-            if (!saveResponse.ok) {
-                throw new Error("Failed to initialize checkout");
-            }
-
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const saveData = (await saveResponse.json()) as any;
-            const vinRequestId = saveData.vinRequest?.id;
-
-            if (vinRequestId) {
-                // 2. Create Stripe Checkout Session
-                const checkoutResponse = await fetch("/api/create-checkout-session", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ vinRequestId, vin }),
-                });
-
-                if (checkoutResponse.ok) {
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    const session = (await checkoutResponse.json()) as any;
-                    if (session.url) {
-                        window.location.href = session.url;
-                        return;
-                    }
+            if (checkoutResponse.ok) {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                const session = (await checkoutResponse.json()) as any;
+                if (session.url) {
+                    window.location.href = session.url;
+                    return;
                 }
             }
         } catch (error) {

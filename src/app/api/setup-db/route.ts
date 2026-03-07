@@ -54,6 +54,8 @@ export async function GET(request: NextRequest) {
                 created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
                 FOREIGN KEY (user_id) REFERENCES users(id)
             )`,
+            // Add preview_data column to vin_requests if it doesn't exist
+            `ALTER TABLE vin_requests ADD COLUMN preview_data TEXT;`,
             `CREATE INDEX IF NOT EXISTS idx_vin_requests_user_id ON vin_requests(user_id)`,
             `CREATE INDEX IF NOT EXISTS idx_vin_requests_status ON vin_requests(status)`,
             `CREATE TABLE IF NOT EXISTS vin_reports (

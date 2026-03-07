@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAuthUser } from '@/lib/auth-middleware';
 import { validateVinOrRego } from '@/lib/vin-validation';
+import { fetchLiveVehicleData } from '@/lib/car-api';
 import { getRequestContext } from '@cloudflare/next-on-pages';
 
 export const runtime = 'edge';
@@ -73,12 +74,28 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        // Insert VIN request
+        // Fetch basic preview data from live API before saving
+        let previewDataJson = null;
+        try {
+            const liveData = await fetchLiveVehicleData(vin.toUpperCase());
+            if (liveData && liveData.vehicleInfo) {
+                previewDataJson = JSON.stringify({
+                    make: liveData.vehicleInfo.make,
+                    model: liveData.vehicleInfo.model,
+                    year: liveData.vehicleInfo.year
+                });
+            }
+        } catch (apiErr) {
+            console.error('Failed to fetch preview data:', apiErr);
+            // Non-blocking: we still generate the db record even if preview fails
+        }
+
+        // Insert VIN request with preview data
         const result = await db
             .prepare(
-                'INSERT INTO vin_requests (user_id, vin_number, status) VALUES (?, ?, ?)'
+                'INSERT INTO vin_requests (user_id, vin_number, status, preview_data) VALUES (?, ?, ?, ?)'
             )
-            .bind(user.userId, vin.toUpperCase(), 'pending')
+            .bind(user.userId, vin.toUpperCase(), 'pending', previewDataJson)
             .run();
 
         const vinRequestId = result.meta.last_row_id;
