@@ -71,10 +71,12 @@ export function VinInput({ className, onScanStart, onScanComplete }: VinInputPro
             }
 
             // Redirect to VIN check page for preview
+            setIsLoading(false);
             router.push(`/vin-check?vin=${vin.toUpperCase()}`);
         } catch (err) {
             console.error(err);
             if (onScanComplete) onScanComplete();
+            setIsLoading(false);
             // Fallback
             router.push(`/vin-check?vin=${vin.toUpperCase()}`);
         }
