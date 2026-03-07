@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { validateVinOrRego } from "@/lib/vin-validation";
-import { Loader2, Search } from "lucide-react"; // Import Search icon
+import { Loader2, Search, CarFront, Hash } from "lucide-react"; // Import Icons
 import { motion, useAnimation } from "framer-motion";
 import { LoadingOverlay } from "@/components/ui/LoadingOverlay";
 
@@ -14,6 +14,7 @@ interface VinInputProps {
 export function VinInput({ className, onScanStart, onScanComplete }: VinInputProps) {
 
     const [vin, setVin] = useState("");
+    const [searchMode, setSearchMode] = useState<'vin' | 'rego'>('vin');
     const [error, setError] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(false);
     const router = useRouter();
@@ -24,7 +25,7 @@ export function VinInput({ className, onScanStart, onScanComplete }: VinInputPro
         setError(null);
         setIsLoading(true);
 
-        const validation = validateVinOrRego(vin);
+        const validation = validateVinOrRego(vin, searchMode);
         if (!validation.isValid) {
             setError(validation.error || "Invalid VIN");
             setIsLoading(false);
@@ -83,10 +84,29 @@ export function VinInput({ className, onScanStart, onScanComplete }: VinInputPro
         <div className={`w-full max-w-md mx-auto ${className}`}>
             <motion.form
                 onSubmit={handleSubmit}
-                className="flex flex-col gap-2 relative"
+                className="flex flex-col gap-4 relative"
                 animate={controls}
             >
-                <label htmlFor="vin-input" className="sr-only">Enter VIN</label>
+                <div className="flex justify-center mb-2">
+                    <div className="inline-flex bg-muted/50 p-1 rounded-full border border-border/50">
+                        <button
+                            type="button"
+                            onClick={() => { setSearchMode('vin'); setError(null); }}
+                            className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all duration-300 flex items-center gap-2 ${searchMode === 'vin' ? 'bg-background shadow-sm text-primary' : 'text-muted-foreground hover:text-foreground'}`}
+                        >
+                            <Hash className="w-4 h-4" /> VIN
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => { setSearchMode('rego'); setError(null); }}
+                            className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all duration-300 flex items-center gap-2 ${searchMode === 'rego' ? 'bg-background shadow-sm text-primary' : 'text-muted-foreground hover:text-foreground'}`}
+                        >
+                            <CarFront className="w-4 h-4" /> Rego
+                        </button>
+                    </div>
+                </div>
+
+                <label htmlFor="vin-input" className="sr-only">Enter {searchMode === 'vin' ? 'VIN' : 'Rego'}</label>
                 <div className="relative flex items-center group">
                     <div className="absolute left-3 text-muted-foreground group-focus-within:text-primary transition-colors duration-300">
                         <Search className="h-5 w-5" />
@@ -94,14 +114,14 @@ export function VinInput({ className, onScanStart, onScanComplete }: VinInputPro
                     <input
                         id="vin-input"
                         type="text"
-                        placeholder="Enter 17-digit VIN"
+                        placeholder={searchMode === 'vin' ? "Enter 17-digit VIN" : "Enter License Plate"}
                         value={vin}
                         onChange={(e) => {
                             setVin(e.target.value.toUpperCase());
                             if (error) setError(null);
                         }}
                         className="flex h-14 w-full rounded-full border border-input bg-background/80 backdrop-blur-sm px-10 py-2 text-lg shadow-sm transition-all duration-300 placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:border-primary focus-visible:shadow-lg dark:focus-visible:shadow-[0_0_20px_rgba(var(--primary),0.3)] disabled:cursor-not-allowed disabled:opacity-50"
-                        maxLength={17}
+                        maxLength={searchMode === 'vin' ? 17 : 8}
                     />
                     <button
                         type="submit"

@@ -1,32 +1,42 @@
-export function validateVinOrRego(input: string): { isValid: boolean; error?: string; isRego?: boolean } {
+export function validateVinOrRego(input: string, mode?: 'vin' | 'rego'): { isValid: boolean; error?: string; isRego?: boolean } {
     const cleanInput = input.toUpperCase().replace(/\s+/g, '').trim();
 
     if (!cleanInput) {
         return { isValid: false, error: "Please enter a VIN or Registration Number." };
     }
 
-    // Check if it's a Registration Plate (typically 2-8 characters in Australia)
-    if (cleanInput.length >= 2 && cleanInput.length <= 8) {
+    if (mode === 'rego') {
+        if (cleanInput.length < 2 || cleanInput.length > 8) {
+            return { isValid: false, error: `Registration must be between 2 and 8 characters. Current length: ${cleanInput.length}` };
+        }
         if (!/^[A-Z0-9]+$/.test(cleanInput)) {
             return { isValid: false, error: "Registration contains invalid characters. Only letters and numbers allowed." };
         }
         return { isValid: true, isRego: true };
     }
 
-    // Check if it's a VIN (must be exactly 17 characters)
-    if (cleanInput.length !== 17) {
-        return { isValid: false, error: `Must be a 17-character VIN or a valid Rego. Current length: ${cleanInput.length}` };
+    if (mode === 'vin') {
+        if (cleanInput.length !== 17) {
+            return { isValid: false, error: `VIN must be exactly 17 characters. Current length: ${cleanInput.length}` };
+        }
+        if (/[IOQ]/.test(cleanInput)) {
+            return { isValid: false, error: "VIN cannot contain letters I, O, or Q." };
+        }
+        if (!/^[A-HJ-NPR-Z0-9]+$/.test(cleanInput)) {
+            return { isValid: false, error: "VIN contains invalid characters. Only A-Z and 0-9 are allowed." };
+        }
+        return { isValid: true, isRego: false };
     }
 
-    // Illegal characters check for VIN (I, O, Q are not allowed in standard VINs)
-    if (/[IOQ]/.test(cleanInput)) {
-        return { isValid: false, error: "VIN cannot contain letters I, O, or Q." };
+    // Generic fallback mode if not specified (legacy)
+    if (cleanInput.length >= 2 && cleanInput.length <= 8) {
+        if (!/^[A-Z0-9]+$/.test(cleanInput)) return { isValid: false, error: "Registration contains invalid characters." };
+        return { isValid: true, isRego: true };
     }
 
-    // Alphanumeric check for VIN
-    if (!/^[A-HJ-NPR-Z0-9]+$/.test(cleanInput)) {
-        return { isValid: false, error: "VIN contains invalid characters. Only A-Z and 0-9 are allowed." };
-    }
+    if (cleanInput.length !== 17) return { isValid: false, error: `Must be a 17-character VIN or 2-8 char Rego. Current length: ${cleanInput.length}` };
+    if (/[IOQ]/.test(cleanInput)) return { isValid: false, error: "VIN cannot contain letters I, O, or Q." };
+    if (!/^[A-HJ-NPR-Z0-9]+$/.test(cleanInput)) return { isValid: false, error: "VIN contains invalid characters." };
 
     return { isValid: true, isRego: false };
 }
