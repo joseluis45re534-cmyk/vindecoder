@@ -11,14 +11,8 @@ const MAX_PENDING_PER_USER = 5;
 export async function POST(request: NextRequest) {
     try {
         // Check authentication
-        const user = await getAuthUser(request);
-
-        if (!user) {
-            return NextResponse.json(
-                { error: 'Unauthorized' },
-                { status: 401 }
-            );
-        }
+        const authUser = await getAuthUser(request);
+        const currentUser = authUser || { userId: 0, email: 'guest@vindecoder.com.au' };
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const { vin } = (await request.json()) as any;
@@ -48,7 +42,7 @@ export async function POST(request: NextRequest) {
                     success: true,
                     vinRequest: {
                         id: Math.floor(Math.random() * 1000),
-                        user_id: user.userId,
+                        user_id: currentUser.userId,
                         vin_number: vin.toUpperCase(),
                         status: 'pending',
                         created_at: new Date().toISOString(),
@@ -61,17 +55,19 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        // Per-user VIN spam check: max pending requests
-        const pendingCount = await db
-            .prepare('SELECT COUNT(*) as cnt FROM vin_requests WHERE user_id = ? AND status = ?')
-            .bind(user.userId, 'pending')
-            .first();
+        // Per-user VIN spam check: max pending requests for logged in users
+        if (currentUser.userId !== 0) {
+            const pendingCount = await db
+                .prepare('SELECT COUNT(*) as cnt FROM vin_requests WHERE user_id = ? AND status = ?')
+                .bind(currentUser.userId, 'pending')
+                .first();
 
-        if (pendingCount && (pendingCount as { cnt: number }).cnt >= MAX_PENDING_PER_USER) {
-            return NextResponse.json(
-                { error: `You have reached the maximum of ${MAX_PENDING_PER_USER} pending VIN requests. Please complete or cancel existing ones first.` },
-                { status: 429 }
-            );
+            if (pendingCount && (pendingCount as { cnt: number }).cnt >= MAX_PENDING_PER_USER) {
+                return NextResponse.json(
+                    { error: `You have reached the maximum of ${MAX_PENDING_PER_USER} pending VIN requests. Please complete or cancel existing ones first.` },
+                    { status: 429 }
+                );
+            }
         }
 
         // Fetch basic preview data from live API before saving
@@ -115,7 +111,7 @@ export async function POST(request: NextRequest) {
             .prepare(
                 'INSERT INTO vin_requests (user_id, vin_number, status, preview_data) VALUES (?, ?, ?, ?)'
             )
-            .bind(user.userId, vin.toUpperCase(), 'pending', previewDataJson)
+            .bind(currentUser.userId, vin.toUpperCase(), 'pending', previewDataJson)
             .run();
 
         const vinRequestId = result.meta.last_row_id;

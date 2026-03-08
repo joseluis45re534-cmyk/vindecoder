@@ -17,10 +17,8 @@ const getStripe = (key?: string) => {
 
 export async function POST(request: NextRequest) {
     try {
-        const user = await getAuthUser(request);
-        if (!user) {
-            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-        }
+        const authUser = await getAuthUser(request);
+        const currentUser = authUser || { userId: 0, email: undefined };
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const { vinRequestId, vin } = (await request.json()) as any;
@@ -77,9 +75,9 @@ export async function POST(request: NextRequest) {
             metadata: {
                 vinRequestId: vinRequestId.toString(),
                 vin: vin,
-                userId: user.userId.toString(),
+                userId: currentUser.userId.toString(),
             },
-            customer_email: user.email,
+            customer_email: currentUser.email,
         });
 
         return NextResponse.json({ url: session.url, sessionId: session.id });
