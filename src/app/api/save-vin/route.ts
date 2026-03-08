@@ -6,7 +6,7 @@ import { getRequestContext } from '@cloudflare/next-on-pages';
 
 export const runtime = 'edge';
 
-const MAX_PENDING_PER_USER = 5;
+const MAX_PENDING_PER_USER = 50;
 
 export async function POST(request: NextRequest) {
     try {

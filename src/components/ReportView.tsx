@@ -13,6 +13,23 @@ export function ReportView({ report }: ReportViewProps) {
         window.print();
     };
 
+    // Safely fallback for legacy JSON report structures (from before the StandardReport refactor)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const r = report as any;
+    const vInfo = report.vehicleInfo || {
+        vin: r.vin || r.VechileIdentificationNumber || 'Unknown',
+        make: r.make || r.CarMake?.CurrentTextValue || 'Unknown',
+        model: r.model || r.CarModel?.CurrentTextValue || 'Unknown',
+        year: r.year || r.RegistrationYear || 'Unknown',
+        colour: r.colour || r.Colour || 'Unknown',
+        engineId: r.engineId || r.Engine || 'N/A',
+        registrationState: r.registrationState || r.State || 'Unknown',
+        registrationExpiry: r.registrationExpiry || r.Expiry || 'Unknown',
+    };
+    const sCheck = report.stolenCheck || { status: r.Stolen ? 'stolen' : 'clear', details: r.Stolen ? 'Stolen record found.' : 'No stolen records.' };
+    const wCheck = report.wovrCheck || { status: 'unknown', details: 'Not reported' };
+    const fCheck = report.financeCheck || { status: 'unknown', details: 'Not reported' };
+
     return (
         <div className="max-w-4xl mx-auto space-y-8 animate-in fade-in duration-700">
             {/* Header */}
@@ -23,7 +40,7 @@ export function ReportView({ report }: ReportViewProps) {
                         Live Report Generated Successfully
                     </div>
                     <h1 className="text-3xl font-bold tracking-tight">Vehicle History Report</h1>
-                    <p className="text-muted-foreground mt-1 font-mono">VIN: {report.vehicleInfo.vin}</p>
+                    <p className="text-muted-foreground mt-1 font-mono">VIN: {vInfo.vin}</p>
                     <p className="text-xs text-muted-foreground mt-1">Generated: {new Date().toLocaleDateString()}</p>
                 </div>
                 <div className="flex gap-2 print:hidden">
@@ -52,19 +69,19 @@ export function ReportView({ report }: ReportViewProps) {
                 <div className="bg-card rounded-lg border p-6 shadow-sm">
                     <h3 className="text-lg font-semibold mb-4 flex items-center"><FileText className="h-5 w-5 mr-2 text-primary" /> Vehicle Details</h3>
                     <dl className="space-y-3 text-sm">
-                        <div className="flex justify-between border-b border-dashed pb-2"><dt className="text-muted-foreground">Make</dt><dd className="font-medium">{report.vehicleInfo.make}</dd></div>
-                        <div className="flex justify-between border-b border-dashed pb-2"><dt className="text-muted-foreground">Model</dt><dd className="font-medium">{report.vehicleInfo.model}</dd></div>
-                        <div className="flex justify-between border-b border-dashed pb-2"><dt className="text-muted-foreground">Year</dt><dd className="font-medium">{report.vehicleInfo.year}</dd></div>
-                        <div className="flex justify-between border-b border-dashed pb-2"><dt className="text-muted-foreground">Colour</dt><dd className="font-medium">{report.vehicleInfo.colour}</dd></div>
-                        <div className="flex justify-between pt-1"><dt className="text-muted-foreground">Engine No.</dt><dd className="font-medium">{report.vehicleInfo.engineId}</dd></div>
+                        <div className="flex justify-between border-b border-dashed pb-2"><dt className="text-muted-foreground">Make</dt><dd className="font-medium">{vInfo.make}</dd></div>
+                        <div className="flex justify-between border-b border-dashed pb-2"><dt className="text-muted-foreground">Model</dt><dd className="font-medium">{vInfo.model}</dd></div>
+                        <div className="flex justify-between border-b border-dashed pb-2"><dt className="text-muted-foreground">Year</dt><dd className="font-medium">{vInfo.year}</dd></div>
+                        <div className="flex justify-between border-b border-dashed pb-2"><dt className="text-muted-foreground">Colour</dt><dd className="font-medium">{vInfo.colour}</dd></div>
+                        <div className="flex justify-between pt-1"><dt className="text-muted-foreground">Engine No.</dt><dd className="font-medium">{vInfo.engineId}</dd></div>
                     </dl>
                 </div>
 
                 <div className="bg-card rounded-lg border p-6 shadow-sm">
                     <h3 className="text-lg font-semibold mb-4 flex items-center"><CheckCircle2 className="h-5 w-5 mr-2 text-green-600" /> Registration Status</h3>
                     <dl className="space-y-3 text-sm">
-                        <div className="flex justify-between border-b border-dashed pb-2"><dt className="text-muted-foreground">State</dt><dd className="font-medium">{report.vehicleInfo.registrationState}</dd></div>
-                        <div className="flex justify-between pt-1"><dt className="text-muted-foreground">Expiry</dt><dd className="font-medium">{report.vehicleInfo.registrationExpiry}</dd></div>
+                        <div className="flex justify-between border-b border-dashed pb-2"><dt className="text-muted-foreground">State</dt><dd className="font-medium">{vInfo.registrationState}</dd></div>
+                        <div className="flex justify-between pt-1"><dt className="text-muted-foreground">Expiry</dt><dd className="font-medium">{vInfo.registrationExpiry}</dd></div>
                     </dl>
                 </div>
 
@@ -73,29 +90,29 @@ export function ReportView({ report }: ReportViewProps) {
                     <h3 className="text-lg font-semibold mb-4 flex items-center"><AlertCircle className="h-5 w-5 mr-2 text-orange-500" /> Safety & Legal Checks</h3>
                     <div className="grid gap-4 md:grid-cols-3">
                         {/* Stolen Check */}
-                        <div className={`flex flex-col p-4 rounded-lg border ${report.stolenCheck.status === 'stolen' ? 'bg-red-50 border-red-100' : report.stolenCheck.status === 'clear' ? 'bg-green-50 border-green-100' : 'bg-gray-50 border-gray-100'}`}>
+                        <div className={`flex flex-col p-4 rounded-lg border ${sCheck.status === 'stolen' ? 'bg-red-50 border-red-100' : sCheck.status === 'clear' ? 'bg-green-50 border-green-100' : 'bg-gray-50 border-gray-100'}`}>
                             <p className="font-medium mb-1">Stolen Check</p>
-                            <p className="text-sm">{report.stolenCheck.details}</p>
+                            <p className="text-sm">{sCheck.details}</p>
                             <div className="mt-2 flex justify-end">
-                                {report.stolenCheck.status === 'clear' ? <CheckCircle2 className="h-5 w-5 text-green-600" /> : <AlertCircle className="h-5 w-5 text-red-600" />}
+                                {sCheck.status === 'clear' ? <CheckCircle2 className="h-5 w-5 text-green-600" /> : <AlertCircle className="h-5 w-5 text-red-600" />}
                             </div>
                         </div>
 
                         {/* Written-off Check */}
-                        <div className={`flex flex-col p-4 rounded-lg border ${report.wovrCheck.status === 'clear' ? 'bg-green-50 border-green-100' : 'bg-gray-50 border-gray-100'}`}>
+                        <div className={`flex flex-col p-4 rounded-lg border ${wCheck.status === 'clear' ? 'bg-green-50 border-green-100' : 'bg-gray-50 border-gray-100'}`}>
                             <p className="font-medium mb-1">Written-Off Check</p>
-                            <p className="text-sm">{report.wovrCheck.details}</p>
+                            <p className="text-sm">{wCheck.details}</p>
                             <div className="mt-2 flex justify-end">
-                                {report.wovrCheck.status === 'clear' ? <CheckCircle2 className="h-5 w-5 text-green-600" /> : <AlertCircle className="h-5 w-5 text-gray-400" />}
+                                {wCheck.status === 'clear' ? <CheckCircle2 className="h-5 w-5 text-green-600" /> : <AlertCircle className="h-5 w-5 text-gray-400" />}
                             </div>
                         </div>
 
                         {/* Finance Check */}
-                        <div className={`flex flex-col p-4 rounded-lg border ${report.financeCheck.status === 'clear' ? 'bg-green-50 border-green-100' : 'bg-gray-50 border-gray-100'}`}>
+                        <div className={`flex flex-col p-4 rounded-lg border ${fCheck.status === 'clear' ? 'bg-green-50 border-green-100' : 'bg-gray-50 border-gray-100'}`}>
                             <p className="font-medium mb-1">Finance Check (PPSR)</p>
-                            <p className="text-sm">{report.financeCheck.details}</p>
+                            <p className="text-sm">{fCheck.details}</p>
                             <div className="mt-2 flex justify-end">
-                                {report.financeCheck.status === 'clear' ? <CheckCircle2 className="h-5 w-5 text-green-600" /> : <AlertCircle className="h-5 w-5 text-gray-400" />}
+                                {fCheck.status === 'clear' ? <CheckCircle2 className="h-5 w-5 text-green-600" /> : <AlertCircle className="h-5 w-5 text-gray-400" />}
                             </div>
                         </div>
                     </div>
