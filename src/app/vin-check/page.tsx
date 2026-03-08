@@ -168,7 +168,12 @@ function VinCheckContent() {
                                 <CheckCircle2 className="h-4 w-4 mr-2" />
                                 Report Generated Successfully
                             </div>
-                            <h2 className="text-2xl font-bold">{reportData?.year} {reportData?.make} {reportData?.model}</h2>
+                            {(() => {
+                                const displayName = [reportData?.year, reportData?.make, reportData?.model]
+                                    .filter(val => val && val !== 'Unknown' && val !== 'Vehicle' && val !== 'Data Found')
+                                    .join(' ');
+                                return <h2 className="text-2xl font-bold">{displayName || 'Vehicle Data Found'}</h2>;
+                            })()}
                             <p className="font-mono text-muted-foreground mt-2 mb-4">{vin}</p>
                             {reportData?.image && (
                                 <div className="mt-4 flex justify-center">

@@ -1,6 +1,9 @@
 // src/lib/car-api.ts
 
 export interface LiveVehicleData {
+    Make?: string;
+    Model?: string;
+    Year?: string;
     Description?: string;
     RegistrationYear?: string;
     CarMake?: { CurrentTextValue: string };
@@ -50,20 +53,9 @@ export async function fetchLiveVehicleData(vinOrRego: string, state: string = 'N
         throw new Error('CAR_REG_API credentials are not configured');
     }
 
-    // Determine if input is a VIN (17 chars) or Registration (typically 6-8 chars)
-    const isVin = vinOrRego.trim().length === 17;
-
-    // The API seems to prefer CheckAustralia for Rego. For VIN, we use CheckVIN if available, or just fallback to the unified endpoint. 
-    // We'll use the main CheckAustralia by default and pass RegistrationNumber as per docs if it's a plate.
-    // If it's a VIN, we use the CheckVIN endpoint (common in RegCheck APIs).
-
-    let url = '';
-    if (isVin) {
-        // Using the typical RegCheck VIN endpoint
-        url = `https://www.carregistrationapi.com/api/reg.asmx/CheckVIN?VINNumber=${encodeURIComponent(vinOrRego)}&username=${encodeURIComponent(user)}&password=${encodeURIComponent(pass)}`;
-    } else {
-        url = `https://www.carregistrationapi.com/api/reg.asmx/CheckAustralia?RegistrationNumber=${encodeURIComponent(vinOrRego)}&State=${encodeURIComponent(state)}&username=${encodeURIComponent(user)}&password=${encodeURIComponent(pass)}`;
-    }
+    // The API seems to prefer CheckAustralia for Rego. For VIN, we previously tried CheckVIN, but it throws 500 errors for standard Australian VINs (like the VF Ute).
+    // The unified CheckAustralia endpoint successfully resolves both License Plates and VINs using the RegistrationNumber parameter.
+    const url = `https://www.carregistrationapi.com/api/reg.asmx/CheckAustralia?RegistrationNumber=${encodeURIComponent(vinOrRego)}&State=${encodeURIComponent(state)}&username=${encodeURIComponent(user)}&password=${encodeURIComponent(pass)}`;
 
     try {
         const response = await fetch(url);
@@ -89,9 +81,9 @@ export async function fetchLiveVehicleData(vinOrRego: string, state: string = 'N
         const standardReport: StandardReport = {
             vehicleInfo: {
                 vin: rawData.VechileIdentificationNumber || vinOrRego,
-                make: rawData.CarMake?.CurrentTextValue || 'Unknown',
-                model: rawData.CarModel?.CurrentTextValue || 'Unknown',
-                year: rawData.RegistrationYear || 'Unknown',
+                make: rawData.CarMake?.CurrentTextValue || rawData.Make || 'Unknown',
+                model: rawData.CarModel?.CurrentTextValue || rawData.Model || 'Unknown',
+                year: rawData.RegistrationYear || rawData.Year || 'Unknown',
                 engineId: rawData.Engine || 'N/A',
                 colour: rawData.Colour || 'Unknown',
                 registrationState: rawData.State || state,
