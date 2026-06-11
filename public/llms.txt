@@ -1,0 +1,29 @@
+# CarVinLookup
+
+> CarVinLookup runs instant U.S. vehicle history reports from a VIN or license plate, combining NMVTIS title records, NICB theft data, and state DMV records.
+
+CarVinLookup helps used-car buyers in the United States check a vehicle before purchase. Enter any 17-character VIN or a U.S. license plate (all 50 states) to get a report.
+
+## What a report covers
+
+- Title brands: salvage, rebuilt, junk, and flood-damage titles (sourced from NMVTIS)
+- Theft records: active theft reports from the National Insurance Crime Bureau (NICB)
+- Open liens: outstanding loans or liens recorded against the vehicle
+- Odometer history: reported mileage readings and rollback or tampering alerts
+- Vehicle identity: make, model, year, body type, engine, and color
+
+## How it works
+
+1. Enter the 17-character VIN or a U.S. license plate and state.
+2. CarVinLookup queries NMVTIS, NICB, and DMV title records.
+3. A full vehicle history report is generated instantly.
+
+## Pricing
+
+A full report is $24.99 USD. A free preview shows the vehicle's identity before unlocking.
+
+## Data sources
+
+- NMVTIS — National Motor Vehicle Title Information System
+- NICB — National Insurance Crime Bureau
+- State DMV title and registration databases

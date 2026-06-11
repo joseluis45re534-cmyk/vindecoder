@@ -15,7 +15,7 @@ export default function SearchForm() {
     const validateInput = (value: string) => {
         const clean = value.replace(/[^A-Z0-9]/gi, '').toUpperCase();
         if (clean.length === 17 && !/[IOQ]/.test(clean)) return { type: 'VIN', value: clean };
-        if (clean.length > 0 && clean.length <= 7) return { type: 'PLATE', value: clean };
+        if (clean.length > 0 && clean.length <= 8) return { type: 'PLATE', value: clean };
         return null;
     };
 
@@ -25,7 +25,7 @@ export default function SearchForm() {
 
         const valid = validateInput(input);
         if (!valid) {
-            setError('Please enter a valid 17-character VIN or Registration Plate.');
+            setError('Please enter a valid 17-character VIN or U.S. license plate.');
             return;
         }
 
@@ -58,7 +58,8 @@ export default function SearchForm() {
                     type="text"
                     value={input}
                     onChange={(e) => setInput(e.target.value.toUpperCase())}
-                    placeholder="Enter VIN or Rego Plate"
+                    placeholder="Enter VIN or License Plate"
+                    aria-label="VIN or U.S. license plate"
                     className="w-full px-6 py-4 rounded-full border-2 border-gray-200 text-lg shadow-sm focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-50 transition-all pl-12"
                     disabled={loading}
                 />
