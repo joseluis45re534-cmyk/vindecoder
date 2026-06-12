@@ -1,10 +1,16 @@
-
 #:schema node_modules/wrangler/config-schema.json
-name = "oz-vin-check"
+name = "vindecoder"
 compatibility_date = "2024-05-12"
 compatibility_flags = ["nodejs_compat"]
 
-[[d1_databases]]
-binding = "DB"
-database_name = "oz-vin-check-db"
-database_id = "xxxx-xxxx-xxxx-xxxx" # User to fill
+# Cloudflare Pages output produced by `@cloudflare/next-on-pages`.
+pages_build_output_dir = ".vercel/output/static"
+
+# To enable persistence (admin pricing/keys, orders, analytics, blog), create a
+# D1 database and bind it as `DB` — either in the Pages dashboard
+# (Settings → Functions → D1 bindings) or by uncommenting and filling this:
+#
+# [[d1_databases]]
+# binding = "DB"
+# database_name = "carvinlookup-db"
+# database_id = "<your-d1-database-id>"

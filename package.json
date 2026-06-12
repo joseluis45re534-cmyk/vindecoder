@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next-on-pages",
+    "pages:build": "next-on-pages",
     "start": "next start",
     "lint": "eslint"
   },
