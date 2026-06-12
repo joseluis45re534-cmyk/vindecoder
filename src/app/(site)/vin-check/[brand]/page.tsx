@@ -17,16 +17,27 @@ export async function generateMetadata({
   const brand = getBrand(slug);
   if (!brand) return { title: 'Brand not found' };
   const title = `${brand.name} VIN Check & Decoder — Free Preview`;
-  const description = `Run a free ${brand.name} VIN check. Decode any ${brand.name} VIN or license plate for title brands, salvage & flood history, theft records, liens, recalls, and odometer readings from NMVTIS, NICB & DMV data.`;
+  // Keep under ~160 chars for all brand names (incl. "Mercedes-Benz").
+  const description = `Free ${brand.name} VIN check — decode any ${brand.name} VIN or plate for title brands, salvage, theft, liens & odometer history from NMVTIS, NICB & DMV data.`;
+  const url = `${SITE_URL}/vin-check/${brand.slug}`;
   return {
     title,
     description,
     alternates: { canonical: `/vin-check/${brand.slug}` },
     openGraph: {
       type: 'website',
+      siteName: SITE_NAME,
       title,
       description,
-      url: `${SITE_URL}/vin-check/${brand.slug}`,
+      url,
+      locale: 'en_US',
+      images: [{ url: '/opengraph-image', width: 1200, height: 630, alt: `${brand.name} VIN check` }],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description,
+      images: ['/opengraph-image'],
     },
   };
 }

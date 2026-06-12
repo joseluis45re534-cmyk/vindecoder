@@ -139,12 +139,23 @@ export function SiteFooter() {
           </div>
         </div>
 
-        <div className="border-t border-slate-800 mt-12 pt-8 flex flex-col sm:flex-row justify-between items-center gap-4 text-xs">
-          <p>© {new Date().getFullYear()} {SITE_NAME}. All rights reserved. Data from NMVTIS, NICB &amp; state DMVs.</p>
-          <p className="flex items-center gap-1.5">
-            <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" aria-hidden="true" />
-            Secure checkout · Reports delivered instantly
-          </p>
+        <div className="border-t border-slate-800 mt-12 pt-8 flex flex-col gap-4 text-xs">
+          <nav aria-label="Legal" className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2">
+            <Link href="/privacy" className="hover:text-white transition-colors">Privacy Policy</Link>
+            <span className="text-slate-700" aria-hidden="true">·</span>
+            <Link href="/terms" className="hover:text-white transition-colors">Terms of Service</Link>
+            <span className="text-slate-700" aria-hidden="true">·</span>
+            <Link href="/contact" className="hover:text-white transition-colors">Contact</Link>
+            <span className="text-slate-700" aria-hidden="true">·</span>
+            <Link href="/about" className="hover:text-white transition-colors">About</Link>
+          </nav>
+          <div className="flex flex-col sm:flex-row justify-between items-center gap-3 text-center">
+            <p>© {new Date().getFullYear()} {SITE_NAME}. All rights reserved. Data from NMVTIS, NICB &amp; state DMVs.</p>
+            <p className="flex items-center gap-1.5">
+              <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" aria-hidden="true" />
+              Secure checkout · Reports delivered instantly
+            </p>
+          </div>
         </div>
       </div>
     </footer>
