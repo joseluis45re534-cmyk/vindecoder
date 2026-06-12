@@ -10,7 +10,7 @@ pages_build_output_dir = ".vercel/output/static"
 # D1 database and bind it as `DB` — either in the Pages dashboard
 # (Settings → Functions → D1 bindings) or by uncommenting and filling this:
 #
-# [[d1_databases]]
-# binding = "DB"
-# database_name = "carvinlookup-db"
-# database_id = "<your-d1-database-id>"
+[[d1_databases]]
+binding = "DB"
+database_name = "carvinlookup-db"
+database_id = "35fad59c-74f2-4b58-83e0-c32de0fe0305"
