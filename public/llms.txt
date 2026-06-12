@@ -2,7 +2,7 @@
 
 > CarVinLookup runs instant U.S. vehicle history reports from a VIN or license plate, combining NMVTIS title records, NICB theft data, and state DMV records.
 
-CarVinLookup helps used-car buyers in the United States check a vehicle before purchase. Enter any 17-character VIN or a U.S. license plate (all 50 states) to get a report.
+CarVinLookup helps used-car buyers in the United States check a vehicle before purchase. Enter any 17-character VIN or a U.S. license plate (all 50 states) to get a report. A full report is $24.99; a free preview shows the vehicle's identity first.
 
 ## What a report covers
 
@@ -20,10 +20,28 @@ CarVinLookup helps used-car buyers in the United States check a vehicle before p
 
 ## Pricing
 
-A full report is $24.99 USD. A free preview shows the vehicle's identity before unlocking.
+- Single Report — $24.99 (one full report)
+- 5-Report Bundle — $49.99 (best for shopping multiple cars)
+- Dealer Unlimited — $99/month (unlimited reports, bulk VIN upload, API access)
+
+## Key pages
+
+- VIN check (home): https://carvinlookup.com/
+- Pricing: https://carvinlookup.com/pricing
+- Blog (buying guides): https://carvinlookup.com/blog
+
+## Guides
+
+- How to Read a VIN Number: https://carvinlookup.com/blog/how-to-read-a-vin-number
+- Salvage Title vs. Rebuilt Title: https://carvinlookup.com/blog/salvage-title-vs-rebuilt-title
+- How to Check a Used Car for Flood Damage: https://carvinlookup.com/blog/check-car-for-flood-damage
 
 ## Data sources
 
 - NMVTIS — National Motor Vehicle Title Information System
 - NICB — National Insurance Crime Bureau
 - State DMV title and registration databases
+
+## Full content
+
+- https://carvinlookup.com/llms-full.txt

@@ -1,0 +1,27 @@
+# Copy to `.dev.vars` for local dev (gitignored). In production, set each as a
+# Cloudflare Pages secret:  npx wrangler pages secret put NAME
+
+# --- Admin panel ---
+ADMIN_PASSWORD=change-me-to-a-strong-password
+# Generate: openssl rand -hex 32
+ADMIN_SESSION_SECRET=replace-with-32-byte-random-hex
+
+# --- Payments: Stripe ---
+STRIPE_SECRET_KEY=sk_test_...
+STRIPE_WEBHOOK_SECRET=whsec_...
+NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_test_...
+
+# --- Payments: PayPal ---
+PAYPAL_CLIENT_ID=...
+PAYPAL_SECRET=...
+PAYPAL_ENV=sandbox   # or: live
+
+# --- Blog automation (Claude) ---
+ANTHROPIC_API_KEY=sk-ant-...
+# Optional model override (defaults to claude-opus-4-8)
+# ANTHROPIC_MODEL=claude-opus-4-8
+# Bearer token required to trigger /api/cron/blog from a scheduler
+CRON_SECRET=replace-with-random-token
+
+# --- Site ---
+NEXT_PUBLIC_SITE_URL=https://carvinlookup.com

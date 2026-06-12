@@ -28,6 +28,7 @@
     "drizzle-kit": "^0.31.10",
     "eslint": "^9",
     "eslint-config-next": "15.4.1",
+    "playwright": "^1.60.0",
     "tailwindcss": "^4",
     "typescript": "^5",
     "wrangler": "^4.65.0"

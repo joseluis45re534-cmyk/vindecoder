@@ -52,27 +52,43 @@ export default function SearchForm() {
     };
 
     return (
-        <div className="w-full max-w-lg mx-auto">
-            <form onSubmit={handleSearch} className="relative">
+        <div className="w-full max-w-xl mx-auto">
+            <form
+                onSubmit={handleSearch}
+                className="relative bg-white rounded-full p-1.5 sm:p-2 shadow-2xl shadow-blue-950/40 ring-1 ring-white/20 flex items-center transition-shadow focus-within:shadow-blue-500/30 focus-within:ring-blue-400/40"
+            >
+                <Search className="absolute left-4 sm:left-6 text-slate-400 w-5 h-5 pointer-events-none" aria-hidden="true" />
                 <input
                     type="text"
                     value={input}
                     onChange={(e) => setInput(e.target.value.toUpperCase())}
-                    placeholder="Enter VIN or License Plate"
+                    placeholder="Enter VIN or plate"
                     aria-label="VIN or U.S. license plate"
-                    className="w-full px-6 py-4 rounded-full border-2 border-gray-200 text-lg shadow-sm focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-50 transition-all pl-12"
+                    className="flex-1 min-w-0 bg-transparent pl-11 sm:pl-12 pr-2 py-3 sm:py-3.5 text-base sm:text-lg text-slate-900 placeholder:text-slate-400 focus:outline-none font-medium tracking-wide"
                     disabled={loading}
+                    autoComplete="off"
+                    spellCheck={false}
                 />
-                <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-6 h-6" />
                 <button
                     type="submit"
                     disabled={loading || !input}
-                    className="absolute right-2 top-2 bottom-2 bg-blue-600 text-white rounded-full px-8 font-semibold hover:bg-blue-700 disabled:opacity-50 transition-colors flex items-center justify-center min-w-[100px]"
+                    className="shrink-0 bg-orange-600 hover:bg-orange-500 text-white rounded-full px-5 sm:px-7 py-3 sm:py-3.5 font-bold disabled:opacity-50 disabled:hover:bg-orange-600 transition-all active:scale-95 flex items-center justify-center min-w-[88px] sm:min-w-[130px] shadow-md shadow-orange-600/30"
                 >
-                    {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Check'}
+                    {loading ? (
+                        <Loader2 className="w-5 h-5 animate-spin" aria-label="Searching" />
+                    ) : (
+                        <>
+                            <span className="sm:hidden">Check</span>
+                            <span className="hidden sm:inline">Check VIN</span>
+                        </>
+                    )}
                 </button>
             </form>
-            {error && <p className="mt-3 text-red-500 bg-red-50 px-4 py-2 rounded-lg text-sm inline-block">{error}</p>}
+            {error && (
+                <p className="mt-4 text-red-200 bg-red-500/20 border border-red-400/30 px-4 py-2 rounded-xl text-sm inline-block backdrop-blur">
+                    {error}
+                </p>
+            )}
         </div>
     );
 }
