@@ -1,6 +1,6 @@
 #:schema node_modules/wrangler/config-schema.json
 name = "vindecoder"
-compatibility_date = "2024-05-12"
+compatibility_date = "2024-11-01"
 compatibility_flags = ["nodejs_compat"]
 
 # Cloudflare Pages output produced by `@cloudflare/next-on-pages`.
