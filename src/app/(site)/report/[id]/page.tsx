@@ -16,6 +16,7 @@ interface Preview {
   country?: string;
   engine?: string;
   bodyType?: string;
+  photoUrl?: string;
 }
 
 const PRICE = '$24.99';
@@ -52,6 +53,7 @@ function ReportContent() {
   const [data, setData] = useState<Preview | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [photoFailed, setPhotoFailed] = useState(false);
 
   useEffect(() => {
     const run = async () => {
@@ -92,6 +94,14 @@ function ReportContent() {
   const title = `${data.year} ${data.make} ${data.model}`;
   const cleanEngine = data.engine && data.engine !== 'N/A' && data.engine.length < 24 ? data.engine : null;
   const cleanBody = data.bodyType && data.bodyType !== 'N/A' ? data.bodyType : null;
+  // Show the real auto.dev retail photo when we have one (and it loads); otherwise
+  // fall back to the representative stock image. The photo is served through our
+  // own /api/vehicle-photo proxy, which adds the auto.dev auth header server-side
+  // (a browser <img> can't), so the image loads from our origin.
+  const hasRealPhoto = Boolean(data.photoUrl) && !photoFailed;
+  const heroSrc = hasRealPhoto
+    ? `/api/vehicle-photo?src=${encodeURIComponent(data.photoUrl as string)}`
+    : '/images/report-hero.jpg';
 
   return (
     <div className="min-h-screen bg-slate-50 pb-28 lg:pb-12">
@@ -117,17 +127,20 @@ function ReportContent() {
             {/* Vehicle hero */}
             <div className="bg-white rounded-3xl shadow-xl shadow-slate-900/5 border border-slate-100 p-6 sm:p-7">
               <div className="grid grid-cols-1 sm:grid-cols-[180px,1fr] gap-6">
-                {/* Vehicle photo (representative; actual photos unlock with the report) */}
+                {/* Vehicle photo — real auto.dev retail photo when available, else representative stock */}
                 <div className="relative w-full h-36 sm:h-full min-h-[140px] rounded-2xl overflow-hidden bg-slate-200">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
-                    src="/images/report-hero.jpg"
-                    alt={`${title} — vehicle inspection`}
+                    src={heroSrc}
+                    alt={hasRealPhoto ? `${title} — vehicle photo` : `${title} — vehicle inspection`}
                     className="w-full h-full object-cover"
+                    onError={() => setPhotoFailed(true)}
                   />
                   <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-slate-950/80 to-transparent px-3 pt-6 pb-2 flex items-center gap-1.5">
                     <Camera className="w-3.5 h-3.5 text-white shrink-0" aria-hidden="true" />
-                    <span className="text-[10px] text-white font-semibold leading-tight">Vehicle photos in full report</span>
+                    <span className="text-[10px] text-white font-semibold leading-tight">
+                      {hasRealPhoto ? 'More vehicle photos in full report' : 'Vehicle photos in full report'}
+                    </span>
                   </div>
                 </div>
                 <div>

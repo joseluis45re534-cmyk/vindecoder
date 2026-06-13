@@ -7,6 +7,8 @@ export interface VehicleData {
     color: string;
     body_type: string;
     engine: string;
+    /** Real retail photo of the vehicle from auto.dev, when available. */
+    photo_url?: string;
     registration: {
         plate: string;
         state: string;
@@ -49,11 +51,33 @@ function formatEngine(eng: unknown): string {
     return '';
 }
 
-async function fetchFromAutoDev(vin: string, apiKey: string): Promise<VehicleData | null> {
+// Fetch a real retail photo for the VIN from auto.dev's Vehicle Photos API.
+// Response shape: { data: { retail: string[] } }. Returns the first photo URL,
+// or undefined when none exist / on any error (photos are optional, never block).
+async function fetchVehiclePhoto(vin: string, apiKey: string): Promise<string | undefined> {
     try {
-        const res = await fetch(`https://api.auto.dev/vin/${encodeURIComponent(vin)}`, {
+        const res = await fetch(`https://api.auto.dev/photos/${encodeURIComponent(vin)}`, {
             headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
         });
+        if (!res.ok) return undefined;
+        const d = (await res.json()) as { data?: { retail?: unknown } };
+        const retail = d.data?.retail;
+        if (Array.isArray(retail) && typeof retail[0] === 'string') return retail[0];
+        return undefined;
+    } catch {
+        return undefined;
+    }
+}
+
+async function fetchFromAutoDev(vin: string, apiKey: string): Promise<VehicleData | null> {
+    try {
+        // Decode + photos run in parallel — photos are best-effort and never block the decode.
+        const [res, photoUrl] = await Promise.all([
+            fetch(`https://api.auto.dev/vin/${encodeURIComponent(vin)}`, {
+                headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
+            }),
+            fetchVehiclePhoto(vin, apiKey),
+        ]);
         if (!res.ok) return null;
         const d = (await res.json()) as Record<string, unknown>;
         const vehicle = (d.vehicle as Record<string, unknown>) || {};
@@ -70,6 +94,7 @@ async function fetchFromAutoDev(vin: string, apiKey: string): Promise<VehicleDat
             color: String(d.color ?? 'N/A').toUpperCase(),
             body_type: String(d.body ?? vehicle.body ?? 'N/A').toUpperCase(),
             engine: formatEngine(d.engine) || 'N/A',
+            photo_url: photoUrl,
             registration: { plate: '', state: '', expiry: '' },
             // History fields aren't part of a VIN decode — surfaced behind the
             // paywall pending a history provider (NMVTIS/NICB).
