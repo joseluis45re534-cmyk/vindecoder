@@ -1,6 +1,8 @@
 
+import Link from 'next/link';
 import SearchForm from '@/components/SearchForm';
 import PaymentCalculator from '@/components/PaymentCalculator';
+import { BRANDS } from '@/lib/brands';
 import {
   ShieldCheck,
   FileText,
@@ -12,6 +14,10 @@ import {
   Star,
   Database,
   Zap,
+  Car,
+  DollarSign,
+  Clock,
+  MapPin,
 } from 'lucide-react';
 
 export const runtime = 'edge';
@@ -254,6 +260,39 @@ export default function Home() {
         </div>
       </section>
 
+      {/* ===== Popular brands — internal links to /vin-check/[brand] ===== */}
+      <section id="brands" className="py-16 sm:py-24 bg-white px-4 sm:px-6 lg:px-8" aria-labelledby="brands-heading">
+        <div className="max-w-6xl mx-auto scroll-reveal">
+          <p className="text-center text-sm font-semibold text-blue-600 uppercase tracking-widest mb-3">Check by brand</p>
+          <h2 id="brands-heading" className="text-3xl sm:text-4xl font-extrabold text-slate-900 text-center mb-4 tracking-tight">
+            Popular VIN checks by car brand
+          </h2>
+          <p className="text-center text-slate-500 max-w-2xl mx-auto mb-12">
+            Run a brand-specific report with the common issues and VIN patterns for your make.
+          </p>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+            {BRANDS.slice(0, 18).map((b) => (
+              <Link
+                key={b.slug}
+                href={`/vin-check/${b.slug}`}
+                className="group bg-slate-50 hover:bg-white rounded-xl border border-slate-100 hover:border-blue-200 hover:shadow-md card-lift px-4 py-3 flex items-center gap-2.5"
+              >
+                <Car className="w-4 h-4 text-blue-600 shrink-0" aria-hidden="true" />
+                <span className="font-semibold text-slate-700 group-hover:text-slate-900 text-sm truncate">{b.name}</span>
+              </Link>
+            ))}
+          </div>
+          <div className="text-center mt-10">
+            <Link
+              href="/vin-check"
+              className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-bold px-6 py-3 rounded-full shadow-md shadow-blue-600/25 active:scale-[0.98] transition-all"
+            >
+              View all {BRANDS.length} brands →
+            </Link>
+          </div>
+        </div>
+      </section>
+
       {/* ===== Sample reports — real demo links with imagery ===== */}
       <section id="examples" className="py-16 sm:py-24 px-4 sm:px-6 lg:px-8 bg-slate-50" aria-labelledby="examples-heading">
         <div className="max-w-6xl mx-auto scroll-reveal">
@@ -311,6 +350,32 @@ export default function Home() {
             Estimate your monthly loan payment before negotiating — then run the VIN so the car&apos;s history matches its price.
           </p>
           <PaymentCalculator />
+        </div>
+      </section>
+
+      {/* ===== Why CarVinLookup — value band ===== */}
+      <section className="py-16 sm:py-24 bg-slate-900 px-4 sm:px-6 lg:px-8" aria-labelledby="why-heading">
+        <div className="max-w-6xl mx-auto scroll-reveal">
+          <p className="text-center text-sm font-semibold text-blue-400 uppercase tracking-widest mb-3">Why CarVinLookup</p>
+          <h2 id="why-heading" className="text-3xl sm:text-4xl font-extrabold text-white text-center mb-14 tracking-tight">
+            Full history, fair price, no surprises
+          </h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {[
+              { icon: DollarSign, t: 'One flat price', d: 'A full report is $24.99 — far less than legacy providers, with no subscription required.' },
+              { icon: Clock, t: 'Under 60 seconds', d: 'Enter a VIN or plate and get a complete report almost instantly.' },
+              { icon: Database, t: 'Official sources', d: 'Title, theft, lien & odometer data straight from NMVTIS, NICB, and state DMVs.' },
+              { icon: MapPin, t: 'All 50 states', d: 'Cross-state records catch salvage and flood titles that were washed across state lines.' },
+            ].map(({ icon: Icon, t, d }) => (
+              <div key={t} className="bg-white/5 border border-white/10 rounded-2xl p-7 card-lift hover:bg-white/10">
+                <span className="inline-flex w-12 h-12 rounded-xl bg-blue-600/20 text-blue-400 items-center justify-center mb-5">
+                  <Icon className="w-6 h-6" aria-hidden="true" />
+                </span>
+                <h3 className="font-bold text-white mb-2">{t}</h3>
+                <p className="text-slate-400 text-sm leading-relaxed">{d}</p>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 
