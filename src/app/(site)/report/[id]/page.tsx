@@ -3,9 +3,10 @@
 import { useParams } from 'next/navigation';
 import { useEffect, useState, Suspense } from 'react';
 import {
-  Loader2, Lock, ShieldAlert, ShieldCheck, AlertTriangle, Gauge, FileText,
-  Camera, Gavel, BadgeDollarSign, Bell, Users, Car, CheckCircle2,
+  Loader2, Lock, ShieldCheck, ShieldAlert, AlertTriangle, Gauge, FileText,
+  Camera, Gavel, BadgeDollarSign, Bell, Users, Car, CheckCircle2, Clock, RotateCcw,
 } from 'lucide-react';
+import CheckoutButtons from '@/components/CheckoutButtons';
 
 interface Preview {
   make: string;
@@ -21,30 +22,27 @@ const PRICE = '$24.99';
 
 // Data-point categories revealed in the full report (locked in the preview).
 const CHECKS = [
-  { icon: FileText, label: 'Title & brand history', hint: 'Clean, salvage, rebuilt, junk' },
-  { icon: AlertTriangle, label: 'Salvage / total loss', hint: 'Insurance write-offs' },
-  { icon: Car, label: 'Accident history', hint: 'Reported damage events' },
-  { icon: Gauge, label: 'Odometer readings', hint: 'Rollback & tampering alerts' },
-  { icon: ShieldCheck, label: 'Theft records', hint: 'NICB theft & recovery' },
-  { icon: BadgeDollarSign, label: 'Liens & loans', hint: 'Open financial claims' },
-  { icon: Gavel, label: 'Auction & sale history', hint: 'Past listings & sales' },
-  { icon: Camera, label: 'Vehicle photos', hint: 'Historical condition photos' },
-  { icon: Bell, label: 'Open recalls', hint: 'Manufacturer safety recalls' },
+  { icon: FileText, label: 'Title & brand history', hint: 'Clean · salvage · rebuilt · junk', color: 'text-blue-600 bg-blue-50' },
+  { icon: AlertTriangle, label: 'Salvage / total loss', hint: 'Insurance write-offs', color: 'text-amber-600 bg-amber-50' },
+  { icon: Car, label: 'Accident history', hint: 'Reported damage events', color: 'text-rose-600 bg-rose-50' },
+  { icon: Gauge, label: 'Odometer readings', hint: 'Rollback & tampering alerts', color: 'text-blue-600 bg-blue-50' },
+  { icon: ShieldCheck, label: 'Theft records', hint: 'NICB theft & recovery', color: 'text-emerald-600 bg-emerald-50' },
+  { icon: BadgeDollarSign, label: 'Liens & loans', hint: 'Open financial claims', color: 'text-violet-600 bg-violet-50' },
+  { icon: Gavel, label: 'Auction & sale history', hint: 'Past listings & sales', color: 'text-sky-600 bg-sky-50' },
+  { icon: Camera, label: 'Vehicle photos', hint: 'Historical condition photos', color: 'text-fuchsia-600 bg-fuchsia-50' },
+  { icon: Bell, label: 'Open recalls', hint: 'Manufacturer safety recalls', color: 'text-orange-600 bg-orange-50' },
 ];
 
-const BENEFITS = [
-  'VIN search & full decode',
+const INCLUDED = [
   'NMVTIS title-brand history',
-  'Salvage / junk / rebuilt check',
-  'Insurance total-loss records',
+  'Salvage, junk & flood check',
   'Odometer rollback alerts',
-  'Lien & impound information',
   'Theft & recovery records',
-  'Auction & sale history',
+  'Liens, loans & impound info',
+  'Accident & auction history',
   'Real vehicle photos',
   'Open safety recalls',
-  'Full specs & equipment',
-  '40+ data points',
+  'Full specs & 40+ data points',
 ];
 
 function ReportContent() {
@@ -92,103 +90,171 @@ function ReportContent() {
   }
 
   const title = `${data.year} ${data.make} ${data.model}`;
+  const cleanEngine = data.engine && data.engine !== 'N/A' && data.engine.length < 24 ? data.engine : null;
+  const cleanBody = data.bodyType && data.bodyType !== 'N/A' ? data.bodyType : null;
 
   return (
-    <div className="min-h-screen bg-slate-50 py-8 sm:py-12 px-4 sm:px-6">
-      <div className="max-w-4xl mx-auto">
-        {/* Found banner */}
-        <div className="text-center mb-6">
-          <span className="inline-flex items-center gap-2 bg-emerald-50 text-emerald-700 text-sm font-semibold px-4 py-1.5 rounded-full">
+    <div className="min-h-screen bg-slate-50 pb-28 lg:pb-12">
+      {/* Header strip */}
+      <div className="bg-gradient-to-br from-slate-950 via-blue-950 to-slate-900 px-4 sm:px-6 lg:px-8 pt-10 pb-24">
+        <div className="max-w-6xl mx-auto text-center">
+          <span className="inline-flex items-center gap-2 bg-emerald-500/15 text-emerald-300 text-sm font-semibold px-4 py-1.5 rounded-full ring-1 ring-emerald-400/20">
             <CheckCircle2 className="w-4 h-4" aria-hidden="true" /> We found your vehicle
           </span>
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 mt-4 tracking-tight">
-            Your {title} report is ready
+          <h1 className="text-2xl sm:text-4xl font-extrabold text-white mt-5 tracking-tight">
+            Your <span className="text-blue-300">{title}</span> report is ready
           </h1>
-          <p className="text-slate-500 mt-2">Unlock 40+ data points sourced from NMVTIS, NICB &amp; state DMVs.</p>
+          <p className="text-slate-300 mt-3 max-w-xl mx-auto">
+            Unlock 40+ data points sourced from NMVTIS, NICB &amp; state DMVs — in seconds.
+          </p>
         </div>
+      </div>
 
-        <div className="bg-white rounded-3xl shadow-xl shadow-slate-900/5 border border-slate-100 overflow-hidden">
-          {/* Vehicle summary */}
-          <div className="p-6 sm:p-8 grid grid-cols-1 sm:grid-cols-[auto,1fr] gap-6 border-b border-slate-100">
-            <div className="w-full sm:w-44 h-32 rounded-2xl bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center relative overflow-hidden">
-              <Car className="w-12 h-12 text-slate-300" aria-hidden="true" />
-              <span className="absolute inset-0 backdrop-blur-[2px] flex items-center justify-center">
-                <Lock className="w-5 h-5 text-slate-400" aria-hidden="true" />
-              </span>
-            </div>
-            <div>
-              <h2 className="text-2xl font-extrabold text-slate-900">{title}</h2>
-              <p className="font-mono text-sm text-slate-400 mt-0.5">VIN: {data.vin}</p>
-              <dl className="grid grid-cols-2 sm:grid-cols-4 gap-x-4 gap-y-3 mt-5 text-sm">
-                <div><dt className="text-slate-400 text-xs uppercase tracking-wide">Country</dt><dd className="font-bold text-slate-900">{data.country || '—'}</dd></div>
-                <div><dt className="text-slate-400 text-xs uppercase tracking-wide">Engine</dt><dd className="font-bold text-slate-900">{data.engine && data.engine !== 'N/A' ? data.engine : '—'}</dd></div>
-                <div><dt className="text-slate-400 text-xs uppercase tracking-wide">Body</dt><dd className="font-bold text-slate-900">{data.bodyType && data.bodyType !== 'N/A' ? data.bodyType : '—'}</dd></div>
-                <div><dt className="text-slate-400 text-xs uppercase tracking-wide">Year</dt><dd className="font-bold text-slate-900">{data.year}</dd></div>
-              </dl>
-            </div>
-          </div>
-
-          {/* Locked findings grid */}
-          <div className="p-6 sm:p-8">
-            <div className="flex items-center justify-between mb-5">
-              <h3 className="font-extrabold text-slate-900">What&apos;s in your report</h3>
-              <span className="text-xs font-semibold text-orange-600 bg-orange-50 px-3 py-1 rounded-full uppercase tracking-wide">Locked</span>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              {CHECKS.map(({ icon: Icon, label, hint }) => (
-                <div key={label} className="relative bg-slate-50 rounded-2xl border border-slate-100 p-5">
-                  <div className="flex items-start justify-between mb-2">
-                    <span className="inline-flex w-9 h-9 rounded-lg bg-white border border-slate-100 items-center justify-center text-blue-600">
-                      <Icon className="w-4 h-4" aria-hidden="true" />
-                    </span>
-                    <Lock className="w-4 h-4 text-slate-300" aria-hidden="true" />
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 -mt-16">
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr,360px] gap-6 items-start">
+          {/* ===== LEFT: report content ===== */}
+          <div className="space-y-6">
+            {/* Vehicle hero */}
+            <div className="bg-white rounded-3xl shadow-xl shadow-slate-900/5 border border-slate-100 p-6 sm:p-7">
+              <div className="grid grid-cols-1 sm:grid-cols-[180px,1fr] gap-6">
+                {/* Locked photo */}
+                <div className="relative w-full h-36 sm:h-full min-h-[140px] rounded-2xl bg-gradient-to-br from-slate-800 to-slate-900 overflow-hidden flex items-center justify-center">
+                  <Car className="w-14 h-14 text-white/10" aria-hidden="true" />
+                  <div className="absolute inset-0 flex flex-col items-center justify-center gap-1.5 backdrop-blur-[1px]">
+                    <Lock className="w-5 h-5 text-white/70" aria-hidden="true" />
+                    <span className="text-[11px] text-white/60 font-medium">Photos in full report</span>
                   </div>
-                  <p className="font-bold text-slate-900 text-sm">{label}</p>
-                  <p className="text-xs text-slate-400 mt-0.5">{hint}</p>
                 </div>
-              ))}
+                <div>
+                  <h2 className="text-2xl font-extrabold text-slate-900 leading-tight">{title}</h2>
+                  <p className="font-mono text-xs text-slate-400 mt-1">VIN {data.vin}</p>
+                  <dl className="grid grid-cols-2 sm:grid-cols-4 gap-x-4 gap-y-4 mt-5">
+                    {[
+                      { k: 'Country', v: data.country || '—' },
+                      { k: 'Engine', v: cleanEngine || '—' },
+                      { k: 'Body', v: cleanBody || '—' },
+                      { k: 'Year', v: String(data.year) },
+                    ].map((f) => (
+                      <div key={f.k}>
+                        <dt className="text-[11px] text-slate-400 uppercase tracking-wide">{f.k}</dt>
+                        <dd className="font-bold text-slate-900 text-sm mt-0.5 truncate">{f.v}</dd>
+                      </div>
+                    ))}
+                  </dl>
+                </div>
+              </div>
+            </div>
+
+            {/* Findings grid */}
+            <div className="bg-white rounded-3xl shadow-sm border border-slate-100 p-6 sm:p-7">
+              <div className="flex items-center justify-between mb-5">
+                <h3 className="font-extrabold text-slate-900">What&apos;s in your report</h3>
+                <span className="text-[11px] font-bold text-orange-600 bg-orange-50 px-3 py-1 rounded-full uppercase tracking-wider">9 sections locked</span>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
+                {CHECKS.map(({ icon: Icon, label, hint, color }) => (
+                  <div key={label} className="relative bg-slate-50 rounded-2xl border border-slate-100 p-4 hover:border-slate-200 transition-colors">
+                    <div className="flex items-start justify-between mb-2.5">
+                      <span className={`inline-flex w-9 h-9 rounded-lg items-center justify-center ${color}`}>
+                        <Icon className="w-4 h-4" aria-hidden="true" />
+                      </span>
+                      <Lock className="w-3.5 h-3.5 text-slate-300" aria-hidden="true" />
+                    </div>
+                    <p className="font-bold text-slate-900 text-sm leading-snug">{label}</p>
+                    <p className="text-[11px] text-slate-400 mt-0.5">{hint}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Frosted "data behind the blur" teaser */}
+            <div className="relative bg-white rounded-3xl shadow-sm border border-slate-100 p-6 sm:p-7 overflow-hidden">
+              <h3 className="font-extrabold text-slate-900 mb-4">Report preview</h3>
+              <div className="space-y-3 blur-[5px] select-none pointer-events-none" aria-hidden="true">
+                {[
+                  ['Title brand', 'Clean — no brands recorded'],
+                  ['Last reported odometer', '63,118 mi'],
+                  ['Accident records', 'No accidents reported'],
+                  ['Open liens', 'None found'],
+                  ['Previous owners', '2 owners'],
+                  ['Auction records', '1 sale record'],
+                ].map(([k, v]) => (
+                  <div key={k} className="flex items-center justify-between bg-slate-50 rounded-xl px-4 py-3">
+                    <span className="text-sm text-slate-500">{k}</span>
+                    <span className="text-sm font-bold text-slate-900">{v}</span>
+                  </div>
+                ))}
+              </div>
+              <div className="absolute inset-0 flex flex-col items-center justify-center bg-white/40 backdrop-blur-[1px]">
+                <span className="w-12 h-12 rounded-2xl bg-slate-900 flex items-center justify-center mb-3 shadow-lg">
+                  <Lock className="w-5 h-5 text-white" aria-hidden="true" />
+                </span>
+                <p className="font-bold text-slate-900">Unlock to reveal the full history</p>
+                <p className="text-sm text-slate-500 mt-1">40+ verified data points</p>
+              </div>
             </div>
           </div>
 
-          {/* Unlock CTA bar */}
-          <div className="bg-slate-50 border-t border-slate-100 p-6 sm:p-8 flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div className="flex items-center gap-2 text-sm text-slate-500">
-              <ShieldCheck className="w-4 h-4 text-emerald-600" aria-hidden="true" />
-              Full NMVTIS vehicle history report · instant access
+          {/* ===== RIGHT: sticky order card ===== */}
+          <aside id="order" className="lg:sticky lg:top-20">
+            <div className="bg-white rounded-3xl shadow-xl shadow-slate-900/10 border border-slate-100 overflow-hidden">
+              <div className="bg-slate-900 px-6 py-5 text-white">
+                <p className="text-xs uppercase tracking-widest text-blue-300 font-semibold">Full report</p>
+                <p className="text-sm text-slate-300 mt-1">{title}</p>
+              </div>
+              <div className="p-6">
+                <div className="flex items-end gap-2 mb-1">
+                  <span className="text-4xl font-extrabold text-slate-900">{PRICE}</span>
+                  <span className="text-slate-400 font-medium mb-1.5">one-time</span>
+                </div>
+                <p className="text-xs text-emerald-600 font-semibold mb-5">No subscription · no hidden fees</p>
+
+                <ul className="space-y-2.5 mb-6">
+                  {INCLUDED.map((b) => (
+                    <li key={b} className="flex items-start gap-2 text-sm text-slate-600">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-500 mt-0.5 shrink-0" aria-hidden="true" />
+                      {b}
+                    </li>
+                  ))}
+                </ul>
+
+                <CheckoutButtons planId="single" reportId={id} highlighted />
+
+                <div className="grid grid-cols-3 gap-2 mt-5 text-center">
+                  {[
+                    { icon: ShieldCheck, t: 'Secure' },
+                    { icon: Clock, t: 'Instant' },
+                    { icon: RotateCcw, t: 'Guarantee' },
+                  ].map(({ icon: Icon, t }) => (
+                    <div key={t} className="flex flex-col items-center gap-1 text-[11px] text-slate-400 font-medium">
+                      <Icon className="w-4 h-4 text-slate-400" aria-hidden="true" />
+                      {t}
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
-            <button className="w-full sm:w-auto bg-orange-600 hover:bg-orange-500 text-white font-bold text-lg px-8 py-4 rounded-full shadow-lg shadow-orange-600/25 hover:scale-[1.02] active:scale-100 transition-all">
-              Unlock Full Report — {PRICE}
-            </button>
-          </div>
-        </div>
 
-        {/* Benefits */}
-        <div className="bg-white rounded-3xl shadow-sm border border-slate-100 mt-6 p-6 sm:p-8">
-          <h3 className="font-extrabold text-slate-900 mb-5">Your full report includes</h3>
-          <ul className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-3">
-            {BENEFITS.map((b) => (
-              <li key={b} className="flex items-center gap-2.5 text-sm text-slate-700 py-1 border-b border-slate-50">
-                <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" aria-hidden="true" />
-                {b}
-              </li>
-            ))}
-          </ul>
+            <div className="flex items-center justify-center gap-1.5 mt-4 text-xs text-slate-400">
+              <Users className="w-3.5 h-3.5 text-blue-400" aria-hidden="true" />
+              Trusted by thousands of U.S. car buyers
+            </div>
+          </aside>
         </div>
+      </div>
 
-        {/* Trust row */}
-        <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs text-slate-400 mt-6">
-          <span className="flex items-center gap-1.5"><ShieldCheck className="w-3.5 h-3.5 text-emerald-500" /> Secure checkout</span>
-          <span className="flex items-center gap-1.5"><Users className="w-3.5 h-3.5 text-blue-500" /> Trusted by thousands of buyers</span>
-          <span className="flex items-center gap-1.5"><ShieldAlert className="w-3.5 h-3.5 text-amber-500" /> Money-back guarantee</span>
+      {/* Mobile sticky unlock bar */}
+      <div className="lg:hidden fixed bottom-0 inset-x-0 z-40 bg-white border-t border-slate-200 px-4 py-3 flex items-center justify-between gap-3 shadow-[0_-4px_20px_rgba(0,0,0,0.06)]">
+        <div>
+          <p className="text-xs text-slate-400 leading-none">Full report</p>
+          <p className="text-lg font-extrabold text-slate-900 leading-tight">{PRICE}</p>
         </div>
-
-        {/* Final CTA */}
-        <div className="text-center mt-8">
-          <button className="bg-orange-600 hover:bg-orange-500 text-white font-bold text-lg px-10 py-4 rounded-full shadow-lg shadow-orange-600/25 hover:scale-[1.02] active:scale-100 transition-all">
-            Get the full {data.make} {data.model} report — {PRICE}
-          </button>
-          <p className="text-xs text-slate-400 mt-3">One-time payment · no subscription · instant delivery</p>
-        </div>
+        <a
+          href="#order"
+          className="flex-1 max-w-[60%] bg-orange-600 hover:bg-orange-500 active:scale-[0.98] text-white font-bold text-center px-5 py-3 rounded-full shadow-md shadow-orange-600/25 transition-all"
+        >
+          Unlock full report
+        </a>
       </div>
     </div>
   );
