@@ -1,6 +1,6 @@
 
 import { NextResponse } from 'next/server';
-import { fetchVehicleData } from '@/lib/vehicle-api';
+import { fetchVehicleData, VinDecodeError } from '@/lib/vehicle-api';
 import { getEnv } from '@/lib/cf';
 
 export const runtime = 'edge';
@@ -53,6 +53,12 @@ export async function POST(request: Request) {
         });
 
     } catch (error) {
+        if (error instanceof VinDecodeError) {
+            return NextResponse.json(
+                { error: "We couldn't decode this VIN right now. Please double-check it and try again." },
+                { status: 502 },
+            );
+        }
         console.error('API Error:', error);
         return NextResponse.json({ error: 'Failed to process request' }, { status: 500 });
     }

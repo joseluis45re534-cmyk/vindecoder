@@ -150,13 +150,31 @@ async function fetchFromAutoDev(vin: string, apiKey: string): Promise<VehicleDat
     }
 }
 
+/** Thrown when a valid VIN can't be decoded via auto.dev (with a key present).
+ *  The route turns this into a clear error instead of serving fake demo data. */
+export class VinDecodeError extends Error {
+    constructor() {
+        super('VIN_DECODE_FAILED');
+        this.name = 'VinDecodeError';
+    }
+}
+
 export async function fetchVehicleData(identifier: string, apiKey?: string): Promise<VehicleData> {
     const cleanId = identifier.toUpperCase().replace(/[^A-Z0-9]/g, '');
 
     // Real data via auto.dev when a key is set and the input is a valid VIN.
     if (apiKey && VIN_RE.test(cleanId)) {
-        const real = await fetchFromAutoDev(cleanId, apiKey);
+        let real = await fetchFromAutoDev(cleanId, apiKey);
+        if (!real) {
+            // One retry — auto.dev occasionally rate-limits / times out transiently.
+            await new Promise((r) => setTimeout(r, 500));
+            real = await fetchFromAutoDev(cleanId, apiKey);
+        }
         if (real) return real;
+        // Valid VIN + key present but decode still failed: surface an error rather
+        // than falling through to the hardcoded demo vehicle, which would show the
+        // user a completely wrong car (e.g. a Toyota Camry for an Audi VIN).
+        throw new VinDecodeError();
     }
 
     // Demo fallback (no key, plate lookup, or provider error).
