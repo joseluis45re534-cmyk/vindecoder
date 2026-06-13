@@ -121,40 +121,48 @@ async function exactVinPhoto(vin: string): Promise<string | undefined> {
 // Find a representative dealer photo of the same make/model (prefer same year) from
 // auto.dev listings. Returns a real, clean studio-style photo of the model — not the
 // exact VIN, so callers should label it as representative.
+async function listingPhoto(query: string, apiKey: string): Promise<string | undefined> {
+    try {
+        const res = await fetchWithTimeout(`https://api.auto.dev/listings?${query}&limit=1`, {
+            headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
+        }, 3500);
+        if (!res.ok) { res.body?.cancel(); return undefined; }
+        const text = await res.text();
+        const m = text.match(/https:\/\/retail\.photos\.vin\/[A-Za-z0-9-]+\.jpg/);
+        return m ? m[0] : undefined;
+    } catch {
+        return undefined; // timed out or failed
+    }
+}
+
 async function representativePhoto(
     make: string, model: string, year: number, apiKey: string,
 ): Promise<string | undefined> {
-    const headers = { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' };
-    // Try with the exact year first, then any year of the same model.
-    const queries = [
-        `vehicle.make=${encodeURIComponent(make)}&vehicle.model=${encodeURIComponent(model)}&vehicle.year=${year}`,
-        `vehicle.make=${encodeURIComponent(make)}&vehicle.model=${encodeURIComponent(model)}`,
-    ];
-    for (const q of queries) {
-        try {
-            const res = await fetchWithTimeout(`https://api.auto.dev/listings?${q}&limit=1`, { headers }, 4000);
-            if (!res.ok) { res.body?.cancel(); continue; }
-            const text = await res.text();
-            // Grab the first real photo URL from the search results.
-            const m = text.match(/https:\/\/retail\.photos\.vin\/[A-Za-z0-9-]+\.jpg/);
-            if (m) return m[0];
-        } catch {
-            // timed out or failed — try next query
-        }
-    }
-    return undefined;
+    const base = `vehicle.make=${encodeURIComponent(make)}&vehicle.model=${encodeURIComponent(model)}`;
+    // Run the same-year and any-year searches in parallel (bounded ~3.5s total),
+    // preferring an exact-year match when both return a photo.
+    const [withYear, anyYear] = await Promise.all([
+        listingPhoto(`${base}&vehicle.year=${year}`, apiKey),
+        listingPhoto(base, apiKey),
+    ]);
+    return withYear || anyYear;
 }
 
 // Resolve the best available photo: the exact vehicle when auto.dev has it, else a
-// representative same-model photo, else nothing (→ stock fallback).
+// representative same-model photo, else nothing (→ stock fallback). Capped overall so
+// a slow listings search never delays the report.
 async function resolveVehiclePhoto(
     vin: string, make: string, model: string, year: number, apiKey: string,
 ): Promise<{ url: string; representative: boolean } | undefined> {
-    const exact = await exactVinPhoto(vin);
-    if (exact) return { url: exact, representative: false };
-    const rep = await representativePhoto(make, model, year, apiKey);
-    if (rep) return { url: rep, representative: true };
-    return undefined;
+    const work = (async () => {
+        const exact = await exactVinPhoto(vin);
+        if (exact) return { url: exact, representative: false };
+        const rep = await representativePhoto(make, model, year, apiKey);
+        if (rep) return { url: rep, representative: true };
+        return undefined;
+    })();
+    const deadline = new Promise<undefined>((r) => setTimeout(() => r(undefined), 6000));
+    return (await Promise.race([work, deadline])) ?? undefined;
 }
 
 async function fetchFromAutoDev(vin: string, apiKey: string): Promise<VehicleData | null> {
