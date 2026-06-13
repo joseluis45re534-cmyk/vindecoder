@@ -27,6 +27,14 @@ export async function GET(request: Request) {
         }
     }
 
+    // Optional: probe an arbitrary auto.dev path, e.g. ?path=listings/VIN — lets us
+    // explore endpoints without redeploying.
+    const path = searchParams.get('path');
+    if (path) {
+        const result = await probe(`https://api.auto.dev/${path.replace(/^\/+/, '')}`);
+        return Response.json(result);
+    }
+
     const [decode, photos] = await Promise.all([
         probe(`https://api.auto.dev/vin/${encodeURIComponent(vin)}`),
         probe(`https://api.auto.dev/photos/${encodeURIComponent(vin)}`),
