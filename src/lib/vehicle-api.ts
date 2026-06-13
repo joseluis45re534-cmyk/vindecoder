@@ -94,11 +94,22 @@ function formatTransmission(t: unknown): string {
 // exists with a lightweight status check. Returns the URL when a real photo exists,
 // or undefined (→ stock fallback) otherwise. The dedicated /photos and /listings
 // endpoints are unreliable: /photos returns dead URLs, /listings only while listed.
+// fetch with a hard timeout so photo lookups can never hang the request.
+async function fetchWithTimeout(url: string, init: RequestInit, ms: number): Promise<Response> {
+    const ctrl = new AbortController();
+    const t = setTimeout(() => ctrl.abort(), ms);
+    try {
+        return await fetch(url, { ...init, signal: ctrl.signal });
+    } finally {
+        clearTimeout(t);
+    }
+}
+
 // Does a retail.photos.vin image exist for this exact VIN? (status check only)
 async function exactVinPhoto(vin: string): Promise<string | undefined> {
     const url = `https://retail.photos.vin/${encodeURIComponent(vin)}-1.jpg`;
     try {
-        const res = await fetch(url);
+        const res = await fetchWithTimeout(url, {}, 4000);
         const type = res.headers.get('content-type') || '';
         res.body?.cancel(); // don't download the body — status + type is enough
         return res.ok && type.startsWith('image') ? url : undefined;
@@ -121,14 +132,14 @@ async function representativePhoto(
     ];
     for (const q of queries) {
         try {
-            const res = await fetch(`https://api.auto.dev/listings?${q}&limit=3`, { headers });
-            if (!res.ok) continue;
+            const res = await fetchWithTimeout(`https://api.auto.dev/listings?${q}&limit=1`, { headers }, 4000);
+            if (!res.ok) { res.body?.cancel(); continue; }
             const text = await res.text();
             // Grab the first real photo URL from the search results.
             const m = text.match(/https:\/\/retail\.photos\.vin\/[A-Za-z0-9-]+\.jpg/);
             if (m) return m[0];
         } catch {
-            // try next query
+            // timed out or failed — try next query
         }
     }
     return undefined;
