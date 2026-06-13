@@ -49,7 +49,6 @@ export async function POST(request: Request) {
                 drivetrain: data.drivetrain,
                 transmission: data.transmission,
                 photoUrl: data.photo_url,
-                photoRepresentative: data.photo_representative,
             }
         });
 

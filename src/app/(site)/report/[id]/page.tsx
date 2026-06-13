@@ -20,7 +20,6 @@ interface Preview {
   drivetrain?: string;
   transmission?: string;
   photoUrl?: string;
-  photoRepresentative?: boolean;
 }
 
 const PRICE = '$24.99';
@@ -110,17 +109,9 @@ function ReportContent() {
     { k: 'Transmission', v: data.transmission },
     { k: 'Country', v: data.country },
   ].filter((f) => f.v) as { k: string; v: string }[];
-  // Show a real dealer photo when auto.dev has one — the exact vehicle if available,
-  // otherwise a representative same-model photo. Fall back to the stock image only
-  // when neither exists. Representative photos are labelled honestly.
+  // Only ever show this exact vehicle's real dealer photo. When auto.dev has none,
+  // we show a neutral placeholder — never a same-model stand-in or lifestyle stock.
   const hasRealPhoto = Boolean(data.photoUrl) && !photoFailed;
-  const isRepresentative = hasRealPhoto && Boolean(data.photoRepresentative);
-  const heroSrc = hasRealPhoto ? (data.photoUrl as string) : '/images/report-hero.jpg';
-  const photoCaption = !hasRealPhoto
-    ? 'Vehicle photos in full report'
-    : isRepresentative
-      ? `Representative photo · ${title}`
-      : 'More vehicle photos in full report';
 
   return (
     <div className="min-h-screen bg-slate-50 pb-28 lg:pb-12">
@@ -147,20 +138,28 @@ function ReportContent() {
             <div className="bg-white rounded-3xl shadow-xl shadow-slate-900/5 border border-slate-100 p-6 sm:p-7">
               <div className="grid grid-cols-1 sm:grid-cols-[180px,1fr] gap-6">
                 {/* Vehicle photo — real auto.dev retail photo when available, else representative stock */}
-                <div className="relative w-full h-36 sm:h-full min-h-[140px] rounded-2xl overflow-hidden bg-slate-200">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={heroSrc}
-                    alt={hasRealPhoto ? `${title} — vehicle photo` : `${title} — vehicle inspection`}
-                    className="w-full h-full object-cover"
-                    onError={() => setPhotoFailed(true)}
-                  />
-                  <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-slate-950/80 to-transparent px-3 pt-6 pb-2 flex items-center gap-1.5">
-                    <Camera className="w-3.5 h-3.5 text-white shrink-0" aria-hidden="true" />
-                    <span className="text-[10px] text-white font-semibold leading-tight">
-                      {photoCaption}
-                    </span>
-                  </div>
+                <div className="relative w-full h-36 sm:h-full min-h-[140px] rounded-2xl overflow-hidden bg-slate-100 border border-slate-200">
+                  {hasRealPhoto ? (
+                    <>
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={data.photoUrl as string}
+                        alt={`${title} — vehicle photo`}
+                        className="w-full h-full object-cover"
+                        onError={() => setPhotoFailed(true)}
+                      />
+                      <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-slate-950/80 to-transparent px-3 pt-6 pb-2 flex items-center gap-1.5">
+                        <Camera className="w-3.5 h-3.5 text-white shrink-0" aria-hidden="true" />
+                        <span className="text-[10px] text-white font-semibold leading-tight">Photo of this vehicle</span>
+                      </div>
+                    </>
+                  ) : (
+                    // Neutral placeholder — no real photo of this exact VIN exists.
+                    <div className="w-full h-full flex flex-col items-center justify-center text-center px-3 gap-2 bg-gradient-to-br from-slate-50 to-slate-100">
+                      <Car className="w-8 h-8 text-slate-300" aria-hidden="true" />
+                      <span className="text-[11px] text-slate-400 font-medium leading-tight">No photo on record for this VIN</span>
+                    </div>
+                  )}
                 </div>
                 <div>
                   <h2 className="text-2xl font-extrabold text-slate-900 leading-tight">{title}</h2>

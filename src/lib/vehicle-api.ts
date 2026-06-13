@@ -10,10 +10,8 @@ export interface VehicleData {
     trim?: string;
     drivetrain?: string;
     transmission?: string;
-    /** Real photo from auto.dev: the exact vehicle, or a representative same-model shot. */
+    /** Real photo of THIS exact vehicle from auto.dev, when one exists. */
     photo_url?: string;
-    /** True when photo_url is a representative same-model photo, not this exact VIN. */
-    photo_representative?: boolean;
     registration: {
         plate: string;
         state: string;
@@ -105,7 +103,10 @@ async function fetchWithTimeout(url: string, init: RequestInit, ms: number): Pro
     }
 }
 
-// Does a retail.photos.vin image exist for this exact VIN? (status check only)
+// Real photo of THIS exact vehicle, or undefined. auto.dev dealer photos live on the
+// public CDN retail.photos.vin as `{VIN}-1.jpg` and persist after the listing churns.
+// We only ever show the exact vehicle's photo — never a same-model stand-in — so a
+// 404 here means there is genuinely no photo of this car (→ neutral placeholder).
 async function exactVinPhoto(vin: string): Promise<string | undefined> {
     const url = `https://retail.photos.vin/${encodeURIComponent(vin)}-1.jpg`;
     try {
@@ -118,67 +119,15 @@ async function exactVinPhoto(vin: string): Promise<string | undefined> {
     }
 }
 
-// Find a representative dealer photo of the same make/model (prefer same year) from
-// auto.dev listings. Returns a real, clean studio-style photo of the model — not the
-// exact VIN, so callers should label it as representative.
-async function listingPhoto(query: string, apiKey: string): Promise<string | undefined> {
-    try {
-        const res = await fetchWithTimeout(`https://api.auto.dev/listings?${query}&limit=1`, {
-            headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
-        }, 3000);
-        if (!res.ok) { res.body?.cancel(); return undefined; }
-        const text = await res.text();
-        const m = text.match(/https:\/\/retail\.photos\.vin\/[A-Za-z0-9-]+\.jpg/);
-        return m ? m[0] : undefined;
-    } catch {
-        return undefined; // timed out or failed
-    }
-}
-
-// Strip body-style words the decoder appends to the model (e.g. "ACCORD CPE" ->
-// "ACCORD") so the listings search matches auto.dev's base model names.
-function searchModel(model: string): string {
-    return model
-        .replace(/\b(CPE|COUPE|SDN|SEDAN|CONV(ERTIBLE)?|WGN|WAGON|HATCHBACK|HBK|SUV|MINIVAN|VAN|PICKUP|CREW CAB|QUAD CAB)\b/gi, '')
-        .replace(/\s+/g, ' ')
-        .trim() || model;
-}
-
-async function representativePhoto(
-    make: string, model: string, year: number, apiKey: string,
-): Promise<string | undefined> {
-    const base = `vehicle.make=${encodeURIComponent(make)}&vehicle.model=${encodeURIComponent(searchModel(model))}`;
-    // Run the same-year and any-year searches in parallel (bounded ~3.5s total),
-    // preferring an exact-year match when both return a photo.
-    const [withYear, anyYear] = await Promise.all([
-        listingPhoto(`${base}&vehicle.year=${year}`, apiKey),
-        listingPhoto(base, apiKey),
-    ]);
-    return withYear || anyYear;
-}
-
-// Resolve the best available photo: the exact vehicle when auto.dev has it, else a
-// representative same-model photo, else nothing (→ stock fallback). Capped overall so
-// a slow listings search never delays the report.
-async function resolveVehiclePhoto(
-    vin: string, make: string, model: string, year: number, apiKey: string,
-): Promise<{ url: string; representative: boolean } | undefined> {
-    const work = (async () => {
-        const exact = await exactVinPhoto(vin);
-        if (exact) return { url: exact, representative: false };
-        const rep = await representativePhoto(make, model, year, apiKey);
-        if (rep) return { url: rep, representative: true };
-        return undefined;
-    })();
-    const deadline = new Promise<undefined>((r) => setTimeout(() => r(undefined), 4500));
-    return (await Promise.race([work, deadline])) ?? undefined;
-}
-
 async function fetchFromAutoDev(vin: string, apiKey: string): Promise<VehicleData | null> {
     try {
-        const res = await fetch(`https://api.auto.dev/vin/${encodeURIComponent(vin)}`, {
-            headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
-        });
+        // Decode + exact-VIN photo run in parallel — the photo is best-effort and never blocks.
+        const [res, photoUrl] = await Promise.all([
+            fetch(`https://api.auto.dev/vin/${encodeURIComponent(vin)}`, {
+                headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
+            }),
+            exactVinPhoto(vin),
+        ]);
         if (!res.ok) return null;
         const d = (await res.json()) as Record<string, unknown>;
         const vehicle = (d.vehicle as Record<string, unknown>) || {};
@@ -186,9 +135,6 @@ async function fetchFromAutoDev(vin: string, apiKey: string): Promise<VehicleDat
         const make = String(d.make ?? vehicle.make ?? '').toUpperCase();
         const model = String(d.model ?? '').toUpperCase();
         if (!make || !model || !year) return null;
-
-        // Resolve the photo now that we know make/model/year (best-effort, never blocks).
-        const photo = await resolveVehiclePhoto(vin, make, model, year, apiKey);
 
         return {
             vin,
@@ -205,8 +151,7 @@ async function fetchFromAutoDev(vin: string, apiKey: string): Promise<VehicleDat
             })(),
             drivetrain: formatDrivetrain(d.drive) || undefined,
             transmission: formatTransmission(d.transmission) || undefined,
-            photo_url: photo?.url,
-            photo_representative: photo?.representative,
+            photo_url: photoUrl,
             registration: { plate: '', state: '', expiry: '' },
             // History fields aren't part of a VIN decode — surfaced behind the
             // paywall pending a history provider (NMVTIS/NICB).
