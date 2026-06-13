@@ -45,6 +45,9 @@ export async function POST(request: Request) {
                 country: vinCountry(reportId),
                 engine: data.engine,
                 bodyType: data.body_type,
+                trim: data.trim,
+                drivetrain: data.drivetrain,
+                transmission: data.transmission,
                 photoUrl: data.photo_url,
             }
         });

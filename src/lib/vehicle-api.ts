@@ -7,6 +7,9 @@ export interface VehicleData {
     color: string;
     body_type: string;
     engine: string;
+    trim?: string;
+    drivetrain?: string;
+    transmission?: string;
     /** Real retail photo of the vehicle from auto.dev, when available. */
     photo_url?: string;
     registration: {
@@ -43,11 +46,43 @@ function formatEngine(eng: unknown): string {
         return parts.join(' ').trim();
     }
     if (typeof eng === 'string') {
-        // Accept only values that look like a real engine descriptor.
-        return /(\d(\.\d)?\s?(L|liter))|V\d|I\d|inline|cyl|electric|hybrid|diesel|turbo/i.test(eng)
-            ? eng
-            : '';
+        // Accept only values that look like a real engine descriptor — reject raw
+        // codes like "5ITCG2.5" that auto.dev sometimes returns.
+        if (!/(\d(\.\d)?\s?(L|liter))|V\d|I\d|flat\s?\d|inline|cyl|electric|hybrid|diesel|turbo/i.test(eng)) {
+            return '';
+        }
+        // Clean verbose strings, e.g. "3.6, Flat 6 Cylinder Engine" -> "3.6L Flat 6".
+        return eng
+            .replace(/cylinder engine/ig, '')
+            .replace(/\bcylinder\b/ig, 'cyl')
+            .replace(/\bengine\b/ig, '')
+            .replace(/,\s*/g, ' ')
+            .replace(/\s+/g, ' ')
+            .trim()
+            .replace(/^(\d\.\d)\b(?!\s?L)/i, '$1L');
     }
+    return '';
+}
+
+// Normalize auto.dev's drivetrain text ("all wheel drive") to a compact label.
+function formatDrivetrain(d: unknown): string {
+    const s = String(d ?? '').toLowerCase();
+    if (!s || s === 'n/a') return '';
+    if (s.includes('all')) return 'AWD';
+    if (s.includes('front')) return 'FWD';
+    if (s.includes('rear')) return 'RWD';
+    if (s.includes('four') || s.includes('4wd') || s.includes('4x4')) return '4WD';
+    if (s === 'awd' || s === 'fwd' || s === 'rwd' || s === '4wd') return s.toUpperCase();
+    return '';
+}
+
+// Normalize transmission ("AUTOMATED" / "MANUAL") to title case.
+function formatTransmission(t: unknown): string {
+    const s = String(t ?? '').toLowerCase();
+    if (!s || s === 'n/a') return '';
+    if (s.startsWith('auto')) return 'Automatic';
+    if (s.startsWith('man')) return 'Manual';
+    if (s.includes('cvt')) return 'CVT';
     return '';
 }
 
@@ -94,6 +129,13 @@ async function fetchFromAutoDev(vin: string, apiKey: string): Promise<VehicleDat
             color: String(d.color ?? 'N/A').toUpperCase(),
             body_type: String(d.body ?? vehicle.body ?? 'N/A').toUpperCase(),
             engine: formatEngine(d.engine) || 'N/A',
+            trim: ((): string | undefined => {
+                const t = String(d.trim ?? '').trim();
+                // Skip junk/placeholder trims; keep real ones like "quattro".
+                return t && t.toLowerCase() !== 'base' && t.toLowerCase() !== 'n/a' ? t : undefined;
+            })(),
+            drivetrain: formatDrivetrain(d.drive) || undefined,
+            transmission: formatTransmission(d.transmission) || undefined,
             photo_url: photoUrl,
             registration: { plate: '', state: '', expiry: '' },
             // History fields aren't part of a VIN decode — surfaced behind the

@@ -16,6 +16,9 @@ interface Preview {
   country?: string;
   engine?: string;
   bodyType?: string;
+  trim?: string;
+  drivetrain?: string;
+  transmission?: string;
   photoUrl?: string;
 }
 
@@ -92,8 +95,20 @@ function ReportContent() {
   }
 
   const title = `${data.year} ${data.make} ${data.model}`;
-  const cleanEngine = data.engine && data.engine !== 'N/A' && data.engine.length < 24 ? data.engine : null;
+  const cleanEngine = data.engine && data.engine !== 'N/A' && data.engine.length < 28 ? data.engine : null;
   const cleanBody = data.bodyType && data.bodyType !== 'N/A' ? data.bodyType : null;
+
+  // Build the basic-info grid from the fields that decoded cleanly — skip blanks
+  // rather than render a wall of "—".
+  const specs = [
+    { k: 'Year', v: String(data.year) },
+    { k: 'Body', v: cleanBody },
+    { k: 'Drivetrain', v: data.drivetrain },
+    { k: 'Trim', v: data.trim },
+    { k: 'Engine', v: cleanEngine },
+    { k: 'Transmission', v: data.transmission },
+    { k: 'Country', v: data.country },
+  ].filter((f) => f.v) as { k: string; v: string }[];
   // Show the real auto.dev retail photo when we have one (and it loads); otherwise
   // fall back to the representative stock image. The photo is served through our
   // own /api/vehicle-photo proxy, which adds the auto.dev auth header server-side
@@ -147,12 +162,7 @@ function ReportContent() {
                   <h2 className="text-2xl font-extrabold text-slate-900 leading-tight">{title}</h2>
                   <p className="font-mono text-xs text-slate-400 mt-1">VIN {data.vin}</p>
                   <dl className="grid grid-cols-2 sm:grid-cols-4 gap-x-4 gap-y-4 mt-5">
-                    {[
-                      { k: 'Country', v: data.country || '—' },
-                      { k: 'Engine', v: cleanEngine || '—' },
-                      { k: 'Body', v: cleanBody || '—' },
-                      { k: 'Year', v: String(data.year) },
-                    ].map((f) => (
+                    {specs.map((f) => (
                       <div key={f.k}>
                         <dt className="text-[11px] text-slate-400 uppercase tracking-wide">{f.k}</dt>
                         <dd className="font-bold text-slate-900 text-sm mt-0.5 truncate">{f.v}</dd>
