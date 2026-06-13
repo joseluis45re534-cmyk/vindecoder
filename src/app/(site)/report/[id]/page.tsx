@@ -20,6 +20,7 @@ interface Preview {
   drivetrain?: string;
   transmission?: string;
   photoUrl?: string;
+  photoRepresentative?: boolean;
 }
 
 const PRICE = '$24.99';
@@ -109,10 +110,17 @@ function ReportContent() {
     { k: 'Transmission', v: data.transmission },
     { k: 'Country', v: data.country },
   ].filter((f) => f.v) as { k: string; v: string }[];
-  // Show the real dealer photo of the vehicle when auto.dev has a listing for it
-  // (publicly hosted on retail.photos.vin); otherwise fall back to the stock image.
+  // Show a real dealer photo when auto.dev has one — the exact vehicle if available,
+  // otherwise a representative same-model photo. Fall back to the stock image only
+  // when neither exists. Representative photos are labelled honestly.
   const hasRealPhoto = Boolean(data.photoUrl) && !photoFailed;
+  const isRepresentative = hasRealPhoto && Boolean(data.photoRepresentative);
   const heroSrc = hasRealPhoto ? (data.photoUrl as string) : '/images/report-hero.jpg';
+  const photoCaption = !hasRealPhoto
+    ? 'Vehicle photos in full report'
+    : isRepresentative
+      ? `Representative photo · ${title}`
+      : 'More vehicle photos in full report';
 
   return (
     <div className="min-h-screen bg-slate-50 pb-28 lg:pb-12">
@@ -150,7 +158,7 @@ function ReportContent() {
                   <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-slate-950/80 to-transparent px-3 pt-6 pb-2 flex items-center gap-1.5">
                     <Camera className="w-3.5 h-3.5 text-white shrink-0" aria-hidden="true" />
                     <span className="text-[10px] text-white font-semibold leading-tight">
-                      {hasRealPhoto ? 'More vehicle photos in full report' : 'Vehicle photos in full report'}
+                      {photoCaption}
                     </span>
                   </div>
                 </div>
