@@ -25,3 +25,6 @@ CRON_SECRET=replace-with-random-token
 
 # --- Site ---
 NEXT_PUBLIC_SITE_URL=https://carvinlookup.com
+
+# --- Vehicle data (auto.dev) ---
+AUTODEV_API_KEY=

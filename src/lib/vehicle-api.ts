@@ -18,11 +18,60 @@ export interface VehicleData {
     odometer_status: 'Verified' | 'Rollback Suspected' | 'Not Actual';
 }
 
-export async function fetchVehicleData(identifier: string): Promise<VehicleData> {
-    // Simulate API delay
+const VIN_RE = /^[A-HJ-NPR-Z0-9]{17}$/;
+
+/**
+ * Decode a VIN with auto.dev (real vehicle specs/identity). Returns null on any
+ * failure so callers can fall back to the demo generator. auto.dev provides
+ * make/model/year/trim/engine/body — not title/theft/lien history, so those
+ * stay behind the paywall (shown as locked in the report preview).
+ */
+async function fetchFromAutoDev(vin: string, apiKey: string): Promise<VehicleData | null> {
+    try {
+        const res = await fetch(`https://api.auto.dev/vin/${encodeURIComponent(vin)}`, {
+            headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
+        });
+        if (!res.ok) return null;
+        const d = (await res.json()) as Record<string, unknown>;
+        const vehicle = (d.vehicle as Record<string, unknown>) || {};
+        const year = Number(vehicle.year ?? d.year);
+        const make = String(d.make ?? vehicle.make ?? '').toUpperCase();
+        const model = String(d.model ?? '').toUpperCase();
+        if (!make || !model || !year) return null;
+
+        return {
+            vin,
+            make,
+            model,
+            year,
+            color: String(d.color ?? 'N/A').toUpperCase(),
+            body_type: String(d.body ?? vehicle.body ?? 'N/A').toUpperCase(),
+            engine: String(d.engine ?? 'N/A'),
+            registration: { plate: '', state: '', expiry: '' },
+            // History fields aren't part of a VIN decode — surfaced behind the
+            // paywall pending a history provider (NMVTIS/NICB).
+            title_brand: 'Clean',
+            theft_status: 'Clear',
+            lien_status: 'Clear',
+            odometer_status: 'Verified',
+        };
+    } catch {
+        return null;
+    }
+}
+
+export async function fetchVehicleData(identifier: string, apiKey?: string): Promise<VehicleData> {
+    const cleanId = identifier.toUpperCase().replace(/[^A-Z0-9]/g, '');
+
+    // Real data via auto.dev when a key is set and the input is a valid VIN.
+    if (apiKey && VIN_RE.test(cleanId)) {
+        const real = await fetchFromAutoDev(cleanId, apiKey);
+        if (real) return real;
+    }
+
+    // Demo fallback (no key, plate lookup, or provider error).
     await new Promise(resolve => setTimeout(resolve, 800));
 
-    const cleanId = identifier.toUpperCase().replace(/[^A-Z0-9]/g, '');
     const lastChar = cleanId.slice(-1);
 
     const baseVehicle = {

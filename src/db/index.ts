@@ -17,6 +17,8 @@ export interface Env {
     ANTHROPIC_API_KEY?: string;
     CRON_SECRET?: string;
     NEXT_PUBLIC_SITE_URL?: string;
+    // Vehicle data provider
+    AUTODEV_API_KEY?: string;
 }
 
 export const getDb = (env: Env) => {
