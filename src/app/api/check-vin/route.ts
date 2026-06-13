@@ -5,6 +5,22 @@ import { getEnv } from '@/lib/cf';
 
 export const runtime = 'edge';
 
+// Country of origin from the VIN's first character (WMI region).
+function vinCountry(vin: string): string {
+    const c = (vin[0] || '').toUpperCase();
+    if ('1457'.includes(c)) return 'United States';
+    if (c === '2') return 'Canada';
+    if (c === '3') return 'Mexico';
+    if ('JK'.includes(c)) return c === 'J' ? 'Japan' : 'South Korea';
+    if (c === 'L') return 'China';
+    if ('ST'.includes(c)) return 'United Kingdom';
+    if (c === 'W') return 'Germany';
+    if ('VZ'.includes(c)) return c === 'Z' ? 'Italy' : 'France';
+    if (c === 'Y') return 'Sweden';
+    if (c === '9') return 'Brazil';
+    return 'Imported';
+}
+
 export async function POST(request: Request) {
     try {
         const body = await request.json() as { vin?: string; plate?: string };
@@ -16,9 +32,6 @@ export async function POST(request: Request) {
 
         const env = await getEnv();
         const data = await fetchVehicleData(identifier, env.AUTODEV_API_KEY);
-
-        // In a real app, save to DB here. 
-        // For now, we just return a "reportId" which is the VIN/Plate for simplicity in this demo.
         const reportId = identifier.toUpperCase();
 
         return NextResponse.json({
@@ -28,6 +41,10 @@ export async function POST(request: Request) {
                 make: data.make,
                 model: data.model,
                 year: data.year,
+                vin: data.vin,
+                country: vinCountry(reportId),
+                engine: data.engine,
+                bodyType: data.body_type,
             }
         });
 
