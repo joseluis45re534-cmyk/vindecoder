@@ -109,14 +109,10 @@ function ReportContent() {
     { k: 'Transmission', v: data.transmission },
     { k: 'Country', v: data.country },
   ].filter((f) => f.v) as { k: string; v: string }[];
-  // Show the real auto.dev retail photo when we have one (and it loads); otherwise
-  // fall back to the representative stock image. The photo is served through our
-  // own /api/vehicle-photo proxy, which adds the auto.dev auth header server-side
-  // (a browser <img> can't), so the image loads from our origin.
+  // Show the real dealer photo of the vehicle when auto.dev has a listing for it
+  // (publicly hosted on retail.photos.vin); otherwise fall back to the stock image.
   const hasRealPhoto = Boolean(data.photoUrl) && !photoFailed;
-  const heroSrc = hasRealPhoto
-    ? `/api/vehicle-photo?src=${encodeURIComponent(data.photoUrl as string)}`
-    : '/images/report-hero.jpg';
+  const heroSrc = hasRealPhoto ? (data.photoUrl as string) : '/images/report-hero.jpg';
 
   return (
     <div className="min-h-screen bg-slate-50 pb-28 lg:pb-12">

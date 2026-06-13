@@ -86,19 +86,19 @@ function formatTransmission(t: unknown): string {
     return '';
 }
 
-// Fetch a real retail photo for the VIN from auto.dev's Vehicle Photos API.
-// Response shape: { data: { retail: string[] } }. Returns the first photo URL,
-// or undefined when none exist / on any error (photos are optional, never block).
+// Fetch a real photo of the actual vehicle. auto.dev's dedicated /photos endpoint
+// returns dead URLs, but the /listings/{vin} record carries a working, publicly
+// hosted dealer photo at retailListing.primaryImage (host: retail.photos.vin).
+// Returns that URL, or undefined when the VIN has no listing / on any error.
 async function fetchVehiclePhoto(vin: string, apiKey: string): Promise<string | undefined> {
     try {
-        const res = await fetch(`https://api.auto.dev/photos/${encodeURIComponent(vin)}`, {
+        const res = await fetch(`https://api.auto.dev/listings/${encodeURIComponent(vin)}`, {
             headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
         });
-        if (!res.ok) return undefined;
-        const d = (await res.json()) as { data?: { retail?: unknown } };
-        const retail = d.data?.retail;
-        if (Array.isArray(retail) && typeof retail[0] === 'string') return retail[0];
-        return undefined;
+        if (!res.ok) return undefined; // 404 when no listing exists for this VIN
+        const d = (await res.json()) as { retailListing?: { primaryImage?: unknown } };
+        const img = d.retailListing?.primaryImage;
+        return typeof img === 'string' && img.startsWith('http') ? img : undefined;
     } catch {
         return undefined;
     }
