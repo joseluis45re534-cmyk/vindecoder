@@ -26,6 +26,29 @@ const VIN_RE = /^[A-HJ-NPR-Z0-9]{17}$/;
  * make/model/year/trim/engine/body — not title/theft/lien history, so those
  * stay behind the paywall (shown as locked in the report preview).
  */
+// auto.dev returns `engine` as either a clean string ("2.5L I4") or an object
+// ({ name, size, cylinder, configuration }). Normalize to a readable string and
+// reject raw codes (e.g. "5ITCG2.5") that aren't real engine descriptors.
+function formatEngine(eng: unknown): string {
+    if (eng && typeof eng === 'object') {
+        const e = eng as Record<string, unknown>;
+        const parts: string[] = [];
+        const size = e.size ?? e.displacement;
+        if (size) parts.push(`${size}L`);
+        const conf = e.configuration ?? e.type ?? e.name;
+        if (conf) parts.push(String(conf));
+        else if (e.cylinder ?? e.cylinders) parts.push(`${e.cylinder ?? e.cylinders}-cyl`);
+        return parts.join(' ').trim();
+    }
+    if (typeof eng === 'string') {
+        // Accept only values that look like a real engine descriptor.
+        return /(\d(\.\d)?\s?(L|liter))|V\d|I\d|inline|cyl|electric|hybrid|diesel|turbo/i.test(eng)
+            ? eng
+            : '';
+    }
+    return '';
+}
+
 async function fetchFromAutoDev(vin: string, apiKey: string): Promise<VehicleData | null> {
     try {
         const res = await fetch(`https://api.auto.dev/vin/${encodeURIComponent(vin)}`, {
@@ -46,7 +69,7 @@ async function fetchFromAutoDev(vin: string, apiKey: string): Promise<VehicleDat
             year,
             color: String(d.color ?? 'N/A').toUpperCase(),
             body_type: String(d.body ?? vehicle.body ?? 'N/A').toUpperCase(),
-            engine: String(d.engine ?? 'N/A'),
+            engine: formatEngine(d.engine) || 'N/A',
             registration: { plate: '', state: '', expiry: '' },
             // History fields aren't part of a VIN decode — surfaced behind the
             // paywall pending a history provider (NMVTIS/NICB).
