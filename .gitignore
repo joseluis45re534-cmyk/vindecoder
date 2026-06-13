@@ -46,3 +46,4 @@ next-env.d.ts
 _pwtest.mjs
 _*.png
 _*.jpg
+_*.mjs
