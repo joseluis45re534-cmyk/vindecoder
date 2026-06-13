@@ -125,7 +125,7 @@ async function listingPhoto(query: string, apiKey: string): Promise<string | und
     try {
         const res = await fetchWithTimeout(`https://api.auto.dev/listings?${query}&limit=1`, {
             headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
-        }, 3500);
+        }, 3000);
         if (!res.ok) { res.body?.cancel(); return undefined; }
         const text = await res.text();
         const m = text.match(/https:\/\/retail\.photos\.vin\/[A-Za-z0-9-]+\.jpg/);
@@ -135,10 +135,19 @@ async function listingPhoto(query: string, apiKey: string): Promise<string | und
     }
 }
 
+// Strip body-style words the decoder appends to the model (e.g. "ACCORD CPE" ->
+// "ACCORD") so the listings search matches auto.dev's base model names.
+function searchModel(model: string): string {
+    return model
+        .replace(/\b(CPE|COUPE|SDN|SEDAN|CONV(ERTIBLE)?|WGN|WAGON|HATCHBACK|HBK|SUV|MINIVAN|VAN|PICKUP|CREW CAB|QUAD CAB)\b/gi, '')
+        .replace(/\s+/g, ' ')
+        .trim() || model;
+}
+
 async function representativePhoto(
     make: string, model: string, year: number, apiKey: string,
 ): Promise<string | undefined> {
-    const base = `vehicle.make=${encodeURIComponent(make)}&vehicle.model=${encodeURIComponent(model)}`;
+    const base = `vehicle.make=${encodeURIComponent(make)}&vehicle.model=${encodeURIComponent(searchModel(model))}`;
     // Run the same-year and any-year searches in parallel (bounded ~3.5s total),
     // preferring an exact-year match when both return a photo.
     const [withYear, anyYear] = await Promise.all([
@@ -161,7 +170,7 @@ async function resolveVehiclePhoto(
         if (rep) return { url: rep, representative: true };
         return undefined;
     })();
-    const deadline = new Promise<undefined>((r) => setTimeout(() => r(undefined), 6000));
+    const deadline = new Promise<undefined>((r) => setTimeout(() => r(undefined), 4500));
     return (await Promise.race([work, deadline])) ?? undefined;
 }
 
