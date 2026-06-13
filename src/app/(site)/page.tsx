@@ -187,6 +187,79 @@ export default function Home() {
         </div>
       </section>
 
+      {/* ===== Inside your report — visual showcase ===== */}
+      <section id="report" className="py-16 sm:py-24 bg-white px-4 sm:px-6 lg:px-8" aria-labelledby="report-heading">
+        <div className="max-w-6xl mx-auto grid lg:grid-cols-2 gap-12 lg:gap-16 items-center scroll-reveal">
+          {/* Visual: photo + floating animated report card */}
+          <div className="relative">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/images/report-hero.jpg"
+              alt="A couple at a dealership checking a used car's history report on a phone"
+              width={1600}
+              height={905}
+              loading="lazy"
+              className="w-full rounded-3xl shadow-xl shadow-slate-900/10 object-cover aspect-[16/10]"
+            />
+            {/* Floating report summary (desktop) */}
+            <div className="hidden sm:block absolute -bottom-6 -right-4 lg:-right-8 w-64 bg-white rounded-2xl shadow-2xl shadow-slate-900/15 border border-slate-100 p-5 animate-rise">
+              <div className="flex items-center gap-2 pb-3 mb-3 border-b border-slate-100">
+                <ShieldCheck className="w-4 h-4 text-blue-600" aria-hidden="true" />
+                <span className="text-xs font-bold text-slate-900">2021 Toyota Camry — Report</span>
+              </div>
+              {[
+                { label: 'Title', value: 'Clean', ok: true },
+                { label: 'Theft record', value: 'None found', ok: true },
+                { label: 'Odometer', value: 'Verified', ok: true },
+                { label: 'Open liens', value: 'None', ok: true },
+              ].map((r) => (
+                <div key={r.label} className="flex items-center justify-between py-1.5 text-xs">
+                  <span className="text-slate-500">{r.label}</span>
+                  <span className="flex items-center gap-1 font-bold text-emerald-600">
+                    <CheckCircle2 className="w-3.5 h-3.5" aria-hidden="true" /> {r.value}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Content: what's in the report */}
+          <div>
+            <p className="text-sm font-semibold text-blue-600 uppercase tracking-widest mb-3">Inside your report</p>
+            <h2 id="report-heading" className="text-3xl sm:text-4xl font-extrabold text-slate-900 mb-4 tracking-tight">
+              See exactly what you&apos;ll get
+            </h2>
+            <p className="text-slate-500 mb-8 leading-relaxed">
+              Every CarVinLookup report turns a VIN into a clear, complete picture of a vehicle&apos;s past — so you can negotiate hard and buy with confidence.
+            </p>
+            <ul className="space-y-4">
+              {[
+                { icon: AlertTriangle, c: 'text-amber-600 bg-amber-50', t: 'Title & brand history', d: 'Salvage, rebuilt, junk & flood titles across all 50 states.' },
+                { icon: ShieldCheck, c: 'text-emerald-600 bg-emerald-50', t: 'Theft records', d: 'Active theft & recovery reports from the NICB.' },
+                { icon: Gauge, c: 'text-blue-600 bg-blue-50', t: 'Odometer readings', d: 'Reported mileage with rollback & tampering alerts.' },
+                { icon: BadgeDollarSign, c: 'text-violet-600 bg-violet-50', t: 'Liens & specs', d: 'Open loans, plus full make/model/engine decode & recalls.' },
+              ].map(({ icon: Icon, c, t, d }) => (
+                <li key={t} className="flex items-start gap-4">
+                  <span className={`inline-flex w-10 h-10 rounded-xl items-center justify-center shrink-0 ${c}`}>
+                    <Icon className="w-5 h-5" aria-hidden="true" />
+                  </span>
+                  <span>
+                    <span className="block font-bold text-slate-900">{t}</span>
+                    <span className="block text-sm text-slate-500">{d}</span>
+                  </span>
+                </li>
+              ))}
+            </ul>
+            <a
+              href="#vin-search"
+              className="mt-8 inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-bold px-6 py-3 rounded-full shadow-md shadow-blue-600/25 active:scale-[0.98] transition-all"
+            >
+              <FileText className="w-4 h-4" aria-hidden="true" /> See your report
+            </a>
+          </div>
+        </div>
+      </section>
+
       {/* ===== How it works — 3-step funnel ===== */}
       <section id="how-it-works" className="py-16 sm:py-24 px-4 sm:px-6 lg:px-8" aria-labelledby="how-heading">
         <div className="max-w-5xl mx-auto scroll-reveal">
