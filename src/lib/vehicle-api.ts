@@ -86,19 +86,20 @@ function formatTransmission(t: unknown): string {
     return '';
 }
 
-// Fetch a real photo of the actual vehicle. auto.dev's dedicated /photos endpoint
-// returns dead URLs, but the /listings/{vin} record carries a working, publicly
-// hosted dealer photo at retailListing.primaryImage (host: retail.photos.vin).
-// Returns that URL, or undefined when the VIN has no listing / on any error.
-async function fetchVehiclePhoto(vin: string, apiKey: string): Promise<string | undefined> {
+// Real photo of the actual vehicle. auto.dev's dealer photos live on the public
+// CDN retail.photos.vin as `{VIN}-1.jpg`, and they PERSIST after the live listing
+// churns — so we construct the URL directly (no API key, no quota) and confirm it
+// exists with a lightweight status check. Returns the URL when a real photo exists,
+// or undefined (→ stock fallback) otherwise. The dedicated /photos and /listings
+// endpoints are unreliable: /photos returns dead URLs, /listings only while listed.
+async function fetchVehiclePhoto(vin: string): Promise<string | undefined> {
+    const url = `https://retail.photos.vin/${encodeURIComponent(vin)}-1.jpg`;
     try {
-        const res = await fetch(`https://api.auto.dev/listings/${encodeURIComponent(vin)}`, {
-            headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
-        });
-        if (!res.ok) return undefined; // 404 when no listing exists for this VIN
-        const d = (await res.json()) as { retailListing?: { primaryImage?: unknown } };
-        const img = d.retailListing?.primaryImage;
-        return typeof img === 'string' && img.startsWith('http') ? img : undefined;
+        const res = await fetch(url);
+        const type = res.headers.get('content-type') || '';
+        // Don't download the body — the status + content-type is all we need.
+        res.body?.cancel();
+        return res.ok && type.startsWith('image') ? url : undefined;
     } catch {
         return undefined;
     }
@@ -111,7 +112,7 @@ async function fetchFromAutoDev(vin: string, apiKey: string): Promise<VehicleDat
             fetch(`https://api.auto.dev/vin/${encodeURIComponent(vin)}`, {
                 headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
             }),
-            fetchVehiclePhoto(vin, apiKey),
+            fetchVehiclePhoto(vin),
         ]);
         if (!res.ok) return null;
         const d = (await res.json()) as Record<string, unknown>;
