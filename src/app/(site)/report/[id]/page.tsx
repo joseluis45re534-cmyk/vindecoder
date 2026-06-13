@@ -123,13 +123,11 @@ function ReportContent() {
                   <img
                     src="/images/report-hero.jpg"
                     alt={`${title} — vehicle inspection`}
-                    className="w-full h-full object-cover blur-[3px] scale-110"
+                    className="w-full h-full object-cover"
                   />
-                  <div className="absolute inset-0 bg-slate-950/45 flex flex-col items-center justify-center gap-1.5 text-center px-2">
-                    <span className="w-9 h-9 rounded-full bg-white/15 backdrop-blur flex items-center justify-center">
-                      <Camera className="w-4 h-4 text-white" aria-hidden="true" />
-                    </span>
-                    <span className="text-[11px] text-white font-semibold leading-tight">Real vehicle photos<br />in full report</span>
+                  <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-slate-950/80 to-transparent px-3 pt-6 pb-2 flex items-center gap-1.5">
+                    <Camera className="w-3.5 h-3.5 text-white shrink-0" aria-hidden="true" />
+                    <span className="text-[10px] text-white font-semibold leading-tight">Vehicle photos in full report</span>
                   </div>
                 </div>
                 <div>
