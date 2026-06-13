@@ -117,12 +117,19 @@ function ReportContent() {
             {/* Vehicle hero */}
             <div className="bg-white rounded-3xl shadow-xl shadow-slate-900/5 border border-slate-100 p-6 sm:p-7">
               <div className="grid grid-cols-1 sm:grid-cols-[180px,1fr] gap-6">
-                {/* Locked photo */}
-                <div className="relative w-full h-36 sm:h-full min-h-[140px] rounded-2xl bg-gradient-to-br from-slate-800 to-slate-900 overflow-hidden flex items-center justify-center">
-                  <Car className="w-14 h-14 text-white/10" aria-hidden="true" />
-                  <div className="absolute inset-0 flex flex-col items-center justify-center gap-1.5 backdrop-blur-[1px]">
-                    <Lock className="w-5 h-5 text-white/70" aria-hidden="true" />
-                    <span className="text-[11px] text-white/60 font-medium">Photos in full report</span>
+                {/* Vehicle photo (representative; actual photos unlock with the report) */}
+                <div className="relative w-full h-36 sm:h-full min-h-[140px] rounded-2xl overflow-hidden bg-slate-200">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src="/images/report-hero.jpg"
+                    alt={`${title} — vehicle inspection`}
+                    className="w-full h-full object-cover blur-[3px] scale-110"
+                  />
+                  <div className="absolute inset-0 bg-slate-950/45 flex flex-col items-center justify-center gap-1.5 text-center px-2">
+                    <span className="w-9 h-9 rounded-full bg-white/15 backdrop-blur flex items-center justify-center">
+                      <Camera className="w-4 h-4 text-white" aria-hidden="true" />
+                    </span>
+                    <span className="text-[11px] text-white font-semibold leading-tight">Real vehicle photos<br />in full report</span>
                   </div>
                 </div>
                 <div>
