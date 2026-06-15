@@ -1,8 +1,9 @@
 import { NextResponse } from 'next/server';
 import Stripe from 'stripe';
 import { getEnv, siteUrl } from '@/lib/cf';
-import { getPlan } from '@/lib/pricing';
+import { getPlan, isTrialPlan } from '@/lib/pricing';
 import { getPricing, getPaymentConfig } from '@/lib/settings';
+import { trialPhaseOnePriceData } from '@/lib/stripe-billing';
 
 export const runtime = 'edge';
 
@@ -33,7 +34,27 @@ export async function POST(request: Request) {
         ? `${base}/report/${body.reportId}?paid=1&session_id={CHECKOUT_SESSION_ID}`
         : `${base}/?paid=1&session_id={CHECKOUT_SESSION_ID}`;
 
+    const metadata = { planId: plan.id, reportId: body.reportId || '' };
+
     try {
+        // Trial subscription ($1 today → $29/mo): charge the $1/3-day price
+        // on-session; the webhook then converts the subscription into a
+        // two-phase schedule (see src/lib/stripe-billing.ts).
+        if (isTrialPlan(plan)) {
+            const session = await stripe.checkout.sessions.create({
+                mode: 'subscription',
+                line_items: [{ price_data: trialPhaseOnePriceData(), quantity: 1 }],
+                customer_email: body.email,
+                success_url: success,
+                cancel_url: `${base}/?canceled=1`,
+                metadata,
+                // Mirror metadata onto the subscription so the webhook can unlock
+                // the right report from subscription/invoice events too.
+                subscription_data: { metadata },
+            });
+            return NextResponse.json({ url: session.url, id: session.id });
+        }
+
         const session = await stripe.checkout.sessions.create({
             mode: plan.interval === 'month' ? 'subscription' : 'payment',
             line_items: [
@@ -50,7 +71,7 @@ export async function POST(request: Request) {
             customer_email: body.email,
             success_url: success,
             cancel_url: `${base}/?canceled=1`,
-            metadata: { planId: plan.id, reportId: body.reportId || '' },
+            metadata,
         });
 
         return NextResponse.json({ url: session.url, id: session.id });

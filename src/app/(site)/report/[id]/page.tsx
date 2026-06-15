@@ -1,12 +1,17 @@
 'use client';
 
-import { useParams } from 'next/navigation';
+import { useParams, useSearchParams } from 'next/navigation';
 import { useEffect, useState, Suspense } from 'react';
+import { motion, useReducedMotion, useScroll, useTransform } from 'framer-motion';
 import {
-  Loader2, Lock, ShieldCheck, ShieldAlert, AlertTriangle, Gauge, FileText,
-  Camera, Gavel, BadgeDollarSign, Bell, Users, Car, CheckCircle2, Clock, RotateCcw,
+  Loader2, Lock, ShieldCheck, AlertTriangle, Gauge, FileText,
+  Camera, Gavel, BadgeDollarSign, Bell, Users, Car, CheckCircle2, Clock, RotateCcw, Mail,
 } from 'lucide-react';
-import CheckoutButtons from '@/components/CheckoutButtons';
+import { TRIAL_PLAN, formatPrice } from '@/lib/pricing';
+import PriceCountUp from '@/components/checkout/PriceCountUp';
+import TrialCheckout from '@/components/checkout/TrialCheckout';
+import SuccessCheck from '@/components/checkout/SuccessCheck';
+import ManageSubscriptionButton from '@/components/checkout/ManageSubscriptionButton';
 
 interface Preview {
   make: string;
@@ -22,7 +27,10 @@ interface Preview {
   photoUrl?: string;
 }
 
-const PRICE = '$24.99';
+const EASE = [0.22, 1, 0.36, 1] as const;
+const TRIAL_FEE = TRIAL_PLAN.trialFeeCents ?? 100;
+const TRIAL_MONTHLY = TRIAL_PLAN.recurringCents ?? 2900;
+const TRIAL_DAYS = TRIAL_PLAN.trialDays ?? 3;
 
 // Data-point categories revealed in the full report (locked in the preview).
 const CHECKS = [
@@ -37,21 +45,16 @@ const CHECKS = [
   { icon: Bell, label: 'Open recalls', hint: 'Manufacturer safety recalls', color: 'text-orange-600 bg-orange-50' },
 ];
 
-const INCLUDED = [
-  'NMVTIS title-brand history',
-  'Salvage, junk & flood check',
-  'Odometer rollback alerts',
-  'Theft & recovery records',
-  'Liens, loans & impound info',
-  'Accident & auction history',
-  'Real vehicle photos',
-  'Open safety recalls',
-  'Full specs & 40+ data points',
-];
-
 function ReportContent() {
   const params = useParams();
+  const search = useSearchParams();
   const id = (params.id as string) || '';
+  const paid = search.get('paid') === '1';
+  const sessionId = search.get('session_id') || undefined;
+
+  const reduce = useReducedMotion();
+  const { scrollY } = useScroll();
+  const photoY = useTransform(scrollY, [0, 500], [0, -28]);
 
   const [data, setData] = useState<Preview | null>(null);
   const [loading, setLoading] = useState(true);
@@ -81,7 +84,7 @@ function ReportContent() {
   if (loading) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-slate-50 gap-3">
-        <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
         <p className="text-slate-500 text-sm font-medium">Pulling vehicle records…</p>
       </div>
     );
@@ -113,39 +116,73 @@ function ReportContent() {
   // we show a neutral placeholder — never a same-model stand-in or lifestyle stock.
   const hasRealPhoto = Boolean(data.photoUrl) && !photoFailed;
 
+  // Section entrance: fade + slide as each card scrolls into view (no-op under
+  // prefers-reduced-motion).
+  const fadeUp = reduce
+    ? {}
+    : {
+        initial: { opacity: 0, y: 18 },
+        whileInView: { opacity: 1, y: 0 },
+        viewport: { once: true, amount: 0.15 },
+        transition: { duration: 0.3, ease: EASE },
+      };
+  const gridParent = reduce
+    ? {}
+    : {
+        initial: 'hidden' as const,
+        whileInView: 'show' as const,
+        viewport: { once: true, amount: 0.2 },
+        variants: { hidden: {}, show: { transition: { staggerChildren: 0.05 } } },
+      };
+  const gridChild = reduce
+    ? {}
+    : {
+        variants: {
+          hidden: { opacity: 0, y: 14 },
+          show: { opacity: 1, y: 0, transition: { duration: 0.28, ease: EASE } },
+        },
+      };
+  const panelIn = reduce
+    ? {}
+    : { initial: { opacity: 0, y: 18 }, animate: { opacity: 1, y: 0 }, transition: { duration: 0.35, ease: EASE, delay: 0.08 } };
+
   return (
     <div className="min-h-screen bg-slate-50 pb-28 lg:pb-12">
       {/* Header strip */}
       <div className="bg-gradient-to-br from-slate-950 via-blue-950 to-slate-900 px-4 sm:px-6 lg:px-8 pt-10 pb-24">
-        <div className="max-w-6xl mx-auto text-center">
+        <motion.div
+          className="max-w-6xl mx-auto text-center"
+          {...(reduce ? {} : { initial: { opacity: 0, y: 12 }, animate: { opacity: 1, y: 0 }, transition: { duration: 0.4, ease: EASE } })}
+        >
           <span className="inline-flex items-center gap-2 bg-emerald-500/15 text-emerald-300 text-sm font-semibold px-4 py-1.5 rounded-full ring-1 ring-emerald-400/20">
             <CheckCircle2 className="w-4 h-4" aria-hidden="true" /> We found your vehicle
           </span>
-          <h1 className="text-2xl sm:text-4xl font-extrabold text-white mt-5 tracking-tight">
+          <h1 className="font-display text-2xl sm:text-4xl font-bold text-white mt-5 tracking-tight">
             Your <span className="text-blue-300">{title}</span> report is ready
           </h1>
           <p className="text-slate-300 mt-3 max-w-xl mx-auto">
             Unlock 40+ data points sourced from NMVTIS, NICB &amp; state DMVs — in seconds.
           </p>
-        </div>
+        </motion.div>
       </div>
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 -mt-16">
-        <div className="grid grid-cols-1 lg:grid-cols-[1fr,360px] gap-6 items-start">
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-6 items-start">
           {/* ===== LEFT: report content ===== */}
           <div className="space-y-6">
             {/* Vehicle hero */}
-            <div className="bg-white rounded-3xl shadow-xl shadow-slate-900/5 border border-slate-100 p-6 sm:p-7">
-              <div className="grid grid-cols-1 sm:grid-cols-[180px,1fr] gap-6">
-                {/* Vehicle photo — real auto.dev retail photo when available, else representative stock */}
+            <motion.div className="bg-white rounded-3xl shadow-xl shadow-slate-900/5 border border-slate-100 p-6 sm:p-7" {...fadeUp}>
+              <div className="grid grid-cols-1 sm:grid-cols-[180px_1fr] gap-6">
+                {/* Vehicle photo — real auto.dev retail photo when available, else neutral placeholder */}
                 <div className="relative w-full h-36 sm:h-full min-h-[140px] rounded-2xl overflow-hidden bg-slate-100 border border-slate-200">
                   {hasRealPhoto ? (
                     <>
                       {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
+                      <motion.img
                         src={data.photoUrl as string}
                         alt={`${title} — vehicle photo`}
-                        className="w-full h-full object-cover"
+                        className="w-full h-full object-cover scale-105"
+                        style={{ y: reduce ? 0 : photoY }}
                         onError={() => setPhotoFailed(true)}
                       />
                       <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-slate-950/80 to-transparent px-3 pt-6 pb-2 flex items-center gap-1.5">
@@ -162,7 +199,7 @@ function ReportContent() {
                   )}
                 </div>
                 <div>
-                  <h2 className="text-2xl font-extrabold text-slate-900 leading-tight">{title}</h2>
+                  <h2 className="font-display text-2xl font-bold text-slate-900 leading-tight">{title}</h2>
                   <p className="font-mono text-xs text-slate-400 mt-1">VIN {data.vin}</p>
                   <dl className="grid grid-cols-2 sm:grid-cols-4 gap-x-4 gap-y-4 mt-5">
                     {specs.map((f) => (
@@ -174,17 +211,17 @@ function ReportContent() {
                   </dl>
                 </div>
               </div>
-            </div>
+            </motion.div>
 
             {/* Findings grid */}
-            <div className="bg-white rounded-3xl shadow-sm border border-slate-100 p-6 sm:p-7">
+            <motion.div className="bg-white rounded-3xl shadow-sm border border-slate-100 p-6 sm:p-7" {...fadeUp}>
               <div className="flex items-center justify-between mb-5">
-                <h3 className="font-extrabold text-slate-900">What&apos;s in your report</h3>
+                <h3 className="font-display font-bold text-slate-900">What&apos;s in your report</h3>
                 <span className="text-[11px] font-bold text-orange-600 bg-orange-50 px-3 py-1 rounded-full uppercase tracking-wider">9 sections locked</span>
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
+              <motion.div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5" {...gridParent}>
                 {CHECKS.map(({ icon: Icon, label, hint, color }) => (
-                  <div key={label} className="relative bg-slate-50 rounded-2xl border border-slate-100 p-4 hover:border-slate-200 transition-colors">
+                  <motion.div key={label} className="relative bg-slate-50 rounded-2xl border border-slate-100 p-4 hover:border-slate-200 transition-colors" {...gridChild}>
                     <div className="flex items-start justify-between mb-2.5">
                       <span className={`inline-flex w-9 h-9 rounded-lg items-center justify-center ${color}`}>
                         <Icon className="w-4 h-4" aria-hidden="true" />
@@ -193,14 +230,14 @@ function ReportContent() {
                     </div>
                     <p className="font-bold text-slate-900 text-sm leading-snug">{label}</p>
                     <p className="text-[11px] text-slate-400 mt-0.5">{hint}</p>
-                  </div>
+                  </motion.div>
                 ))}
-              </div>
-            </div>
+              </motion.div>
+            </motion.div>
 
             {/* Frosted "data behind the blur" teaser */}
-            <div className="relative bg-white rounded-3xl shadow-sm border border-slate-100 p-6 sm:p-7 overflow-hidden">
-              <h3 className="font-extrabold text-slate-900 mb-4">Report preview</h3>
+            <motion.div className="relative bg-white rounded-3xl shadow-sm border border-slate-100 p-6 sm:p-7 overflow-hidden" {...fadeUp}>
+              <h3 className="font-display font-bold text-slate-900 mb-4">Report preview</h3>
               <div className="space-y-3 blur-[5px] select-none pointer-events-none" aria-hidden="true">
                 {[
                   ['Title brand', 'Clean — no brands recorded'],
@@ -223,77 +260,104 @@ function ReportContent() {
                 <p className="font-bold text-slate-900">Unlock to reveal the full history</p>
                 <p className="text-sm text-slate-500 mt-1">40+ verified data points</p>
               </div>
-            </div>
+            </motion.div>
           </div>
 
-          {/* ===== RIGHT: sticky order card ===== */}
-          <aside id="order" className="lg:sticky lg:top-20">
-            <div className="bg-white rounded-3xl shadow-xl shadow-slate-900/10 border border-slate-100 overflow-hidden">
-              <div className="bg-slate-900 px-6 py-5 text-white">
-                <p className="text-xs uppercase tracking-widest text-blue-300 font-semibold">Full report</p>
-                <p className="text-sm text-slate-300 mt-1">{title}</p>
-              </div>
-              <div className="p-6">
-                <div className="flex items-end gap-2 mb-1">
-                  <span className="text-4xl font-extrabold text-slate-900">{PRICE}</span>
-                  <span className="text-slate-400 font-medium mb-1.5">one-time</span>
-                </div>
-                <p className="text-xs text-emerald-600 font-semibold mb-5">No subscription · no hidden fees</p>
-
-                <ul className="space-y-2.5 mb-6">
-                  {INCLUDED.map((b) => (
-                    <li key={b} className="flex items-start gap-2 text-sm text-slate-600">
-                      <CheckCircle2 className="w-4 h-4 text-emerald-500 mt-0.5 shrink-0" aria-hidden="true" />
-                      {b}
-                    </li>
-                  ))}
-                </ul>
-
-                <CheckoutButtons planId="single" reportId={id} highlighted />
-
-                <div className="grid grid-cols-3 gap-2 mt-5 text-center">
-                  {[
-                    { icon: ShieldCheck, t: 'Secure' },
-                    { icon: Clock, t: 'Instant' },
-                    { icon: RotateCcw, t: 'Guarantee' },
-                  ].map(({ icon: Icon, t }) => (
-                    <div key={t} className="flex flex-col items-center gap-1 text-[11px] text-slate-400 font-medium">
-                      <Icon className="w-4 h-4 text-slate-400" aria-hidden="true" />
-                      {t}
-                    </div>
-                  ))}
+          {/* ===== RIGHT: sticky checkout / success card ===== */}
+          <motion.aside id="order" className="lg:sticky lg:top-20" {...panelIn}>
+            {paid ? (
+              /* ---- Post-payment success ---- */
+              <div className="bg-white rounded-3xl shadow-xl shadow-slate-900/10 border border-slate-100 overflow-hidden">
+                <div className="p-7 flex flex-col items-center text-center">
+                  <SuccessCheck />
+                  <h2 className="font-display text-xl font-bold text-slate-900 mt-4">Payment successful</h2>
+                  <p className="text-sm text-slate-500 mt-2 leading-relaxed">
+                    Your <strong className="text-slate-700">{formatPrice(TRIAL_FEE)}</strong> trial has started. We&apos;re preparing your full report
+                    for <span className="font-semibold text-slate-700">{title}</span>.
+                  </p>
+                  <p className="flex items-center justify-center gap-1.5 text-xs text-slate-400 mt-3">
+                    <Mail className="w-3.5 h-3.5 text-primary" aria-hidden="true" /> A receipt is on its way to your inbox.
+                  </p>
+                  <div className="w-full border-t border-slate-100 my-5" />
+                  <p className="text-[11px] text-slate-400 mb-3 leading-relaxed">
+                    After {TRIAL_DAYS} days you&apos;ll be charged {formatPrice(TRIAL_MONTHLY)}/month unless you cancel.
+                  </p>
+                  <ManageSubscriptionButton sessionId={sessionId} reportId={id} />
                 </div>
               </div>
-            </div>
+            ) : (
+              /* ---- Checkout panel ---- */
+              <div className="bg-white rounded-3xl shadow-xl shadow-slate-900/10 border border-slate-100 overflow-hidden">
+                <div className="bg-slate-900 px-6 py-5 text-white">
+                  <p className="text-xs uppercase tracking-widest text-blue-300 font-semibold">Full report access</p>
+                  <p className="text-sm text-slate-300 mt-1">{title}</p>
+                </div>
+                <div className="p-6">
+                  <div className="flex items-end gap-2 mb-1">
+                    <PriceCountUp cents={TRIAL_FEE} className="font-display text-5xl font-bold text-slate-900" />
+                    <span className="text-slate-400 font-medium mb-1.5">today</span>
+                  </div>
+                  <p className="text-xs text-slate-500 font-medium mb-5">
+                    then <span className="font-bold text-slate-700">{formatPrice(TRIAL_MONTHLY)}/mo</span> after your {TRIAL_DAYS}-day trial
+                  </p>
+
+                  <ul className="space-y-2.5 mb-6">
+                    {TRIAL_PLAN.features.map((b) => (
+                      <li key={b} className="flex items-start gap-2 text-sm text-slate-600">
+                        <CheckCircle2 className="w-4 h-4 text-security mt-0.5 shrink-0" aria-hidden="true" />
+                        {b}
+                      </li>
+                    ))}
+                  </ul>
+
+                  <TrialCheckout reportId={id} />
+
+                  <div className="grid grid-cols-3 gap-2 mt-5 text-center">
+                    {[
+                      { icon: ShieldCheck, t: 'Secure' },
+                      { icon: Clock, t: 'Instant' },
+                      { icon: RotateCcw, t: 'Cancel anytime' },
+                    ].map(({ icon: Icon, t }) => (
+                      <div key={t} className="flex flex-col items-center gap-1 text-[11px] text-slate-400 font-medium">
+                        <Icon className="w-4 h-4 text-slate-400" aria-hidden="true" />
+                        {t}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
 
             <div className="flex items-center justify-center gap-1.5 mt-4 text-xs text-slate-400">
               <Users className="w-3.5 h-3.5 text-blue-400" aria-hidden="true" />
               Trusted by thousands of U.S. car buyers
             </div>
-          </aside>
+          </motion.aside>
         </div>
       </div>
 
-      {/* Mobile sticky unlock bar */}
-      <div className="lg:hidden fixed bottom-0 inset-x-0 z-40 bg-white border-t border-slate-200 px-4 py-3 flex items-center justify-between gap-3 shadow-[0_-4px_20px_rgba(0,0,0,0.06)]">
-        <div>
-          <p className="text-xs text-slate-400 leading-none">Full report</p>
-          <p className="text-lg font-extrabold text-slate-900 leading-tight">{PRICE}</p>
+      {/* Mobile sticky unlock bar (hidden once paid) */}
+      {!paid && (
+        <div className="lg:hidden fixed bottom-0 inset-x-0 z-40 bg-white border-t border-slate-200 px-4 py-3 flex items-center justify-between gap-3 shadow-[0_-4px_20px_rgba(0,0,0,0.06)]">
+          <div>
+            <p className="text-xs text-slate-400 leading-none">Start today for</p>
+            <p className="text-lg font-extrabold text-slate-900 leading-tight">{formatPrice(TRIAL_FEE)}</p>
+          </div>
+          <a
+            href="#order"
+            className="flex-1 max-w-[60%] bg-accent hover:brightness-110 active:scale-[0.98] text-white font-bold text-center px-5 py-3 rounded-full shadow-md shadow-accent/25 transition-all"
+          >
+            Unlock full report
+          </a>
         </div>
-        <a
-          href="#order"
-          className="flex-1 max-w-[60%] bg-orange-600 hover:bg-orange-500 active:scale-[0.98] text-white font-bold text-center px-5 py-3 rounded-full shadow-md shadow-orange-600/25 transition-all"
-        >
-          Unlock full report
-        </a>
-      </div>
+      )}
     </div>
   );
 }
 
 export default function ReportPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen flex items-center justify-center bg-slate-50"><Loader2 className="w-8 h-8 animate-spin text-blue-600" /></div>}>
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center bg-slate-50"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>}>
       <ReportContent />
     </Suspense>
   );

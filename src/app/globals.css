@@ -13,8 +13,16 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  /* Semantic brand tokens (ui-ux-pro-max SaaS trust palette) so components can
+     use bg-primary / text-accent etc. instead of raw hex/blue-600. */
+  --color-primary: var(--primary);
+  --color-primary-deep: var(--primary-deep);
+  --color-accent: var(--accent);
+  --color-security: var(--security-green);
   --font-sans: var(--font-jakarta);
   --font-mono: var(--font-geist-mono);
+  /* Display font for hero headlines; falls back to the body sans. */
+  --font-display: var(--font-space-grotesk), var(--font-jakarta);
 }
 
 html {
