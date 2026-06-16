@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 372 96" width="372" height="96" role="img" aria-label="CarVinLookup logo lockup">
+  <style>
+    .wm { font-family: 'Space Grotesk','Plus Jakarta Sans','Segoe UI',Arial,sans-serif; font-weight:700; font-size:38px; letter-spacing:-0.5px; }
+    .tag{ font-family:'Space Grotesk','Plus Jakarta Sans','Segoe UI',Arial,sans-serif; font-weight:600; font-size:11px; letter-spacing:3px; }
+  </style>
+  <!-- icon (shield + check) -->
+  <g transform="translate(8,20) scale(0.84)">
+    <path d="M16 10 H48 Q52 10 52 14 V32 Q52 46 32 57 Q12 46 12 32 V14 Q12 10 16 10 Z" fill="#2563EB"/>
+    <path d="M22 32 L30 39 L43 24" fill="none" stroke="#FFFFFF" stroke-width="8.5" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M22 32 L30 39 L43 24" fill="none" stroke="#EA580C" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+  <!-- wordmark -->
+  <text class="wm" x="74" y="51">
+    <tspan fill="#1E293B">Car</tspan><tspan fill="#2563EB">Vin</tspan><tspan fill="#1E293B">Lookup</tspan>
+  </text>
+  <text class="tag" x="76" y="72" fill="#1E293B" opacity="0.62">VEHICLE&#160;HISTORY&#160;&amp;&#160;VIN&#160;CHECK</text>
+</svg>

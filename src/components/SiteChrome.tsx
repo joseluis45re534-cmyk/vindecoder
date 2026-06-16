@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ShieldCheck } from "lucide-react";
 import { SITE_NAME } from "@/lib/site";
+import Logo from "@/components/Logo";
 import MobileMenu from "@/components/MobileMenu";
 import { BRANDS } from "@/lib/brands";
 
@@ -24,13 +25,8 @@ export function SiteHeader() {
   return (
     <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-slate-200/60">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-2">
-        <Link href="/" className="flex items-center gap-2 group shrink-0">
-          <span className="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-600 to-blue-800 flex items-center justify-center shadow-md shadow-blue-600/20 group-hover:shadow-blue-600/40 group-hover:scale-105 transition-all">
-            <ShieldCheck className="w-5 h-5 text-white" aria-hidden="true" />
-          </span>
-          <span className="text-base sm:text-lg font-extrabold tracking-tight text-slate-900">
-            Car<span className="text-blue-600">Vin</span>Lookup
-          </span>
+        <Link href="/" className="flex items-center group shrink-0" aria-label={`${SITE_NAME} home`}>
+          <Logo className="h-9 sm:h-10 w-auto group-hover:opacity-90 transition-opacity" />
         </Link>
         <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-slate-600">
           <a href="/#how-it-works" className="hover:text-slate-900 transition-colors">How it works</a>

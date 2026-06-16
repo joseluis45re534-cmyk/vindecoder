@@ -14,7 +14,8 @@ export default function manifest(): MetadataRoute.Manifest {
     theme_color: "#2563eb",
     categories: ["automotive", "utilities", "shopping"],
     icons: [
-      { src: "/favicon.ico", sizes: "any", type: "image/x-icon" },
+      { src: "/icon-512.png", sizes: "512x512", type: "image/png", purpose: "any" },
+      { src: "/icon-512.png", sizes: "512x512", type: "image/png", purpose: "maskable" },
       { src: "/opengraph-image", sizes: "1200x630", type: "image/png" },
     ],
   };
