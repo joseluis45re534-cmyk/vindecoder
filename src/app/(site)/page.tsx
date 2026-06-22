@@ -2,7 +2,10 @@
 import Link from 'next/link';
 import SearchForm from '@/components/SearchForm';
 import PaymentCalculator from '@/components/PaymentCalculator';
+import JsonLd from '@/components/JsonLd';
 import { BRANDS } from '@/lib/brands';
+import { TRIAL_PLAN, formatPrice } from '@/lib/pricing';
+import { faqPageLd, vinCheckHowToLd } from '@/lib/structured-data';
 import {
   ShieldCheck,
   FileText,
@@ -27,6 +30,32 @@ const STATS = [
   { value: '50', label: 'States covered' },
   { value: '< 60s', label: 'Average report time' },
   { value: '4.8/5', label: 'Buyer rating' },
+];
+
+// Report pricing line, sourced from pricing.ts so it never goes stale.
+const REPORT_PRICE_LINE = `${formatPrice(TRIAL_PLAN.trialFeeCents ?? 100)} today, then ${formatPrice(
+  TRIAL_PLAN.recurringCents ?? 2900,
+)}/month after a ${TRIAL_PLAN.trialDays ?? 3}-day trial`;
+
+// Single source for the FAQ — rendered visibly AND emitted as FAQPage JSON-LD,
+// so the structured data always mirrors the on-page text.
+const FAQ = [
+  {
+    q: 'What is a VIN?',
+    a: 'A Vehicle Identification Number is a unique 17-character code stamped on every car sold in the United States. It encodes the manufacturer, model year, and a serial number used to look up the vehicle’s history.',
+  },
+  {
+    q: 'Where do you get your data?',
+    a: 'Reports combine records from the National Motor Vehicle Title Information System (NMVTIS), the National Insurance Crime Bureau (NICB), and state DMV title and registration databases.',
+  },
+  {
+    q: 'Can I run a report with just a license plate?',
+    a: 'Yes. Enter a U.S. license plate and we will resolve it to the VIN, then pull the full vehicle history report.',
+  },
+  {
+    q: 'How much does a full report cost?',
+    a: `Full report access starts at ${REPORT_PRICE_LINE}, and you can cancel anytime. You always get a free preview of the vehicle’s identity first, so you know we found the right car before you pay.`,
+  },
 ];
 
 const CHECKS = [
@@ -435,7 +464,7 @@ export default function Home() {
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {[
-              { icon: DollarSign, t: 'One flat price', d: 'A full report is $24.99 — far less than legacy providers, with no subscription required.' },
+              { icon: DollarSign, t: 'Start for just $1', d: `Unlock your full vehicle history for ${REPORT_PRICE_LINE} — and cancel anytime.` },
               { icon: Clock, t: 'Under 60 seconds', d: 'Enter a VIN or plate and get a complete report almost instantly.' },
               { icon: Database, t: 'Official sources', d: 'Title, theft, lien & odometer data straight from NMVTIS, NICB, and state DMVs.' },
               { icon: MapPin, t: 'All 50 states', d: 'Cross-state records catch salvage and flood titles that were washed across state lines.' },
@@ -478,7 +507,11 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ===== FAQ — plain content (no FAQ schema; restricted to gov/health per Google) ===== */}
+      {/* ===== FAQ — visible Q&A + matching FAQPage/HowTo JSON-LD =====
+           Google limits FAQ *rich results* to gov/health, but AI answer engines
+           still parse FAQPage JSON-LD. The schema is built from the same FAQ
+           constant rendered below, so it always mirrors the visible text. */}
+      <JsonLd data={[faqPageLd(FAQ), vinCheckHowToLd()]} />
       <section id="faq" className="py-16 sm:py-24 bg-white px-4 sm:px-6 lg:px-8" aria-labelledby="faq-heading">
         <div className="max-w-3xl mx-auto scroll-reveal">
           <p className="text-center text-sm font-semibold text-blue-600 uppercase tracking-widest mb-3">FAQ</p>
@@ -486,24 +519,7 @@ export default function Home() {
             Frequently asked questions
           </h2>
           <div className="space-y-4">
-            {[
-              {
-                q: 'What is a VIN?',
-                a: 'A Vehicle Identification Number is a unique 17-character code stamped on every car sold in the United States. It encodes the manufacturer, model year, and a serial number used to look up the vehicle’s history.',
-              },
-              {
-                q: 'Where do you get your data?',
-                a: 'Reports combine records from the National Motor Vehicle Title Information System (NMVTIS), the National Insurance Crime Bureau (NICB), and state DMV title and registration databases.',
-              },
-              {
-                q: 'Can I run a report with just a license plate?',
-                a: 'Yes. Enter a U.S. license plate and we will resolve it to the VIN, then pull the full vehicle history report.',
-              },
-              {
-                q: 'How much does a full report cost?',
-                a: 'A full report is $24.99. You always get a free preview of the vehicle’s identity first, so you know we found the right car before you pay.',
-              },
-            ].map(({ q, a }) => (
+            {FAQ.map(({ q, a }) => (
               <details
                 key={q}
                 className="group bg-slate-50 rounded-2xl border border-slate-100 open:bg-white open:shadow-md transition-all"

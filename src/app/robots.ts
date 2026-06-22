@@ -7,17 +7,36 @@ export const runtime = "edge";
 // every index (search + AI). Everything else is open.
 const DISALLOW = ["/report/", "/api/", "/admin"];
 
-// Per the seo-tool GEO guidance: explicitly welcome the major AI search crawlers
-// so the brand can be surfaced and cited by AI answers.
+// Explicitly welcome the major AI search crawlers and agent fetchers so the brand
+// can be surfaced and cited by AI answers (ChatGPT, Claude, Perplexity, Gemini, …).
+// Two kinds: indexers (train/index for answers) and live "User" agents (fetch a
+// page in real time when a user asks the assistant about us).
 const AI_CRAWLERS = [
-  "GPTBot", // OpenAI training
+  // OpenAI
+  "GPTBot", // training/index
   "OAI-SearchBot", // ChatGPT search index
   "ChatGPT-User", // ChatGPT live browsing
-  "ClaudeBot", // Anthropic
-  "Claude-Web",
-  "PerplexityBot", // Perplexity
-  "Google-Extended", // Gemini / AI Overviews training signal
+  // Anthropic
+  "ClaudeBot", // index
+  "anthropic-ai",
+  "Claude-User", // Claude live fetch
+  // Perplexity
+  "PerplexityBot",
+  "Perplexity-User", // live fetch
+  // Google / Apple (AI training signals)
+  "Google-Extended",
+  "Google-CloudVertexBot",
   "Applebot-Extended",
+  // Others
+  "Amazonbot",
+  "DuckAssistBot",
+  "MistralAI-User",
+  "cohere-ai",
+  "YouBot",
+  "Bytespider", // ByteDance / Doubao
+  "meta-externalagent", // Meta AI
+  "CCBot", // Common Crawl (feeds many LLMs)
+  "Timpibot",
 ];
 
 export default function robots(): MetadataRoute.Robots {

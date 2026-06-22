@@ -2,6 +2,8 @@ import type { Metadata, Viewport } from "next";
 import { Plus_Jakarta_Sans, Geist_Mono, Space_Grotesk } from "next/font/google";
 import "./globals.css";
 import { SITE_URL, SITE_NAME, SITE_DESCRIPTION, SITE_TAGLINE } from "@/lib/site";
+import { siteGraphLd } from "@/lib/structured-data";
+import JsonLd from "@/components/JsonLd";
 
 export const viewport: Viewport = {
   width: "device-width",
@@ -81,70 +83,11 @@ export const metadata: Metadata = {
   category: "automotive",
 };
 
+// Site-wide identity graph (Organization + WebSite + Service). Pricing in the
+// Service offer comes from pricing.ts, so it never goes stale. Page-specific
+// schema (FAQPage, HowTo, BreadcrumbList) is added by the individual pages.
 function StructuredData() {
-  const jsonLd = {
-    "@context": "https://schema.org",
-    "@graph": [
-      {
-        "@type": "Organization",
-        "@id": `${SITE_URL}/#organization`,
-        name: SITE_NAME,
-        url: SITE_URL,
-        description: SITE_DESCRIPTION,
-        logo: {
-          "@type": "ImageObject",
-          url: `${SITE_URL}/opengraph-image`,
-        },
-        areaServed: {
-          "@type": "Country",
-          name: "United States",
-        },
-      },
-      {
-        "@type": "WebSite",
-        "@id": `${SITE_URL}/#website`,
-        url: SITE_URL,
-        name: SITE_NAME,
-        description: SITE_DESCRIPTION,
-        publisher: { "@id": `${SITE_URL}/#organization` },
-        inLanguage: "en-US",
-        potentialAction: {
-          "@type": "SearchAction",
-          target: {
-            "@type": "EntryPoint",
-            urlTemplate: `${SITE_URL}/report/{vin}`,
-          },
-          "query-input": "required name=vin",
-        },
-      },
-      {
-        "@type": "Service",
-        "@id": `${SITE_URL}/#service`,
-        name: "Vehicle History Report",
-        serviceType: "VIN check and vehicle history report",
-        provider: { "@id": `${SITE_URL}/#organization` },
-        areaServed: {
-          "@type": "Country",
-          name: "United States",
-        },
-        description:
-          "Instant U.S. vehicle history reports covering title brands, salvage and flood damage, theft records, open liens, and odometer history.",
-        offers: {
-          "@type": "Offer",
-          price: "24.99",
-          priceCurrency: "USD",
-        },
-      },
-    ],
-  };
-
-  return (
-    <script
-      type="application/ld+json"
-      // Server-rendered so crawlers and AI search see it without executing JS.
-      dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-    />
-  );
+  return <JsonLd data={siteGraphLd()} />;
 }
 
 export default function RootLayout({
