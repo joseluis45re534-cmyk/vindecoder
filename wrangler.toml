@@ -14,3 +14,5 @@ pages_build_output_dir = ".vercel/output/static"
 binding = "DB"
 database_name = "carvinlookup-db"
 database_id = "35fad59c-74f2-4b58-83e0-c32de0fe0305"
+# Drizzle writes migrations here (not the wrangler default "migrations/").
+migrations_dir = "drizzle"
