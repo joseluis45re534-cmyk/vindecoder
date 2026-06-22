@@ -11,6 +11,7 @@ import { getDb, type Env } from '@/db';
 import { settings } from '@/db/schema';
 import { eq } from 'drizzle-orm';
 import { DEFAULT_PLANS, type Plan } from '@/lib/pricing';
+import { DEFAULT_SCHEDULE, type BlogSchedule } from '@/lib/blog-schedule';
 import { getEnv } from '@/lib/cf';
 
 async function readSetting<T>(env: Partial<Env>, key: string): Promise<T | null> {
@@ -54,6 +55,20 @@ export async function getPricing(env?: Partial<Env>): Promise<Plan[]> {
 
 export async function setPricing(env: Partial<Env>, plans: Plan[]): Promise<boolean> {
   return writeSetting(env, 'pricing', plans);
+}
+
+// ---------- Blog automation schedule ----------
+
+export async function getBlogSchedule(env: Partial<Env>): Promise<BlogSchedule> {
+  const stored = await readSetting<Partial<BlogSchedule>>(env, 'blog_schedule');
+  return { ...DEFAULT_SCHEDULE, ...(stored || {}) };
+}
+
+export async function setBlogSchedule(env: Partial<Env>, patch: Partial<BlogSchedule>): Promise<BlogSchedule> {
+  const current = await getBlogSchedule(env);
+  const next: BlogSchedule = { ...current, ...patch };
+  await writeSetting(env, 'blog_schedule', next);
+  return next;
 }
 
 // ---------- Payment credentials ----------

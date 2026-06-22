@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { ExternalLink } from 'lucide-react';
 import { loadPosts } from '@/lib/admin-data';
 import BlogStudio from '@/components/admin/BlogStudio';
+import BlogAutomation from '@/components/admin/BlogAutomation';
 
 export const runtime = 'edge';
 
@@ -28,6 +29,8 @@ export default async function AdminBlogPage() {
           {live ? 'Live (D1)' : 'Demo data'}
         </span>
       </div>
+
+      <BlogAutomation />
 
       <BlogStudio />
 
@@ -72,10 +75,11 @@ export default async function AdminBlogPage() {
         <p className="font-bold mb-1">On automation &amp; AI content</p>
         <p>
           This pipeline optimizes for <strong>genuine quality and originality</strong> — the only durable way to rank and to be
-          cited by AI search. It does not attempt to evade AI-content detectors. Drafts are disclosed as AI-assisted and
-          require human review before publishing. Schedule unattended drafting with a Cloudflare Cron Trigger hitting
-          <code className="font-mono bg-white/60 px-1.5 py-0.5 rounded mx-1">/api/cron/blog</code>
-          (Bearer <code className="font-mono bg-white/60 px-1.5 py-0.5 rounded">CRON_SECRET</code>).
+          cited by AI search. Posts are disclosed as AI-assisted. Auto-publishing is gated by the quality threshold you set above;
+          anything below it is held in <strong>in&nbsp;review</strong>. Scheduled runs fire when an external Cloudflare Cron Trigger
+          (or scheduler) POSTs <code className="font-mono bg-white/60 px-1.5 py-0.5 rounded mx-1">/api/cron/blog</code>
+          (Bearer <code className="font-mono bg-white/60 px-1.5 py-0.5 rounded">CRON_SECRET</code>) — the schedule controls the timing &amp; quantity.
+          Note: mass auto-publishing of AI content can trip Google&apos;s scaled-content policy; keep quantities modest.
         </p>
       </div>
     </div>
