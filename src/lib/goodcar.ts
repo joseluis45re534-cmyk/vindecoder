@@ -1,0 +1,222 @@
+// GoodCar B2B API adapter — the SINGLE source of truth for the integration.
+// When the real response spec is confirmed, only the map*() functions and the
+// endpoint paths below change; nothing outside this file should need edits.
+//
+// Cost-control invariant: decodeVin() is CHEAP and safe pre-payment. getFullReport()
+// is PAID and must only be reached through /api/report behind the entitlement gate.
+
+import { getEnv } from '@/lib/cf';
+import type { Env } from '@/db';
+
+// ---------- Public types ----------
+
+export interface VehicleSpecs {
+  vin: string;
+  year?: string;
+  make?: string;
+  model?: string;
+  trim?: string;
+  bodyStyle?: string;
+  drivetrain?: string;
+  engine?: string;
+  transmission?: string;
+  country?: string;
+  fuelType?: string;
+  raw?: unknown;
+}
+
+export interface FullReport {
+  vin: string;
+  specs: VehicleSpecs;
+  titleHistory?: unknown;
+  salvageTotalLoss?: unknown;
+  accidents?: unknown;
+  odometer?: unknown;
+  theft?: unknown;
+  liensLoans?: unknown;
+  auctionSales?: unknown;
+  photos?: unknown;
+  recalls?: unknown;
+  marketValue?: unknown;
+  sectionCount: number;
+  dataPointCount: number;
+  raw?: unknown;
+}
+
+// ---------- Typed errors ----------
+
+export class GoodCarValidationError extends Error { constructor(m = 'Invalid VIN') { super(m); this.name = 'GoodCarValidationError'; } }
+export class GoodCarAuthError extends Error { constructor(m = 'GoodCar auth/credit failure') { super(m); this.name = 'GoodCarAuthError'; } }
+export class GoodCarNotFoundError extends Error { constructor(m = 'No records for VIN') { super(m); this.name = 'GoodCarNotFoundError'; } }
+export class GoodCarRateLimitError extends Error { constructor(m = 'GoodCar rate limited') { super(m); this.name = 'GoodCarRateLimitError'; } }
+export class GoodCarTimeoutError extends Error { constructor(m = 'GoodCar timed out') { super(m); this.name = 'GoodCarTimeoutError'; } }
+export class GoodCarUnknownError extends Error { constructor(m = 'GoodCar error') { super(m); this.name = 'GoodCarUnknownError'; } }
+
+// ---------- VIN validation ----------
+
+const VIN_RE = /^[A-HJ-NPR-Z0-9]{17}$/; // 17 chars, no I/O/Q
+
+export function normalizeVin(vin: string): string {
+  return (vin || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
+}
+export function isValidVin(vin: string): boolean {
+  return VIN_RE.test(normalizeVin(vin));
+}
+
+// ---------- Low-level fetch ----------
+
+interface FetchArgs {
+  path: string;
+  form?: Record<string, string>; // x-www-form-urlencoded (VIN Decoder uses this)
+  json?: unknown; // application/json (comprehensive report uses this)
+}
+
+function logCall(o: { endpoint: string; vin: string; paid: boolean; ms: number; outcome: string; balance?: unknown }) {
+  // Structured, secret-free log for spend↔revenue reconciliation.
+  console.log('[goodcar]', JSON.stringify({ ...o, ts: new Date().toISOString() }));
+}
+
+async function goodcarFetch(env: Partial<Env>, args: FetchArgs): Promise<unknown> {
+  if (!env.GOODCAR_API_BASE || !env.GOODCAR_API_KEY) {
+    throw new GoodCarAuthError('GOODCAR_API_BASE / GOODCAR_API_KEY not configured');
+  }
+  const headerName = env.GOODCAR_AUTH_HEADER || 'Authorization';
+  const prefix = env.GOODCAR_AUTH_PREFIX ?? 'Bearer';
+  const authValue = prefix ? `${prefix} ${env.GOODCAR_API_KEY}` : env.GOODCAR_API_KEY;
+  const timeoutMs = Number(env.GOODCAR_TIMEOUT_MS) || 10000;
+
+  const headers: Record<string, string> = { [headerName]: authValue, Accept: 'application/json' };
+  let body: BodyInit | undefined;
+  if (args.form) {
+    headers['Content-Type'] = 'application/x-www-form-urlencoded';
+    body = new URLSearchParams(args.form).toString();
+  } else if (args.json !== undefined) {
+    headers['Content-Type'] = 'application/json';
+    body = JSON.stringify(args.json);
+  }
+
+  const url = `${env.GOODCAR_API_BASE.replace(/\/$/, '')}${args.path}`;
+  const ctrl = new AbortController();
+  const t = setTimeout(() => ctrl.abort(), timeoutMs);
+  try {
+    const res = await fetch(url, { method: 'POST', headers, body, signal: ctrl.signal });
+    if (res.status === 401 || res.status === 403) throw new GoodCarAuthError(`GoodCar ${res.status}`);
+    if (res.status === 404) throw new GoodCarNotFoundError();
+    if (res.status === 429) throw new GoodCarRateLimitError();
+    if (!res.ok) throw new GoodCarUnknownError(`GoodCar ${res.status}`);
+    return await res.json();
+  } catch (err) {
+    if (err instanceof Error && err.name === 'AbortError') throw new GoodCarTimeoutError();
+    if (err instanceof GoodCarAuthError || err instanceof GoodCarNotFoundError || err instanceof GoodCarRateLimitError) throw err;
+    throw new GoodCarUnknownError(err instanceof Error ? err.message : String(err));
+  } finally {
+    clearTimeout(t);
+  }
+}
+
+// ---------- Field mapping (the only place GoodCar field names live) ----------
+
+function str(v: unknown): string | undefined {
+  if (v === null || v === undefined || v === '') return undefined;
+  return String(v);
+}
+
+// Maps a GoodCar VIN Decoder `content[0]` object → our VehicleSpecs.
+function mapSpecs(c: Record<string, unknown>, vin: string): VehicleSpecs {
+  return {
+    vin,
+    year: str(c.model_year), //        TODO confirm field name
+    make: str(c.make), //              TODO confirm field name
+    model: str(c.model), //            TODO confirm field name
+    trim: str(c.series), //            TODO confirm field name (series vs style)
+    bodyStyle: str(c.style), //        TODO confirm field name
+    drivetrain: str(c.drivetrain), //  TODO confirm field name
+    engine: str(c.engine_description), // TODO confirm field name
+    transmission: str(c.transmission), // TODO confirm field name
+    country: str(c.country), //        TODO confirm field name
+    fuelType: str(c.fuel_type), //     TODO confirm field name
+    raw: c,
+  };
+}
+
+// Maps the comprehensive Vehicle History response → our FullReport.
+// TODO: confirm ALL field names against a real /vin-report-comprehensive response.
+function mapReport(data: Record<string, unknown>, vin: string): FullReport {
+  const content = Array.isArray(data.content) ? (data.content[0] as Record<string, unknown>) : (data as Record<string, unknown>);
+  const specs = content ? mapSpecs(content, vin) : { vin, raw: data };
+  const sections = {
+    titleHistory: content?.title_history, //      TODO confirm field name
+    salvageTotalLoss: content?.salvage, //        TODO confirm field name
+    accidents: content?.accidents, //             TODO confirm field name
+    odometer: content?.odometer, //               TODO confirm field name
+    theft: content?.theft, //                     TODO confirm field name
+    liensLoans: content?.liens, //                TODO confirm field name
+    auctionSales: content?.sales, //              TODO confirm field name
+    photos: content?.photos, //                   TODO confirm field name
+    recalls: content?.recalls, //                 TODO confirm field name
+    marketValue: content?.market_value, //        TODO confirm field name
+  };
+  const present = Object.values(sections).filter((v) => v != null);
+  return {
+    vin,
+    specs,
+    ...sections,
+    sectionCount: present.length || 9,
+    dataPointCount: 40, // TODO derive from the real response shape
+    raw: data,
+  };
+}
+
+// ---------- Public API ----------
+
+/** CHEAP — safe to call pre-payment. Retries once on timeout/5xx (decode path only). */
+export async function decodeVin(vin: string): Promise<VehicleSpecs> {
+  const clean = normalizeVin(vin);
+  if (!isValidVin(clean)) throw new GoodCarValidationError();
+  const env = await getEnv();
+
+  const attempt = async (): Promise<VehicleSpecs> => {
+    const started = Date.now();
+    try {
+      const data = (await goodcarFetch(env, { path: '/business/api/vin-decoder', form: { vin: clean } })) as {
+        content?: Record<string, unknown>[];
+        remainingBalance?: unknown;
+      };
+      const c = data.content?.[0];
+      if (!c) throw new GoodCarNotFoundError();
+      logCall({ endpoint: 'vin-decoder', vin: clean, paid: false, ms: Date.now() - started, outcome: 'ok', balance: data.remainingBalance });
+      return mapSpecs(c, clean);
+    } catch (err) {
+      logCall({ endpoint: 'vin-decoder', vin: clean, paid: false, ms: Date.now() - started, outcome: (err as Error).name || 'error' });
+      throw err;
+    }
+  };
+
+  try {
+    return await attempt();
+  } catch (err) {
+    // Retry once on transient failures only — never on validation/not-found/auth.
+    if (err instanceof GoodCarTimeoutError || err instanceof GoodCarUnknownError) {
+      await new Promise((r) => setTimeout(r, 400));
+      return attempt();
+    }
+    throw err;
+  }
+}
+
+/** PAID — only call after payment is confirmed (gated in /api/report). Never retried (no double-bill). */
+export async function getFullReport(vin: string): Promise<FullReport> {
+  const clean = normalizeVin(vin);
+  if (!isValidVin(clean)) throw new GoodCarValidationError();
+  const env = await getEnv();
+
+  const started = Date.now();
+  try {
+    const data = (await goodcarFetch(env, { path: '/business/api/vin-report-comprehensive', json: { vin: clean } })) as Record<string, unknown>;
+    logCall({ endpoint: 'vin-report-comprehensive', vin: clean, paid: true, ms: Date.now() - started, outcome: 'ok', balance: (data as { remainingBalance?: unknown }).remainingBalance });
+    return mapReport(data, clean);
+  } catch (err) {
+    logCall({ endpoint: 'vin-report-comprehensive', vin: clean, paid: true, ms: Date.now() - started, outcome: (err as Error).name || 'error' });
+    throw err;
+  }
+}

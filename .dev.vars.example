@@ -24,7 +24,16 @@ ANTHROPIC_API_KEY=sk-ant-...
 CRON_SECRET=replace-with-random-token
 
 # --- Site ---
-NEXT_PUBLIC_SITE_URL=https://carvinlookup.com
+NEXT_PUBLIC_SITE_URL=https://carvinlookup.us
 
 # --- Vehicle data (auto.dev) ---
 AUTODEV_API_KEY=
+
+# --- Vehicle data (GoodCar B2B API) — server-only, NEVER NEXT_PUBLIC_ ---
+GOODCAR_API_BASE=https://goodcar.com
+GOODCAR_API_KEY=
+GOODCAR_AUTH_HEADER=Authorization        # or X-API-Key
+GOODCAR_AUTH_PREFIX=Bearer               # or empty
+GOODCAR_TIMEOUT_MS=10000
+PREVIEW_RATE_LIMIT_PER_HOUR=20           # per IP, anti-scrape
+REPORT_CACHE_TTL_DAYS=30

@@ -3,6 +3,7 @@ import Stripe from 'stripe';
 import { getEnv } from '@/lib/cf';
 import { getPaymentConfig } from '@/lib/settings';
 import { convertToTrialSchedule } from '@/lib/stripe-billing';
+import { markVinUnlocked } from '@/lib/report-cache';
 
 export const runtime = 'edge';
 
@@ -32,8 +33,19 @@ export async function POST(request: Request) {
     switch (event.type) {
         case 'checkout.session.completed': {
             const session = event.data.object as Stripe.Checkout.Session;
-            // TODO(persist): mark order paid + unlock report using session.metadata in D1.
             console.log('✓ Checkout completed:', session.id, session.metadata);
+
+            // Entitlement: unlock the paid VIN so /api/report serves it (and so
+            // re-views skip Stripe verification). reportId carries the VIN.
+            const reportVin = String(session.metadata?.reportId || '').toUpperCase();
+            if (reportVin) {
+                try {
+                    await markVinUnlocked(env, reportVin, session.id);
+                    console.log('✓ Report unlocked:', reportVin);
+                } catch (err) {
+                    console.error('Failed to unlock report (will rely on session_id fallback):', err);
+                }
+            }
 
             // Trial subscription: convert the just-paid $1/3-day subscription into a
             // two-phase schedule so it flips to $29/month after the window instead of

@@ -19,6 +19,14 @@ export interface Env {
     NEXT_PUBLIC_SITE_URL?: string;
     // Vehicle data provider
     AUTODEV_API_KEY?: string;
+    // GoodCar B2B API (VIN decode + vehicle history)
+    GOODCAR_API_BASE?: string;
+    GOODCAR_API_KEY?: string;
+    GOODCAR_AUTH_HEADER?: string; // default "Authorization"
+    GOODCAR_AUTH_PREFIX?: string; // default "Bearer"
+    GOODCAR_TIMEOUT_MS?: string;
+    PREVIEW_RATE_LIMIT_PER_HOUR?: string;
+    REPORT_CACHE_TTL_DAYS?: string;
 }
 
 export const getDb = (env: Env) => {

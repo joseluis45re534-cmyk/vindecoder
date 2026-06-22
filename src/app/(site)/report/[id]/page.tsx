@@ -12,6 +12,7 @@ import PriceCountUp from '@/components/checkout/PriceCountUp';
 import TrialCheckout from '@/components/checkout/TrialCheckout';
 import SuccessCheck from '@/components/checkout/SuccessCheck';
 import ManageSubscriptionButton from '@/components/checkout/ManageSubscriptionButton';
+import UnlockedReport from '@/components/report/UnlockedReport';
 
 interface Preview {
   make: string;
@@ -64,14 +65,40 @@ function ReportContent() {
   useEffect(() => {
     const run = async () => {
       try {
-        const res = await fetch('/api/check-vin', {
+        // Free, pre-payment preview — GoodCar VIN Decoder via /api/preview.
+        const res = await fetch('/api/preview', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ vin: id }),
         });
-        const result = (await res.json()) as { success?: boolean; preview?: Preview; error?: string };
-        if (result.success && result.preview) setData({ ...result.preview, vin: result.preview.vin || id });
-        else setError(result.error || 'Failed to load report');
+        const result = (await res.json()) as {
+          success?: boolean;
+          specs?: {
+            vin?: string; year?: string; make?: string; model?: string; trim?: string;
+            bodyStyle?: string; drivetrain?: string; engine?: string; transmission?: string; country?: string;
+          };
+          error?: string;
+          notFound?: boolean;
+        };
+        if (result.success && result.specs) {
+          const s = result.specs;
+          setData({
+            make: s.make || '',
+            model: s.model || '',
+            year: Number(s.year) || 0,
+            vin: s.vin || id,
+            country: s.country,
+            engine: s.engine,
+            bodyType: s.bodyStyle,
+            trim: s.trim,
+            drivetrain: s.drivetrain,
+            transmission: s.transmission,
+            photoUrl: undefined, // decoder has no photo; exact-VIN photo comes with the paid report
+          });
+        } else {
+          // notFound → block checkout (the error branch renders and no report/CTA shows).
+          setError(result.error || 'Failed to load report');
+        }
       } catch {
         setError('Failed to load report');
       } finally {
@@ -213,6 +240,11 @@ function ReportContent() {
               </div>
             </motion.div>
 
+            {/* Once paid, the real GoodCar report replaces the locked teasers. */}
+            {paid && <UnlockedReport vin={id} sessionId={sessionId} />}
+
+            {!paid && (
+              <>
             {/* Findings grid */}
             <motion.div className="bg-white rounded-3xl shadow-sm border border-slate-100 p-6 sm:p-7" {...fadeUp}>
               <div className="flex items-center justify-between mb-5">
@@ -261,6 +293,8 @@ function ReportContent() {
                 <p className="text-sm text-slate-500 mt-1">40+ verified data points</p>
               </div>
             </motion.div>
+              </>
+            )}
           </div>
 
           {/* ===== RIGHT: sticky checkout / success card ===== */}
