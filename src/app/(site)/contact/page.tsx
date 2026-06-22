@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { Mail, Clock, ShieldCheck } from 'lucide-react';
+import ContactForm from '@/components/ContactForm';
 
 export const runtime = 'edge';
 
@@ -17,11 +18,11 @@ export default function ContactPage() {
         <p className="text-slate-500 mb-10 text-lg">
           Questions about a report, billing, or a dealer plan? We&apos;re happy to help.
         </p>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 mb-10">
           {[
-            { icon: Mail, t: 'Email', d: 'support@carvinlookup.com' },
+            { icon: Mail, t: 'Email', d: 'support@carvinlookup.us' },
             { icon: Clock, t: 'Hours', d: 'Mon–Fri, 9am–6pm ET' },
-            { icon: ShieldCheck, t: 'Dealers', d: 'dealers@carvinlookup.com' },
+            { icon: ShieldCheck, t: 'Dealers', d: 'dealers@carvinlookup.us' },
           ].map(({ icon: Icon, t, d }) => (
             <div key={t} className="bg-white rounded-2xl border border-slate-100 p-6 card-lift">
               <span className="inline-flex w-11 h-11 rounded-xl bg-blue-50 text-blue-600 items-center justify-center mb-4">
@@ -32,6 +33,8 @@ export default function ContactPage() {
             </div>
           ))}
         </div>
+
+        <ContactForm />
       </section>
     </main>
   );

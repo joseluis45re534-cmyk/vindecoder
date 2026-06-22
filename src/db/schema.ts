@@ -89,3 +89,49 @@ export const settings = sqliteTable('settings', {
     value: text('value', { mode: 'json' }).notNull(),
     updated_at: text('updated_at').default(sql`CURRENT_TIMESTAMP`),
 });
+
+/** Visitor support chat sessions — bot-first, with handoff to a human agent. */
+export const chatSessions = sqliteTable('chat_sessions', {
+    id: text('id').primaryKey(),
+    visitor_id: text('visitor_id').notNull(),
+    // bot = AI answering, waiting = human requested, live = agent active, closed = done
+    status: text('status', { enum: ['bot', 'waiting', 'live', 'closed'] }).default('bot'),
+    meta: text('meta', { mode: 'json' }),
+    created_at: text('created_at').default(sql`CURRENT_TIMESTAMP`),
+    last_message_at: text('last_message_at').default(sql`CURRENT_TIMESTAMP`),
+});
+
+/** Individual messages within a chat session. */
+export const chatMessages = sqliteTable('chat_messages', {
+    id: text('id').primaryKey(),
+    session_id: text('session_id').notNull(),
+    // user = visitor, assistant = AI bot, agent = human operator, system = notices
+    role: text('role', { enum: ['user', 'assistant', 'agent', 'system'] }).notNull(),
+    content: text('content').notNull(),
+    created_at: text('created_at').default(sql`CURRENT_TIMESTAMP`),
+});
+
+/** Cheap VIN-decoder results, cached by VIN (TTL enforced in app code). */
+export const vinDecodes = sqliteTable('vin_decodes', {
+    vin: text('vin').primaryKey(),
+    data: text('data', { mode: 'json' }).notNull(),
+    created_at: text('created_at').default(sql`CURRENT_TIMESTAMP`),
+});
+
+/** Per-IP rate-limit counters (anti-scrape for the free preview). */
+export const rateLimits = sqliteTable('rate_limits', {
+    key: text('key').primaryKey(),
+    hits: integer('hits').default(0),
+    window_start: text('window_start').default(sql`CURRENT_TIMESTAMP`),
+});
+
+/** Contact-form submissions, triaged from the admin inbox. */
+export const contactMessages = sqliteTable('contact_messages', {
+    id: text('id').primaryKey(),
+    name: text('name'),
+    email: text('email').notNull(),
+    subject: text('subject'),
+    message: text('message').notNull(),
+    status: text('status', { enum: ['new', 'read', 'replied'] }).default('new'),
+    created_at: text('created_at').default(sql`CURRENT_TIMESTAMP`),
+});

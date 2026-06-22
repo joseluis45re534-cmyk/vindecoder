@@ -141,6 +141,10 @@ export function SiteFooter() {
             <span className="text-slate-700" aria-hidden="true">·</span>
             <Link href="/terms" className="hover:text-white transition-colors">Terms of Service</Link>
             <span className="text-slate-700" aria-hidden="true">·</span>
+            <Link href="/refund" className="hover:text-white transition-colors">Refund &amp; Cancellation</Link>
+            <span className="text-slate-700" aria-hidden="true">·</span>
+            <Link href="/cookies" className="hover:text-white transition-colors">Cookies</Link>
+            <span className="text-slate-700" aria-hidden="true">·</span>
             <Link href="/contact" className="hover:text-white transition-colors">Contact</Link>
             <span className="text-slate-700" aria-hidden="true">·</span>
             <Link href="/about" className="hover:text-white transition-colors">About</Link>

@@ -9,6 +9,7 @@ import {
   Newspaper,
   Settings,
   ShieldCheck,
+  Inbox,
 } from "lucide-react";
 import AdminLogout from "@/components/admin/AdminLogout";
 import AdminMobileNav from "@/components/admin/AdminMobileNav";
@@ -20,6 +21,7 @@ export const metadata: Metadata = {
 
 const NAV = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/admin/inbox", label: "Inbox", icon: Inbox },
   { href: "/admin/orders", label: "Payments", icon: CreditCard },
   { href: "/admin/pricing", label: "Pricing", icon: Tags },
   { href: "/admin/users", label: "Users", icon: Users },
