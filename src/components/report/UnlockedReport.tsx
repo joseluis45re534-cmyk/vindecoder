@@ -48,9 +48,10 @@ function summarize(key: string, v: unknown): string {
   const o = (v && typeof v === 'object' ? (v as Record<string, unknown>) : {}) as Record<string, unknown>;
   switch (key) {
     case 'titleHistory': {
+      // o.issues is GoodCar's list of title CHECKS run (mostly "clear"), not
+      // confirmed brands — so summarize by owners only to avoid over-counting.
       const owners = Array.isArray(o.owners) ? o.owners.length : 0;
-      const issues = Array.isArray(o.issues) ? o.issues.length : 0;
-      return `${plural(owners, 'owner')}${issues ? ` · ${plural(issues, 'brand')}` : ''}`;
+      return owners ? plural(owners, 'owner') : 'Title on record';
     }
     case 'salvageTotalLoss': {
       const n = (Array.isArray(o.junk) ? o.junk.length : 0) + (Array.isArray(o.totalLoss) ? o.totalLoss.length : 0);

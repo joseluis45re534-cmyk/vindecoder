@@ -258,8 +258,10 @@ export async function getFullReport(vin: string): Promise<FullReport> {
 
   const started = Date.now();
   try {
-    // The comprehensive report is heavy — give it a longer timeout than the decode.
-    const data = (await goodcarFetch(env, { path: '/business/api/vin-report-comprehensive', json: { vin: clean }, timeoutMs: 25000 })) as Record<string, unknown>;
+    // NOTE: despite GoodCar's docs showing a JSON body, this endpoint actually
+    // requires form-encoding (JSON → 400 "Missing required fields!"), same as the
+    // decoder. Heavy report → longer timeout than the decode.
+    const data = (await goodcarFetch(env, { path: '/business/api/vin-report-comprehensive', form: { vin: clean }, timeoutMs: 25000 })) as Record<string, unknown>;
     logCall({ endpoint: 'vin-report-comprehensive', vin: clean, paid: true, ms: Date.now() - started, outcome: 'ok', balance: (data as { remainingBalance?: unknown }).remainingBalance });
     return mapReport(data, clean);
   } catch (err) {
