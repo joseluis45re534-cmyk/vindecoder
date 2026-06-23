@@ -40,6 +40,8 @@ export interface FullReport {
   marketValue?: unknown;
   sectionCount: number;
   dataPointCount: number;
+  /** content.main.mainCarImage — the paid report's vehicle photo, when present. */
+  photoUrl?: string;
   raw?: unknown;
 }
 
@@ -69,6 +71,7 @@ interface FetchArgs {
   path: string;
   form?: Record<string, string>; // x-www-form-urlencoded (VIN Decoder uses this)
   json?: unknown; // application/json (comprehensive report uses this)
+  timeoutMs?: number; // override (the comprehensive report is heavy)
 }
 
 function logCall(o: { endpoint: string; vin: string; paid: boolean; ms: number; outcome: string; balance?: unknown }) {
@@ -83,7 +86,7 @@ async function goodcarFetch(env: Partial<Env>, args: FetchArgs): Promise<unknown
   const headerName = env.GOODCAR_AUTH_HEADER || 'Authorization';
   const prefix = env.GOODCAR_AUTH_PREFIX ?? 'Bearer';
   const authValue = prefix ? `${prefix} ${env.GOODCAR_API_KEY}` : env.GOODCAR_API_KEY;
-  const timeoutMs = Number(env.GOODCAR_TIMEOUT_MS) || 10000;
+  const timeoutMs = args.timeoutMs || Number(env.GOODCAR_TIMEOUT_MS) || 10000;
 
   const headers: Record<string, string> = { [headerName]: authValue, Accept: 'application/json' };
   let body: BodyInit | undefined;
@@ -101,7 +104,8 @@ async function goodcarFetch(env: Partial<Env>, args: FetchArgs): Promise<unknown
   try {
     const res = await fetch(url, { method: 'POST', headers, body, signal: ctrl.signal });
     if (res.status === 401 || res.status === 403) throw new GoodCarAuthError(`GoodCar ${res.status}`);
-    if (res.status === 404) throw new GoodCarNotFoundError();
+    // 400 = bad VIN, 404/422 = no data for this VIN ("no-hit no fee") → treat as not-found.
+    if (res.status === 404 || res.status === 422 || res.status === 400) throw new GoodCarNotFoundError();
     if (res.status === 429) throw new GoodCarRateLimitError();
     if (!res.ok) throw new GoodCarUnknownError(`GoodCar ${res.status}`);
     return await res.json();
@@ -139,30 +143,72 @@ function mapSpecs(c: Record<string, unknown>, vin: string): VehicleSpecs {
   };
 }
 
-// Maps the comprehensive Vehicle History response → our FullReport.
-// TODO: confirm ALL field names against a real /vin-report-comprehensive response.
-function mapReport(data: Record<string, unknown>, vin: string): FullReport {
-  const content = Array.isArray(data.content) ? (data.content[0] as Record<string, unknown>) : (data as Record<string, unknown>);
-  const specs = content ? mapSpecs(content, vin) : { vin, raw: data };
-  const sections = {
-    titleHistory: content?.title_history, //      TODO confirm field name
-    salvageTotalLoss: content?.salvage, //        TODO confirm field name
-    accidents: content?.accidents, //             TODO confirm field name
-    odometer: content?.odometer, //               TODO confirm field name
-    theft: content?.theft, //                     TODO confirm field name
-    liensLoans: content?.liens, //                TODO confirm field name
-    auctionSales: content?.sales, //              TODO confirm field name
-    photos: content?.photos, //                   TODO confirm field name
-    recalls: content?.recalls, //                 TODO confirm field name
-    marketValue: content?.market_value, //        TODO confirm field name
+type AnyObj = Record<string, unknown>;
+const obj = (v: unknown): AnyObj => (v && typeof v === 'object' && !Array.isArray(v) ? (v as AnyObj) : {});
+const arr = (v: unknown): unknown[] => (Array.isArray(v) ? v : []);
+// GoodCar marks empty sections with isNoHit: "true" (string) or true.
+const noHit = (s: unknown): boolean => {
+  const o = obj(s);
+  return o.isNoHit === true || o.isNoHit === 'true';
+};
+
+// Maps GoodCar's comprehensive Vehicle History response → our FullReport.
+// Field paths confirmed against GoodCar's documented `content.section_*` schema.
+// GoodCar has no theft or lien section, so those stay null (→ "No records found").
+function mapReport(data: AnyObj, vin: string): FullReport {
+  const c = obj(data.content);
+  const main = obj(c.main);
+  const vd = obj(main.vehicleDataRaw);
+
+  const specs: VehicleSpecs = {
+    vin,
+    year: str(vd.year),
+    make: str(vd.make),
+    model: str(vd.model),
+    raw: main,
   };
-  const present = Object.values(sections).filter((v) => v != null);
+
+  const owners = arr(obj(c.section_title).ownerships);
+  const titleIssues = arr(obj(c.section_title_issues).problemCheckRows);
+  const junk = arr(obj(c.section_junk).junkAndSalvageRecords);
+  const loss = arr(obj(c.section_loss).insurersRecords);
+  const sales = arr(obj(c.section_sales).salesHistoryRecords);
+  const recallRecords = arr(obj(c.section_recalls).recallRecords);
+  const mileage = obj(c.section_mileage);
+  const photo = str(main.mainCarImage);
+
+  const titleHistory = owners.length || titleIssues.length ? { owners, issues: titleIssues } : null;
+  const salvageTotalLoss = junk.length || loss.length ? { junk, totalLoss: loss } : null;
+  const accidents = noHit(c.section_accidents) ? null : (c.section_accidents ?? null);
+  const odometer =
+    !noHit(mileage) && (str(mileage.lastReportedMileage) || str(mileage.estimatedMileage))
+      ? { lastReportedMileage: str(mileage.lastReportedMileage), estimatedMileage: str(mileage.estimatedMileage), records: arr(mileage.mileageRecordsStates) }
+      : null;
+  const auctionSales = sales.length ? sales : null;
+  const recalls = recallRecords.length ? recallRecords : null;
+  const marketValue = !noHit(c.section_market_values) && Object.keys(obj(c.section_market_values)).length ? c.section_market_values : null;
+
+  const sections = {
+    titleHistory,
+    salvageTotalLoss,
+    accidents,
+    odometer,
+    theft: null, //      GoodCar comprehensive has no theft section
+    liensLoans: null, // GoodCar comprehensive has no lien section
+    auctionSales,
+    photos: photo ? [photo] : null,
+    recalls,
+    marketValue,
+  };
+  const present = Object.values(sections).filter((v) => v != null).length;
+
   return {
     vin,
     specs,
     ...sections,
-    sectionCount: present.length || 9,
-    dataPointCount: 40, // TODO derive from the real response shape
+    photoUrl: photo,
+    sectionCount: present,
+    dataPointCount: 40,
     raw: data,
   };
 }
@@ -212,7 +258,8 @@ export async function getFullReport(vin: string): Promise<FullReport> {
 
   const started = Date.now();
   try {
-    const data = (await goodcarFetch(env, { path: '/business/api/vin-report-comprehensive', json: { vin: clean } })) as Record<string, unknown>;
+    // The comprehensive report is heavy — give it a longer timeout than the decode.
+    const data = (await goodcarFetch(env, { path: '/business/api/vin-report-comprehensive', json: { vin: clean }, timeoutMs: 25000 })) as Record<string, unknown>;
     logCall({ endpoint: 'vin-report-comprehensive', vin: clean, paid: true, ms: Date.now() - started, outcome: 'ok', balance: (data as { remainingBalance?: unknown }).remainingBalance });
     return mapReport(data, clean);
   } catch (err) {

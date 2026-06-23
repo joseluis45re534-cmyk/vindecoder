@@ -17,6 +17,7 @@ interface ReportData {
   photos?: unknown;
   recalls?: unknown;
   marketValue?: unknown;
+  photoUrl?: string;
   sectionCount?: number;
   dataPointCount?: number;
 }
@@ -40,10 +41,34 @@ function hasData(v: unknown): boolean {
   return String(v).trim() !== '';
 }
 
-function summarize(v: unknown): string {
-  if (Array.isArray(v)) return `${v.length} record${v.length === 1 ? '' : 's'} found`;
-  if (typeof v === 'object' && v) return 'Records found — see details';
-  return String(v);
+const plural = (n: number, w: string) => `${n} ${w}${n === 1 ? '' : 's'}`;
+
+// Short, human summary per section from the mapped GoodCar data.
+function summarize(key: string, v: unknown): string {
+  const o = (v && typeof v === 'object' ? (v as Record<string, unknown>) : {}) as Record<string, unknown>;
+  switch (key) {
+    case 'titleHistory': {
+      const owners = Array.isArray(o.owners) ? o.owners.length : 0;
+      const issues = Array.isArray(o.issues) ? o.issues.length : 0;
+      return `${plural(owners, 'owner')}${issues ? ` · ${plural(issues, 'brand')}` : ''}`;
+    }
+    case 'salvageTotalLoss': {
+      const n = (Array.isArray(o.junk) ? o.junk.length : 0) + (Array.isArray(o.totalLoss) ? o.totalLoss.length : 0);
+      return plural(n, 'record');
+    }
+    case 'odometer':
+      return o.lastReportedMileage ? `${o.lastReportedMileage} mi` : o.estimatedMileage ? `~${o.estimatedMileage} mi` : 'Reported';
+    case 'auctionSales':
+      return plural(Array.isArray(v) ? v.length : 0, 'sale record');
+    case 'photos':
+      return plural(Array.isArray(v) ? v.length : 0, 'photo');
+    case 'recalls':
+      return plural(Array.isArray(v) ? v.length : 0, 'open recall');
+    case 'marketValue':
+      return 'Estimates available';
+    default:
+      return 'Records found';
+  }
 }
 
 export default function UnlockedReport({ vin, sessionId }: { vin: string; sessionId?: string }) {
@@ -130,6 +155,12 @@ export default function UnlockedReport({ vin, sessionId }: { vin: string; sessio
           <CheckCircle2 className="w-3.5 h-3.5" aria-hidden="true" /> Unlocked
         </span>
       </div>
+      {report?.photoUrl && (
+        <div className="relative w-full h-48 rounded-2xl overflow-hidden bg-slate-100 border border-slate-200 mb-4">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={report.photoUrl} alt="Vehicle photo" className="w-full h-full object-cover" />
+        </div>
+      )}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
         {SECTIONS.map(({ key, icon: Icon, label }) => {
           const present = report ? hasData(report[key]) : false;
@@ -142,7 +173,7 @@ export default function UnlockedReport({ vin, sessionId }: { vin: string; sessio
               </div>
               <p className="font-bold text-slate-900 text-sm leading-snug">{label}</p>
               <p className={`text-[11px] mt-0.5 ${present ? 'text-slate-600' : 'text-slate-400'}`}>
-                {present ? summarize(report?.[key]) : 'No records found'}
+                {present ? summarize(key, report?.[key]) : 'No records found'}
               </p>
             </div>
           );
