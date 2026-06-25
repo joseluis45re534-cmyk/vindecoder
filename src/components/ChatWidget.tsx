@@ -36,6 +36,13 @@ export default function ChatWidget() {
     sessionId.current = localStorage.getItem(LS_SESSION) || '';
   }, []);
 
+  // Let any "Chat with us" button on the site open the widget.
+  useEffect(() => {
+    const handler = () => setOpen(true);
+    window.addEventListener('cvl:open-chat', handler);
+    return () => window.removeEventListener('cvl:open-chat', handler);
+  }, []);
+
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' });
   }, [messages, open]);
