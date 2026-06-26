@@ -107,7 +107,7 @@ async function fetchWithTimeout(url: string, init: RequestInit, ms: number): Pro
 // public CDN retail.photos.vin as `{VIN}-1.jpg` and persist after the listing churns.
 // We only ever show the exact vehicle's photo — never a same-model stand-in — so a
 // 404 here means there is genuinely no photo of this car (→ neutral placeholder).
-async function exactVinPhoto(vin: string): Promise<string | undefined> {
+export async function exactVinPhoto(vin: string): Promise<string | undefined> {
     const url = `https://retail.photos.vin/${encodeURIComponent(vin)}-1.jpg`;
     try {
         const res = await fetchWithTimeout(url, {}, 4000);

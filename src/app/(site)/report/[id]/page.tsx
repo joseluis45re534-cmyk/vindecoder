@@ -76,6 +76,7 @@ function ReportContent() {
           specs?: {
             vin?: string; year?: string; make?: string; model?: string; trim?: string;
             bodyStyle?: string; drivetrain?: string; engine?: string; transmission?: string; country?: string;
+            photoUrl?: string;
           };
           error?: string;
           notFound?: boolean;
@@ -93,7 +94,9 @@ function ReportContent() {
             trim: s.trim,
             drivetrain: s.drivetrain,
             transmission: s.transmission,
-            photoUrl: undefined, // decoder has no photo; exact-VIN photo comes with the paid report
+            // Verified exact-VIN photo from the key-free retail CDN when one exists,
+            // else undefined → neutral placeholder (never a same-model stand-in).
+            photoUrl: s.photoUrl,
           });
         } else {
           // notFound → block checkout (the error branch renders and no report/CTA shows).

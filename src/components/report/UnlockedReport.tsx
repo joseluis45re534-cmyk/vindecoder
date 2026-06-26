@@ -76,6 +76,7 @@ export default function UnlockedReport({ vin, sessionId }: { vin: string; sessio
   const [report, setReport] = useState<ReportData | null>(null);
   const [state, setState] = useState<'loading' | 'ready' | 'retry' | 'error' | 'notfound'>('loading');
   const [msg, setMsg] = useState('');
+  const [photoFailed, setPhotoFailed] = useState(false);
 
   const load = useCallback(async () => {
     setState('loading');
@@ -156,10 +157,15 @@ export default function UnlockedReport({ vin, sessionId }: { vin: string; sessio
           <CheckCircle2 className="w-3.5 h-3.5" aria-hidden="true" /> Unlocked
         </span>
       </div>
-      {report?.photoUrl && (
+      {report?.photoUrl && !photoFailed && (
         <div className="relative w-full h-48 rounded-2xl overflow-hidden bg-slate-100 border border-slate-200 mb-4">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={report.photoUrl} alt="Vehicle photo" className="w-full h-full object-cover" />
+          <img
+            src={report.photoUrl}
+            alt="Vehicle photo"
+            className="w-full h-full object-cover"
+            onError={() => setPhotoFailed(true)}
+          />
         </div>
       )}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">

@@ -10,6 +10,7 @@ import {
   GoodCarTimeoutError,
 } from '@/lib/goodcar';
 import { getCachedDecode, setCachedDecode, allowRequest } from '@/lib/report-cache';
+import { exactVinPhoto } from '@/lib/vehicle-api';
 
 export const runtime = 'edge';
 
@@ -46,7 +47,14 @@ export async function POST(request: Request) {
   }
 
   try {
-    const specs = await decodeVin(vin); // CHEAP call (retries once on transient failure)
+    // Decode + best-effort exact-VIN photo (key-free CDN) run in parallel, so the
+    // photo never adds latency or fails the decode. undefined = no real photo of
+    // this VIN exists (→ the page shows a neutral placeholder, never a stand-in).
+    const [specs, photoUrl] = await Promise.all([
+      decodeVin(vin), // CHEAP call (retries once on transient failure)
+      exactVinPhoto(vin),
+    ]);
+    if (photoUrl) specs.photoUrl = photoUrl;
     await setCachedDecode(env, vin, specs);
     return NextResponse.json({ success: true, vin, specs });
   } catch (err) {

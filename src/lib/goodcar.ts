@@ -22,6 +22,8 @@ export interface VehicleSpecs {
   transmission?: string;
   country?: string;
   fuelType?: string;
+  /** Real photo of THIS exact vehicle (auto.dev retail CDN), when one exists. */
+  photoUrl?: string;
   raw?: unknown;
 }
 

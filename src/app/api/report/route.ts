@@ -4,6 +4,7 @@ import { getEnv } from '@/lib/cf';
 import { getPaymentConfig } from '@/lib/settings';
 import { getFullReport, normalizeVin, isValidVin, GoodCarNotFoundError } from '@/lib/goodcar';
 import { getCachedReport, setCachedReport, isVinUnlocked, markVinUnlocked } from '@/lib/report-cache';
+import { exactVinPhoto } from '@/lib/vehicle-api';
 
 export const runtime = 'edge';
 
@@ -52,7 +53,17 @@ export async function POST(request: Request) {
   }
 
   try {
-    const report = await getFullReport(vin); // PAID — runs exactly once per VIN per TTL
+    // PAID GoodCar report + best-effort exact-VIN photo (key-free), in parallel.
+    // GoodCar's mainCarImage is frequently empty, so fall back to the verified
+    // exact-VIN CDN photo when present — never a same-model stand-in.
+    const [report, photoUrl] = await Promise.all([
+      getFullReport(vin), // PAID — runs exactly once per VIN per TTL
+      exactVinPhoto(vin),
+    ]);
+    if (!report.photoUrl && photoUrl) {
+      report.photoUrl = photoUrl;
+      report.photos = [photoUrl];
+    }
     await setCachedReport(env, vin, report);
     return NextResponse.json({ success: true, vin, report });
   } catch (err) {
