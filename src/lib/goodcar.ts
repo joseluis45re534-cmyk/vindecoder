@@ -24,6 +24,8 @@ export interface VehicleSpecs {
   fuelType?: string;
   /** Real photo of THIS exact vehicle (auto.dev retail CDN), when one exists. */
   photoUrl?: string;
+  /** GoodCar per-make logo — branded fallback when no real photo exists. */
+  brandImageUrl?: string;
   raw?: unknown;
 }
 
@@ -44,6 +46,8 @@ export interface FullReport {
   dataPointCount: number;
   /** content.main.mainCarImage — the paid report's vehicle photo, when present. */
   photoUrl?: string;
+  /** GoodCar per-make logo (section_mfr.manufacturer.carBrandImg) — branded fallback. */
+  brandImageUrl?: string;
   raw?: unknown;
 }
 
@@ -65,6 +69,15 @@ export function normalizeVin(vin: string): string {
 }
 export function isValidVin(vin: string): boolean {
   return VIN_RE.test(normalizeVin(vin));
+}
+
+// GoodCar serves a per-make logo at a predictable CDN path (confirmed across
+// makes). We use it as a BRANDED FALLBACK image when no real photo of the exact
+// vehicle exists — it's GoodCar's own asset, shown as a make emblem, never as a
+// stand-in photo of the car.
+export function goodcarBrandImageUrl(make?: string): string | undefined {
+  const slug = (make || '').trim().toLowerCase().replace(/\s+/g, '-');
+  return slug ? `https://goodcar.com/packages/premvin/img/cars/${slug}.png` : undefined;
 }
 
 // ---------- Low-level fetch ----------
@@ -178,6 +191,9 @@ function mapReport(data: AnyObj, vin: string): FullReport {
   const recallRecords = arr(obj(c.section_recalls).recallRecords);
   const mileage = obj(c.section_mileage);
   const photo = str(main.mainCarImage);
+  // GoodCar's make logo (real API asset) → branded fallback when there's no photo.
+  const mfr = obj(obj(c.section_mfr).manufacturer);
+  const brandImageUrl = str(mfr.carBrandImg) || goodcarBrandImageUrl(str(vd.make));
 
   const titleHistory = owners.length || titleIssues.length ? { owners, issues: titleIssues } : null;
   const salvageTotalLoss = junk.length || loss.length ? { junk, totalLoss: loss } : null;
@@ -209,6 +225,7 @@ function mapReport(data: AnyObj, vin: string): FullReport {
     specs,
     ...sections,
     photoUrl: photo,
+    brandImageUrl,
     sectionCount: present,
     dataPointCount: 40,
     raw: data,

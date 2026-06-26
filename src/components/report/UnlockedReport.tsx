@@ -18,6 +18,7 @@ interface ReportData {
   recalls?: unknown;
   marketValue?: unknown;
   photoUrl?: string;
+  brandImageUrl?: string;
   sectionCount?: number;
   dataPointCount?: number;
 }
@@ -77,6 +78,7 @@ export default function UnlockedReport({ vin, sessionId }: { vin: string; sessio
   const [state, setState] = useState<'loading' | 'ready' | 'retry' | 'error' | 'notfound'>('loading');
   const [msg, setMsg] = useState('');
   const [photoFailed, setPhotoFailed] = useState(false);
+  const [brandFailed, setBrandFailed] = useState(false);
 
   const load = useCallback(async () => {
     setState('loading');
@@ -157,7 +159,7 @@ export default function UnlockedReport({ vin, sessionId }: { vin: string; sessio
           <CheckCircle2 className="w-3.5 h-3.5" aria-hidden="true" /> Unlocked
         </span>
       </div>
-      {report?.photoUrl && !photoFailed && (
+      {report?.photoUrl && !photoFailed ? (
         <div className="relative w-full h-48 rounded-2xl overflow-hidden bg-slate-100 border border-slate-200 mb-4">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
@@ -167,7 +169,20 @@ export default function UnlockedReport({ vin, sessionId }: { vin: string; sessio
             onError={() => setPhotoFailed(true)}
           />
         </div>
-      )}
+      ) : report?.brandImageUrl && !brandFailed ? (
+        // GoodCar make emblem — real brand logo from the GoodCar API, shown when
+        // no actual photo of this exact vehicle exists.
+        <div className="w-full h-48 rounded-2xl overflow-hidden bg-gradient-to-br from-slate-50 to-slate-100 border border-slate-200 mb-4 flex flex-col items-center justify-center gap-2 px-4">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={report.brandImageUrl}
+            alt="Make logo"
+            className="max-h-20 max-w-[60%] object-contain"
+            onError={() => setBrandFailed(true)}
+          />
+          <span className="text-[11px] text-slate-400 font-medium">No photo on record · showing make</span>
+        </div>
+      ) : null}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
         {SECTIONS.map(({ key, icon: Icon, label }) => {
           const present = report ? hasData(report[key]) : false;

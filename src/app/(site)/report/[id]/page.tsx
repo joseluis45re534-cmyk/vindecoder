@@ -26,6 +26,7 @@ interface Preview {
   drivetrain?: string;
   transmission?: string;
   photoUrl?: string;
+  brandImageUrl?: string;
 }
 
 const EASE = [0.22, 1, 0.36, 1] as const;
@@ -61,6 +62,7 @@ function ReportContent() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [photoFailed, setPhotoFailed] = useState(false);
+  const [brandFailed, setBrandFailed] = useState(false);
 
   useEffect(() => {
     const run = async () => {
@@ -76,7 +78,7 @@ function ReportContent() {
           specs?: {
             vin?: string; year?: string; make?: string; model?: string; trim?: string;
             bodyStyle?: string; drivetrain?: string; engine?: string; transmission?: string; country?: string;
-            photoUrl?: string;
+            photoUrl?: string; brandImageUrl?: string;
           };
           error?: string;
           notFound?: boolean;
@@ -95,8 +97,9 @@ function ReportContent() {
             drivetrain: s.drivetrain,
             transmission: s.transmission,
             // Verified exact-VIN photo from the key-free retail CDN when one exists,
-            // else undefined → neutral placeholder (never a same-model stand-in).
+            // else undefined → GoodCar make emblem → neutral placeholder.
             photoUrl: s.photoUrl,
+            brandImageUrl: s.brandImageUrl,
           });
         } else {
           // notFound → block checkout (the error branch renders and no report/CTA shows).
@@ -142,9 +145,11 @@ function ReportContent() {
     { k: 'Transmission', v: data.transmission },
     { k: 'Country', v: data.country },
   ].filter((f) => f.v) as { k: string; v: string }[];
-  // Only ever show this exact vehicle's real dealer photo. When auto.dev has none,
-  // we show a neutral placeholder — never a same-model stand-in or lifestyle stock.
+  // Only ever show this exact vehicle's real dealer photo. When none exists, fall
+  // back to GoodCar's make emblem (a brand logo, clearly labeled) — never a
+  // same-model stand-in or lifestyle stock — then a neutral placeholder.
   const hasRealPhoto = Boolean(data.photoUrl) && !photoFailed;
+  const showBrand = !hasRealPhoto && Boolean(data.brandImageUrl) && !brandFailed;
 
   // Section entrance: fade + slide as each card scrolls into view (no-op under
   // prefers-reduced-motion).
@@ -220,6 +225,19 @@ function ReportContent() {
                         <span className="text-[10px] text-white font-semibold leading-tight">Photo of this vehicle</span>
                       </div>
                     </>
+                  ) : showBrand ? (
+                    // GoodCar make emblem — a real brand logo from the GoodCar API,
+                    // shown when no actual photo of this exact vehicle exists.
+                    <div className="w-full h-full flex flex-col items-center justify-center text-center px-4 gap-2 bg-gradient-to-br from-slate-50 to-slate-100">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={data.brandImageUrl as string}
+                        alt={`${data.make} logo`}
+                        className="max-h-16 max-w-[70%] object-contain"
+                        onError={() => setBrandFailed(true)}
+                      />
+                      <span className="text-[10px] text-slate-400 font-medium leading-tight">No photo on record · showing make</span>
+                    </div>
                   ) : (
                     // Neutral placeholder — no real photo of this exact VIN exists.
                     <div className="w-full h-full flex flex-col items-center justify-center text-center px-3 gap-2 bg-gradient-to-br from-slate-50 to-slate-100">

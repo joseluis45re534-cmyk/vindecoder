@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import Stripe from 'stripe';
 import { getEnv } from '@/lib/cf';
 import { getPaymentConfig } from '@/lib/settings';
-import { getFullReport, normalizeVin, isValidVin, GoodCarNotFoundError } from '@/lib/goodcar';
+import { getFullReport, normalizeVin, isValidVin, goodcarBrandImageUrl, GoodCarNotFoundError } from '@/lib/goodcar';
 import { getCachedReport, setCachedReport, isVinUnlocked, markVinUnlocked } from '@/lib/report-cache';
 import { exactVinPhoto } from '@/lib/vehicle-api';
 
@@ -46,7 +46,11 @@ export async function POST(request: Request) {
 
   // Idempotent: a paid user re-viewing hits cache and never re-bills GoodCar.
   const cached = await getCachedReport(env, vin);
-  if (cached) return NextResponse.json({ success: true, vin, report: cached, cached: true });
+  if (cached) {
+    // Backfill the branded fallback for reports cached before this field existed.
+    if (!cached.brandImageUrl) cached.brandImageUrl = goodcarBrandImageUrl(cached.specs?.make);
+    return NextResponse.json({ success: true, vin, report: cached, cached: true });
+  }
 
   if (!env.GOODCAR_API_KEY) {
     return NextResponse.json({ error: 'Report service is temporarily unavailable.', retryable: true }, { status: 503 });

@@ -4,6 +4,7 @@ import {
   decodeVin,
   normalizeVin,
   isValidVin,
+  goodcarBrandImageUrl,
   GoodCarNotFoundError,
   GoodCarAuthError,
   GoodCarRateLimitError,
@@ -40,7 +41,11 @@ export async function POST(request: Request) {
 
   // Serve from cache to avoid re-billing repeat lookups.
   const cached = await getCachedDecode(env, vin);
-  if (cached) return NextResponse.json({ success: true, vin, specs: cached, cached: true });
+  if (cached) {
+    // Backfill the branded fallback for decodes cached before this field existed.
+    if (!cached.brandImageUrl) cached.brandImageUrl = goodcarBrandImageUrl(cached.make);
+    return NextResponse.json({ success: true, vin, specs: cached, cached: true });
+  }
 
   if (!env.GOODCAR_API_KEY) {
     return NextResponse.json({ error: 'Vehicle lookup is temporarily unavailable.', configured: false }, { status: 503 });
@@ -55,6 +60,9 @@ export async function POST(request: Request) {
       exactVinPhoto(vin),
     ]);
     if (photoUrl) specs.photoUrl = photoUrl;
+    // GoodCar make logo as the branded fallback image (the decoder doesn't return
+    // it, but GoodCar serves it at a predictable per-make path).
+    specs.brandImageUrl = goodcarBrandImageUrl(specs.make);
     await setCachedDecode(env, vin, specs);
     return NextResponse.json({ success: true, vin, specs });
   } catch (err) {
