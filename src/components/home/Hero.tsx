@@ -78,37 +78,9 @@ export default function Hero() {
               </span>
               <span className="text-[11px] text-slate-400 font-mono">1HG…CM82</span>
             </div>
-            <div className="relative rounded-2xl h-36 bg-gradient-to-br from-sky-50 to-slate-200 mb-4 overflow-hidden">
-              <svg viewBox="0 0 280 130" className="w-full h-full" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Sample sedan illustration">
-                {/* ground shadow */}
-                <ellipse cx="140" cy="117" rx="112" ry="8" fill="#0f172a" opacity="0.07" />
-                {/* body */}
-                <path d="M32 90 L32 78 Q32 68 44 66 L92 60 Q99 43 122 41 L150 39 Q176 39 196 58 L240 64 Q252 66 252 80 L252 90 L230 90 Q208 50 186 90 L106 90 Q84 50 62 90 Z" fill="#2563EB" />
-                {/* lower-body shade */}
-                <path d="M32 90 L252 90 L230 90 Q208 50 186 90 L106 90 Q84 50 62 90 Z" fill="#1e40af" opacity="0.18" />
-                {/* belt-line highlight */}
-                <path d="M44 66 L92 60 Q99 43 122 41 L150 39 Q176 39 196 58 L240 64" fill="none" stroke="#60a5fa" strokeWidth="2" strokeLinecap="round" opacity="0.7" />
-                {/* glass */}
-                <path d="M99 58 Q104 47 122 46 L149 44 Q166 44 179 57 Z" fill="#dbeafe" />
-                <path d="M138 45 L138 58" stroke="#2563EB" strokeWidth="3" />
-                {/* lights */}
-                <path d="M34 70 Q40 69 44 71 L44 76 Q39 77 35 76 Z" fill="#e0f2fe" />
-                <rect x="244" y="70" width="7" height="7" rx="2" fill="#f87171" />
-                {/* door + handle */}
-                <path d="M150 60 L150 86" stroke="#1e40af" strokeWidth="1.5" opacity="0.35" />
-                <rect x="156" y="64" width="10" height="3" rx="1.5" fill="#1e40af" opacity="0.4" />
-                {/* wheels */}
-                <g>
-                  <circle cx="84" cy="94" r="20" fill="#1e293b" />
-                  <circle cx="84" cy="94" r="10.5" fill="#cbd5e1" />
-                  <circle cx="84" cy="94" r="3.5" fill="#64748b" />
-                </g>
-                <g>
-                  <circle cx="208" cy="94" r="20" fill="#1e293b" />
-                  <circle cx="208" cy="94" r="10.5" fill="#cbd5e1" />
-                  <circle cx="208" cy="94" r="3.5" fill="#64748b" />
-                </g>
-              </svg>
+            <div className="relative rounded-2xl h-36 bg-slate-100 mb-4 overflow-hidden">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/images/HERO-IMAGES.avif" alt="2021 Toyota Camry SE" className="w-full h-full object-cover" />
             </div>
             <h3 className="font-display text-lg font-bold text-slate-900">2021 Toyota Camry SE</h3>
             <div className="flex flex-wrap gap-1.5 mt-2 mb-4">
