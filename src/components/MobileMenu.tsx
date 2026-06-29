@@ -10,6 +10,7 @@ const LINKS = [
   { href: '/pricing', label: 'Pricing' },
   { href: '/blog', label: 'Blog' },
   { href: '/#faq', label: 'FAQ' },
+  { href: '/account', label: 'My account' },
 ];
 
 export default function MobileMenu() {

@@ -10,7 +10,7 @@ export default function ManageSubscriptionButton({
     reportId,
 }: {
     sessionId?: string;
-    reportId: string;
+    reportId?: string;
 }) {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');

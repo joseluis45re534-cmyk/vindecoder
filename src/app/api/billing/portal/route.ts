@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import Stripe from 'stripe';
 import { getEnv, siteUrl } from '@/lib/cf';
 import { getPaymentConfig } from '@/lib/settings';
+import { getCurrentUser } from '@/lib/account';
 
 export const runtime = 'edge';
 
@@ -26,14 +27,21 @@ export async function POST(request: Request) {
     });
 
     const base = siteUrl(env);
-    const returnUrl = body.reportId ? `${base}/report/${body.reportId}` : `${base}/`;
+    const returnUrl = body.reportId ? `${base}/report/${body.reportId}` : `${base}/account`;
 
     try {
-        if (!body.sessionId) {
-            return NextResponse.json({ error: 'Missing checkout session.' }, { status: 400 });
+        // Resolve the Stripe customer: from the checkout session (fresh purchase
+        // flow) or, when absent, from the logged-in user's stored customer id
+        // (dashboard flow).
+        let customer: string | undefined;
+        if (body.sessionId) {
+            const session = await stripe.checkout.sessions.retrieve(body.sessionId);
+            customer = typeof session.customer === 'string' ? session.customer : session.customer?.id;
         }
-        const session = await stripe.checkout.sessions.retrieve(body.sessionId);
-        const customer = typeof session.customer === 'string' ? session.customer : session.customer?.id;
+        if (!customer) {
+            const user = await getCurrentUser(request, env);
+            customer = user?.stripe_customer_id ?? undefined;
+        }
         if (!customer) {
             return NextResponse.json({ error: 'No subscription found to manage.' }, { status: 400 });
         }

@@ -4,6 +4,7 @@ import { getEnv } from '@/lib/cf';
 import { getPaymentConfig } from '@/lib/settings';
 import { convertToTrialSchedule } from '@/lib/stripe-billing';
 import { markVinUnlocked } from '@/lib/report-cache';
+import { recordPaidOrder } from '@/lib/account';
 
 export const runtime = 'edge';
 
@@ -44,6 +45,24 @@ export async function POST(request: Request) {
                     console.log('✓ Report unlocked:', reportVin);
                 } catch (err) {
                     console.error('Failed to unlock report (will rely on session_id fallback):', err);
+                }
+
+                // Record the purchase as an order so it shows in the buyer's
+                // dashboard. Links to an existing account by email; otherwise stays
+                // claimable when they sign up with the same email. Idempotent on session id.
+                try {
+                    const customerId = typeof session.customer === 'string' ? session.customer : session.customer?.id;
+                    await recordPaidOrder(env, {
+                        email: session.customer_details?.email || session.customer_email || null,
+                        reportVin,
+                        planId: String(session.metadata?.planId || 'trial'),
+                        provider: 'stripe',
+                        providerRef: session.id,
+                        amountCents: session.amount_total ?? 0,
+                        stripeCustomerId: customerId ?? null,
+                    });
+                } catch (err) {
+                    console.error('Failed to record order (non-fatal):', err);
                 }
             }
 

@@ -14,6 +14,8 @@ export interface Env {
     // Admin + automation
     ADMIN_PASSWORD?: string;
     ADMIN_SESSION_SECRET?: string;
+    // Customer account sessions (falls back to ADMIN_SESSION_SECRET if unset)
+    USER_SESSION_SECRET?: string;
     ANTHROPIC_API_KEY?: string;
     CRON_SECRET?: string;
     NEXT_PUBLIC_SITE_URL?: string;

@@ -15,6 +15,13 @@
       "when": 1781979065563,
       "tag": "0001_rainy_pretty_boy",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1782726696403,
+      "tag": "0002_user_accounts",
+      "breakpoints": true
     }
   ]
 }

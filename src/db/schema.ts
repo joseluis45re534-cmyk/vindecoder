@@ -1,6 +1,6 @@
 
 import { sql } from 'drizzle-orm';
-import { sqliteTable, text, integer, real } from 'drizzle-orm/sqlite-core';
+import { sqliteTable, text, integer, real, index } from 'drizzle-orm/sqlite-core';
 
 /** Generated vehicle history reports. */
 export const reports = sqliteTable('reports', {
@@ -21,8 +21,13 @@ export const users = sqliteTable('users', {
     email: text('email').notNull().unique(),
     name: text('name'),
     role: text('role', { enum: ['customer', 'admin'] }).default('customer'),
+    // PBKDF2-HMAC-SHA256 verifier, stored as `salt$hash` (Web Crypto, edge-safe).
+    // Null for accounts created without a password (e.g. future OAuth/magic-link).
+    password_hash: text('password_hash'),
+    email_verified: integer('email_verified', { mode: 'boolean' }).default(false),
     stripe_customer_id: text('stripe_customer_id'),
     created_at: text('created_at').default(sql`CURRENT_TIMESTAMP`),
+    updated_at: text('updated_at').default(sql`CURRENT_TIMESTAMP`),
 });
 
 /** Payment orders (Stripe or PayPal). */
@@ -38,7 +43,10 @@ export const orders = sqliteTable('orders', {
     currency: text('currency').default('usd'),
     status: text('status', { enum: ['pending', 'paid', 'failed', 'refunded'] }).default('pending'),
     created_at: text('created_at').default(sql`CURRENT_TIMESTAMP`),
-});
+}, (t) => ({
+    emailIdx: index('orders_email_idx').on(t.email),
+    userIdx: index('orders_user_id_idx').on(t.user_id),
+}));
 
 /** Blog posts (keyword-driven content pipeline). */
 export const posts = sqliteTable('posts', {

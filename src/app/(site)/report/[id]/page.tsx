@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useParams, useSearchParams } from 'next/navigation';
 import { useEffect, useState, Suspense } from 'react';
 import { motion, useReducedMotion, useScroll, useTransform } from 'framer-motion';
@@ -338,6 +339,14 @@ function ReportContent() {
                     After {TRIAL_DAYS} days you&apos;ll be charged {formatPrice(TRIAL_MONTHLY)}/month unless you cancel.
                   </p>
                   <ManageSubscriptionButton sessionId={sessionId} reportId={id} />
+                  <div className="w-full border-t border-slate-100 my-5" />
+                  <p className="text-xs text-slate-500 mb-3">Save this report to your account to access it anytime.</p>
+                  <Link
+                    href="/register?next=/account"
+                    className="inline-flex items-center justify-center gap-1.5 w-full bg-slate-900 text-white text-sm font-semibold py-2.5 rounded-xl hover:bg-slate-800 transition-colors"
+                  >
+                    Create a free account
+                  </Link>
                 </div>
               </div>
             ) : (
