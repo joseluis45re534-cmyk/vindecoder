@@ -1,10 +1,10 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { verifySession, COOKIE_NAME, adminSecret } from '@/lib/auth';
-import { verifyUserSession, USER_COOKIE_NAME, userSessionSecret } from '@/lib/user-auth';
+import { updateSession } from '@/lib/supabase/middleware';
 
-// Protect the admin panel (/admin) and the customer dashboard (/account).
-// Both use stateless signed-cookie sessions verified here at the edge.
+// Protect the admin panel (/admin, signed-cookie auth) and the customer
+// dashboard (/account, Supabase Auth).
 export const config = {
     matcher: ['/admin/:path*', '/account/:path*'],
 };
@@ -12,20 +12,19 @@ export const config = {
 export async function middleware(req: NextRequest) {
     const { pathname } = req.nextUrl;
 
-    // ── Customer dashboard ──
+    // ── Customer dashboard (Supabase) ──
     if (pathname.startsWith('/account')) {
-        const token = req.cookies.get(USER_COOKIE_NAME)?.value;
-        const userId = await verifyUserSession(token, userSessionSecret(process.env as { USER_SESSION_SECRET?: string; ADMIN_SESSION_SECRET?: string }));
-        if (!userId) {
+        const { response, user } = await updateSession(req);
+        if (!user) {
             const url = req.nextUrl.clone();
             url.pathname = '/login';
             url.searchParams.set('next', pathname);
             return NextResponse.redirect(url);
         }
-        return NextResponse.next();
+        return response; // carries refreshed Supabase session cookies
     }
 
-    // ── Admin panel ──
+    // ── Admin panel (signed cookie) ──
     if (pathname === '/admin/login') {
         return NextResponse.next();
     }

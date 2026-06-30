@@ -26,6 +26,13 @@ CRON_SECRET=replace-with-random-token
 # --- Site ---
 NEXT_PUBLIC_SITE_URL=https://carvinlookup.us
 
+# --- Supabase Auth (user accounts + email confirmation) ---
+# Project → Settings → API. The URL + anon key are public (used in the browser);
+# the service_role key is secret (server-only) — NEVER expose it as NEXT_PUBLIC_.
+NEXT_PUBLIC_SUPABASE_URL=https://YOUR-PROJECT.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=ey...
+SUPABASE_SERVICE_ROLE_KEY=ey...
+
 # --- Vehicle data (auto.dev) ---
 AUTODEV_API_KEY=
 

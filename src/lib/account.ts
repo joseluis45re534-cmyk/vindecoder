@@ -1,13 +1,10 @@
-// Account data layer — user lookups, session→user resolution, purchase linking,
-// and the report list that powers the dashboard. DB-touching (D1/Drizzle), so it
-// must NOT be imported from middleware (use lib/user-auth.ts there instead).
+// Account data layer — purchases/reports for a customer, keyed by EMAIL.
+// Identity now lives in Supabase Auth; this module only joins a verified email
+// to the D1 orders/reports that belong to it. DB-touching (D1/Drizzle).
 
-import { and, desc, eq, inArray, isNull, or } from 'drizzle-orm';
+import { desc, eq, inArray } from 'drizzle-orm';
 import { getDb, type Env } from '@/db';
-import { users, orders, reports } from '@/db/schema';
-import { readUserCookie, verifyUserSession, userSessionSecret } from '@/lib/user-auth';
-
-export type UserRow = typeof users.$inferSelect;
+import { orders, reports } from '@/db/schema';
 
 function db(env: Partial<Env>) {
     return env.DB ? getDb(env as { DB: D1Database }) : null;
@@ -15,60 +12,9 @@ function db(env: Partial<Env>) {
 
 const norm = (email: string) => email.trim().toLowerCase();
 
-// ---------- user lookups ----------
+// ---------- order recording (Stripe webhook) ----------
 
-export async function getUserById(env: Partial<Env>, id: string): Promise<UserRow | null> {
-    const d = db(env);
-    if (!d) return null;
-    const rows = await d.select().from(users).where(eq(users.id, id)).limit(1);
-    return rows[0] || null;
-}
-
-export async function getUserByEmail(env: Partial<Env>, email: string): Promise<UserRow | null> {
-    const d = db(env);
-    if (!d) return null;
-    const rows = await d.select().from(users).where(eq(users.email, norm(email))).limit(1);
-    return rows[0] || null;
-}
-
-export async function createUser(
-    env: Partial<Env>,
-    params: { email: string; name?: string | null; passwordHash: string },
-): Promise<UserRow | null> {
-    const d = db(env);
-    if (!d) return null;
-    const id = crypto.randomUUID();
-    await d.insert(users).values({
-        id,
-        email: norm(params.email),
-        name: params.name ?? null,
-        password_hash: params.passwordHash,
-        role: 'customer',
-    });
-    return getUserById(env, id);
-}
-
-/** Resolve the current user from the request's session cookie, or null. */
-export async function getCurrentUser(request: Request, env: Partial<Env>): Promise<UserRow | null> {
-    const userId = await verifyUserSession(readUserCookie(request), userSessionSecret(env));
-    if (!userId) return null;
-    return getUserById(env, userId);
-}
-
-// ---------- purchase linking ----------
-
-/** Attach any pre-existing anonymous orders (matched by email) to this account. */
-export async function linkOrdersToUser(env: Partial<Env>, userId: string, email: string): Promise<void> {
-    const d = db(env);
-    if (!d) return;
-    await d
-        .update(orders)
-        .set({ user_id: userId })
-        .where(and(eq(orders.email, norm(email)), isNull(orders.user_id)));
-}
-
-/** Record a paid order (called from the Stripe webhook). Links to a user if one
- *  already exists for the email; otherwise stays claimable on later signup. */
+/** Record a paid order, keyed by the buyer's email. Idempotent on provider ref. */
 export async function recordPaidOrder(
     env: Partial<Env>,
     params: {
@@ -78,22 +24,18 @@ export async function recordPaidOrder(
         provider: 'stripe' | 'paypal';
         providerRef?: string | null;
         amountCents: number;
-        stripeCustomerId?: string | null;
     },
 ): Promise<void> {
     const d = db(env);
     if (!d) return;
-    const email = params.email ? norm(params.email) : null;
-    const user = email ? await getUserByEmail(env, email) : null;
-    // Idempotency: skip if we already recorded this provider ref.
     if (params.providerRef) {
         const existing = await d.select().from(orders).where(eq(orders.provider_ref, params.providerRef)).limit(1);
         if (existing.length) return;
     }
     await d.insert(orders).values({
         id: crypto.randomUUID(),
-        user_id: user?.id ?? null,
-        email,
+        user_id: null,
+        email: params.email ? norm(params.email) : null,
         report_id: params.reportVin,
         plan_id: params.planId,
         provider: params.provider,
@@ -101,10 +43,6 @@ export async function recordPaidOrder(
         amount_cents: params.amountCents,
         status: 'paid',
     });
-    // Backfill the user's Stripe customer id so the billing portal can find them.
-    if (user && params.stripeCustomerId && !user.stripe_customer_id) {
-        await d.update(users).set({ stripe_customer_id: params.stripeCustomerId }).where(eq(users.id, user.id));
-    }
 }
 
 // ---------- dashboard report list ----------
@@ -119,15 +57,11 @@ export interface UserReportSummary {
     status: string | null;
 }
 
-/** All reports this user has purchased — joined from their orders. */
-export async function listUserReports(env: Partial<Env>, user: UserRow): Promise<UserReportSummary[]> {
+/** All reports purchased under this email — joined from their orders. */
+export async function listReportsForEmail(env: Partial<Env>, email: string): Promise<UserReportSummary[]> {
     const d = db(env);
     if (!d) return [];
-    const ords = await d
-        .select()
-        .from(orders)
-        .where(or(eq(orders.user_id, user.id), eq(orders.email, norm(user.email))))
-        .orderBy(desc(orders.created_at));
+    const ords = await d.select().from(orders).where(eq(orders.email, norm(email))).orderBy(desc(orders.created_at));
 
     const vins = [...new Set(ords.map((o) => o.report_id).filter(Boolean))] as string[];
     if (!vins.length) return [];

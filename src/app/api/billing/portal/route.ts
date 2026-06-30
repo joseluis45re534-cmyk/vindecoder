@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import Stripe from 'stripe';
 import { getEnv, siteUrl } from '@/lib/cf';
 import { getPaymentConfig } from '@/lib/settings';
-import { getCurrentUser } from '@/lib/account';
+import { createClient } from '@/lib/supabase/server';
 
 export const runtime = 'edge';
 
@@ -39,8 +39,16 @@ export async function POST(request: Request) {
             customer = typeof session.customer === 'string' ? session.customer : session.customer?.id;
         }
         if (!customer) {
-            const user = await getCurrentUser(request, env);
-            customer = user?.stripe_customer_id ?? undefined;
+            // Dashboard flow: resolve the Stripe customer from the logged-in
+            // Supabase user's email.
+            const supabase = await createClient();
+            const {
+                data: { user },
+            } = await supabase.auth.getUser();
+            if (user?.email) {
+                const customers = await stripe.customers.list({ email: user.email, limit: 1 });
+                customer = customers.data[0]?.id;
+            }
         }
         if (!customer) {
             return NextResponse.json({ error: 'No subscription found to manage.' }, { status: 400 });

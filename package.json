@@ -11,6 +11,8 @@
   },
   "dependencies": {
     "@cloudflare/workers-types": "^4.20260214.0",
+    "@supabase/ssr": "^0.12.0",
+    "@supabase/supabase-js": "^2.110.0",
     "clsx": "^2.1.1",
     "drizzle-orm": "^0.45.1",
     "framer-motion": "^12.40.0",

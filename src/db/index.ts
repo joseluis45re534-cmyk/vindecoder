@@ -14,8 +14,13 @@ export interface Env {
     // Admin + automation
     ADMIN_PASSWORD?: string;
     ADMIN_SESSION_SECRET?: string;
-    // Customer account sessions (falls back to ADMIN_SESSION_SECRET if unset)
+    // Customer account sessions (legacy D1 auth — superseded by Supabase)
     USER_SESSION_SECRET?: string;
+    // Supabase Auth (identity + email confirmation). Public values are also
+    // exposed via NEXT_PUBLIC_* for the browser client.
+    NEXT_PUBLIC_SUPABASE_URL?: string;
+    NEXT_PUBLIC_SUPABASE_ANON_KEY?: string;
+    SUPABASE_SERVICE_ROLE_KEY?: string;
     ANTHROPIC_API_KEY?: string;
     CRON_SECRET?: string;
     NEXT_PUBLIC_SITE_URL?: string;

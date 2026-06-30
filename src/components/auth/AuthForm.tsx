@@ -3,45 +3,97 @@
 import { Suspense, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { Loader2, Mail, Lock, User, ShieldCheck, CheckCircle2 } from 'lucide-react';
+import { Loader2, Mail, Lock, User, ShieldCheck, CheckCircle2, MailCheck } from 'lucide-react';
+import { createClient } from '@/lib/supabase/client';
 
 const PERKS = ['All your reports in one place', 'Manage your subscription', 'Secure & private'];
+
+// Friendlier copy for the handful of Supabase auth errors users actually hit.
+function friendlyError(message: string): string {
+    const m = message.toLowerCase();
+    if (m.includes('invalid login credentials')) return 'Incorrect email or password.';
+    if (m.includes('already registered') || m.includes('already exists')) return 'An account with this email already exists — try signing in.';
+    if (m.includes('email not confirmed')) return 'Please confirm your email first — check your inbox for the link.';
+    if (m.includes('password should be at least')) return 'Password must be at least 6 characters.';
+    return message;
+}
 
 function Form({ mode }: { mode: 'login' | 'register' }) {
     const router = useRouter();
     const params = useSearchParams();
     const isRegister = mode === 'register';
     const next = params.get('next') || '/account';
+    const supabase = createClient();
 
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [name, setName] = useState('');
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
+    const [confirmSent, setConfirmSent] = useState(false);
 
     const submit = async (e: React.FormEvent) => {
         e.preventDefault();
         setError('');
         setLoading(true);
         try {
-            const res = await fetch(isRegister ? '/api/auth/register' : '/api/auth/login', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(isRegister ? { email, password, name } : { email, password }),
-            });
-            const data = (await res.json().catch(() => ({}))) as { error?: string };
-            if (res.ok) {
+            if (isRegister) {
+                const emailRedirectTo = `${window.location.origin}/auth/callback?next=${encodeURIComponent(next)}`;
+                const { data, error } = await supabase.auth.signUp({
+                    email,
+                    password,
+                    options: { data: { name }, emailRedirectTo },
+                });
+                if (error) {
+                    setError(friendlyError(error.message));
+                    return;
+                }
+                // No session means email confirmation is required.
+                if (!data.session) {
+                    setConfirmSent(true);
+                    return;
+                }
                 router.push(next);
                 router.refresh();
             } else {
-                setError(data.error || 'Something went wrong — please try again.');
+                const { error } = await supabase.auth.signInWithPassword({ email, password });
+                if (error) {
+                    setError(friendlyError(error.message));
+                    return;
+                }
+                router.push(next);
+                router.refresh();
             }
         } catch {
-            setError('Network error — please try again.');
+            setError('Something went wrong — please try again.');
         } finally {
             setLoading(false);
         }
     };
+
+    if (confirmSent) {
+        return (
+            <div className="min-h-[80vh] flex items-center justify-center bg-slate-50 px-4 py-16">
+                <div className="w-full max-w-md text-center bg-white rounded-3xl border border-slate-100 shadow-xl shadow-slate-900/5 p-7 sm:p-9">
+                    <span className="inline-flex w-14 h-14 rounded-2xl bg-emerald-50 text-emerald-600 items-center justify-center mb-5">
+                        <MailCheck className="w-7 h-7" aria-hidden="true" />
+                    </span>
+                    <h1 className="font-display text-2xl font-bold text-slate-900">Confirm your email</h1>
+                    <p className="text-sm text-slate-500 mt-2 leading-relaxed">
+                        We sent a confirmation link to <span className="font-semibold text-slate-700">{email}</span>. Click it
+                        to activate your account, then sign in.
+                    </p>
+                    <p className="text-xs text-slate-400 mt-4">Didn&apos;t get it? Check spam, or wait a minute and try again.</p>
+                    <Link
+                        href="/login"
+                        className="mt-6 inline-flex items-center justify-center gap-2 bg-primary text-white font-bold px-6 py-3 rounded-xl hover:brightness-110 transition"
+                    >
+                        Go to sign in
+                    </Link>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="min-h-[80vh] flex items-center justify-center bg-slate-50 px-4 py-16">

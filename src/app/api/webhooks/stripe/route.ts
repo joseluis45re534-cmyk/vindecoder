@@ -51,7 +51,6 @@ export async function POST(request: Request) {
                 // dashboard. Links to an existing account by email; otherwise stays
                 // claimable when they sign up with the same email. Idempotent on session id.
                 try {
-                    const customerId = typeof session.customer === 'string' ? session.customer : session.customer?.id;
                     await recordPaidOrder(env, {
                         email: session.customer_details?.email || session.customer_email || null,
                         reportVin,
@@ -59,7 +58,6 @@ export async function POST(request: Request) {
                         provider: 'stripe',
                         providerRef: session.id,
                         amountCents: session.amount_total ?? 0,
-                        stripeCustomerId: customerId ?? null,
                     });
                 } catch (err) {
                     console.error('Failed to record order (non-fatal):', err);

@@ -1,13 +1,12 @@
 import type { Metadata } from 'next';
-import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import Stripe from 'stripe';
 import { FileText, Car, ArrowRight, CheckCircle2, CreditCard, Clock } from 'lucide-react';
 import { getEnv } from '@/lib/cf';
 import { getPaymentConfig } from '@/lib/settings';
-import { verifyUserSession, USER_COOKIE_NAME, userSessionSecret } from '@/lib/user-auth';
-import { getUserById, listUserReports } from '@/lib/account';
+import { createClient } from '@/lib/supabase/server';
+import { listReportsForEmail } from '@/lib/account';
 import { TRIAL_PLAN, formatPrice } from '@/lib/pricing';
 import LogoutButton from '@/components/account/LogoutButton';
 import ManageSubscriptionButton from '@/components/checkout/ManageSubscriptionButton';
@@ -29,35 +28,40 @@ const SUB_LABELS: Record<string, { label: string; cls: string }> = {
 };
 
 export default async function AccountPage() {
+    const supabase = await createClient();
+    const {
+        data: { user },
+    } = await supabase.auth.getUser();
+    if (!user?.email) redirect('/login?next=/account');
+
+    const email = user.email;
+    const name = (user.user_metadata?.name as string) || '';
+
     const env = await getEnv();
-    const token = (await cookies()).get(USER_COOKIE_NAME)?.value;
-    const userId = await verifyUserSession(token, userSessionSecret(env));
-    if (!userId) redirect('/login?next=/account');
-    const user = await getUserById(env, userId);
-    if (!user) redirect('/login?next=/account');
+    const reports = await listReportsForEmail(env, email);
 
-    const reports = await listUserReports(env, user);
-
-    // Best-effort live subscription status from Stripe (source of truth).
+    // Best-effort live subscription status from Stripe, resolved by email.
     let sub: { status: string; renews: number | null } | null = null;
-    if (user.stripe_customer_id) {
-        try {
-            const cfg = await getPaymentConfig(env);
-            if (cfg.stripeSecret) {
-                const stripe = new Stripe(cfg.stripeSecret, { httpClient: Stripe.createFetchHttpClient() });
-                const subs = await stripe.subscriptions.list({ customer: user.stripe_customer_id, status: 'all', limit: 1 });
+    try {
+        const cfg = await getPaymentConfig(env);
+        if (cfg.stripeSecret) {
+            const stripe = new Stripe(cfg.stripeSecret, { httpClient: Stripe.createFetchHttpClient() });
+            const customers = await stripe.customers.list({ email, limit: 1 });
+            const customer = customers.data[0];
+            if (customer) {
+                const subs = await stripe.subscriptions.list({ customer: customer.id, status: 'all', limit: 1 });
                 const s = subs.data[0];
                 if (s) {
                     const renewsAt = (s as unknown as { current_period_end?: number }).current_period_end;
                     sub = { status: s.status, renews: renewsAt ? renewsAt * 1000 : null };
                 }
             }
-        } catch {
-            /* best-effort — dashboard still renders without live status */
         }
+    } catch {
+        /* best-effort — dashboard still renders without live status */
     }
 
-    const memberSince = user.created_at ? new Date(user.created_at.includes('T') ? user.created_at : user.created_at.replace(' ', 'T') + 'Z') : null;
+    const memberSince = user.created_at ? new Date(user.created_at) : null;
     const subMeta = sub ? SUB_LABELS[sub.status] ?? { label: sub.status, cls: 'text-slate-600 bg-slate-100' } : null;
 
     return (
@@ -67,9 +71,9 @@ export default async function AccountPage() {
                 <div className="flex items-center justify-between gap-4 mb-8">
                     <div>
                         <h1 className="font-display text-2xl sm:text-3xl font-bold text-slate-900">
-                            {user.name ? `Hi, ${user.name}` : 'Your account'}
+                            {name ? `Hi, ${name}` : 'Your account'}
                         </h1>
-                        <p className="text-sm text-slate-500 mt-1">{user.email}</p>
+                        <p className="text-sm text-slate-500 mt-1">{email}</p>
                     </div>
                     <LogoutButton />
                 </div>
@@ -168,7 +172,7 @@ export default async function AccountPage() {
                             <dl className="space-y-3 text-sm">
                                 <div>
                                     <dt className="text-[11px] text-slate-400 uppercase tracking-wide">Email</dt>
-                                    <dd className="text-slate-800 font-medium truncate">{user.email}</dd>
+                                    <dd className="text-slate-800 font-medium truncate">{email}</dd>
                                 </div>
                                 {memberSince && (
                                     <div>
