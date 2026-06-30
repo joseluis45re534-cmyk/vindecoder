@@ -10,11 +10,16 @@ const LINKS = [
   { href: '/pricing', label: 'Pricing' },
   { href: '/blog', label: 'Blog' },
   { href: '/#faq', label: 'FAQ' },
-  { href: '/account', label: 'My account' },
 ];
+
+interface Me {
+  authenticated: boolean;
+  name?: string | null;
+}
 
 export default function MobileMenu() {
   const [open, setOpen] = useState(false);
+  const [me, setMe] = useState<Me | null>(null);
 
   // Lock body scroll while the menu is open.
   useEffect(() => {
@@ -23,6 +28,16 @@ export default function MobileMenu() {
       document.body.style.overflow = '';
     };
   }, [open]);
+
+  // Resolve session state for the auth links.
+  useEffect(() => {
+    let alive = true;
+    fetch('/api/account/me', { cache: 'no-store' })
+      .then((r) => r.json())
+      .then((d) => { if (alive) setMe(d as Me); })
+      .catch(() => { if (alive) setMe({ authenticated: false }); });
+    return () => { alive = false; };
+  }, []);
 
   return (
     <div className="md:hidden">
@@ -73,6 +88,32 @@ export default function MobileMenu() {
               {l.label}
             </Link>
           ))}
+          {me?.authenticated ? (
+            <Link
+              href="/account"
+              onClick={() => setOpen(false)}
+              className="py-3.5 px-2 text-base font-semibold text-slate-700 border-b border-slate-100 hover:text-blue-600 transition-colors truncate"
+            >
+              {me.name?.trim() ? `${me.name} · My account` : 'My account'}
+            </Link>
+          ) : (
+            <div className="flex gap-3 mt-2">
+              <Link
+                href="/login"
+                onClick={() => setOpen(false)}
+                className="flex-1 text-center py-3 rounded-full border border-slate-200 text-base font-semibold text-slate-700 hover:bg-slate-50 transition-colors"
+              >
+                Log in
+              </Link>
+              <Link
+                href="/register"
+                onClick={() => setOpen(false)}
+                className="flex-1 text-center py-3 rounded-full bg-slate-900 text-white text-base font-semibold hover:bg-slate-800 transition-colors"
+              >
+                Sign up
+              </Link>
+            </div>
+          )}
           <a
             href="/#vin-search"
             onClick={() => setOpen(false)}

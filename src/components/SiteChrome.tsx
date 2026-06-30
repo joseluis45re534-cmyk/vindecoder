@@ -1,8 +1,9 @@
 import Link from "next/link";
-import { ShieldCheck, User } from "lucide-react";
+import { ShieldCheck } from "lucide-react";
 import { SITE_NAME } from "@/lib/site";
 import Logo from "@/components/Logo";
 import MobileMenu from "@/components/MobileMenu";
+import AccountNav from "@/components/account/AccountNav";
 import { BRANDS } from "@/lib/brands";
 
 const FOOTER_BRANDS = [
@@ -35,13 +36,8 @@ export function SiteHeader() {
           <Link href="/blog" className="hover:text-slate-900 transition-colors">Blog</Link>
           <a href="/#faq" className="hover:text-slate-900 transition-colors">FAQ</a>
         </nav>
-        <div className="flex items-center gap-2">
-          <Link
-            href="/account"
-            className="hidden md:inline-flex items-center gap-1.5 text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors"
-          >
-            <User className="w-4 h-4" aria-hidden="true" /> Account
-          </Link>
+        <div className="flex items-center gap-3">
+          <AccountNav />
           <a
             href="/#vin-search"
             className="hidden md:inline-flex bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold px-5 py-2.5 rounded-full shadow-md shadow-blue-600/25 transition-all hover:shadow-lg hover:shadow-blue-600/30 active:scale-[0.97]"
