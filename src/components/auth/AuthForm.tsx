@@ -9,13 +9,24 @@ import { createClient } from '@/lib/supabase/client';
 const PERKS = ['All your reports in one place', 'Manage your subscription', 'Secure & private'];
 
 // Friendlier copy for the handful of Supabase auth errors users actually hit.
-function friendlyError(message: string): string {
-    const m = message.toLowerCase();
+// Takes the whole error so we can sanitize opaque payloads (e.g. "{}") that
+// GoTrue returns when confirmation-email sending fails.
+function friendlyError(err: unknown): string {
+    const raw = String(
+        (err && typeof err === 'object' && 'message' in err ? (err as { message?: unknown }).message : err) ?? '',
+    ).trim();
+    const m = raw.toLowerCase();
     if (m.includes('invalid login credentials')) return 'Incorrect email or password.';
-    if (m.includes('already registered') || m.includes('already exists')) return 'An account with this email already exists — try signing in.';
+    if (m.includes('already registered') || m.includes('already exists') || m.includes('user already')) return 'An account with this email already exists — try signing in.';
     if (m.includes('email not confirmed')) return 'Please confirm your email first — check your inbox for the link.';
-    if (m.includes('password should be at least')) return 'Password must be at least 6 characters.';
-    return message;
+    if (m.includes('password should be at least') || m.includes('weak password')) return 'Password must be at least 6 characters.';
+    if (m.includes('rate limit') || m.includes('too many')) return 'Too many attempts — please wait a minute and try again.';
+    if (m.includes('sending') || m.includes('confirmation email') || m.includes('smtp') || m.includes('unexpected_failure')) {
+        return "We couldn't send your confirmation email — the email service looks misconfigured. Please try again shortly.";
+    }
+    // Never surface an empty/opaque payload.
+    if (!raw || raw === '{}' || raw === '[object Object]') return 'Something went wrong — please try again.';
+    return raw;
 }
 
 function Form({ mode }: { mode: 'login' | 'register' }) {
@@ -45,7 +56,7 @@ function Form({ mode }: { mode: 'login' | 'register' }) {
                     options: { data: { name }, emailRedirectTo },
                 });
                 if (error) {
-                    setError(friendlyError(error.message));
+                    setError(friendlyError(error));
                     return;
                 }
                 // No session means email confirmation is required.
@@ -58,7 +69,7 @@ function Form({ mode }: { mode: 'login' | 'register' }) {
             } else {
                 const { error } = await supabase.auth.signInWithPassword({ email, password });
                 if (error) {
-                    setError(friendlyError(error.message));
+                    setError(friendlyError(error));
                     return;
                 }
                 router.push(next);
