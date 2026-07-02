@@ -122,6 +122,8 @@ export function SiteFooter() {
               <li><Link href="/blog/how-to-read-a-vin-number" className="hover:text-white transition-colors">How to read a VIN</Link></li>
               <li><Link href="/blog/salvage-title-vs-rebuilt-title" className="hover:text-white transition-colors">Salvage vs. rebuilt</Link></li>
               <li><Link href="/blog/check-car-for-flood-damage" className="hover:text-white transition-colors">Flood damage guide</Link></li>
+              <li><Link href="/glossary" className="hover:text-white transition-colors">VIN &amp; title glossary</Link></li>
+              <li><Link href="/data-sources" className="hover:text-white transition-colors">Data sources &amp; methodology</Link></li>
             </ul>
           </div>
 

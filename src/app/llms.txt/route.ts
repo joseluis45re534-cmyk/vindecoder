@@ -58,7 +58,15 @@ ${posts.map((p) => `- ${p.title}: ${SITE_URL}/blog/${p.slug}`).join('\n')}
 
 - NMVTIS — National Motor Vehicle Title Information System
 - NICB — National Insurance Crime Bureau
+- NHTSA — National Highway Traffic Safety Administration (recalls)
 - State DMV title and registration databases
+- Full methodology and honest limitations: ${SITE_URL}/data-sources
+
+## Reference
+
+- VIN & title glossary: ${SITE_URL}/glossary
+- Data sources & methodology: ${SITE_URL}/data-sources
+- Sample reports: ${SITE_URL}/#examples
 
 ## Full content
 

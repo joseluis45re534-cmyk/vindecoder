@@ -62,6 +62,25 @@ reveal inconsistencies; a reading lower than a prior record is a red flag.
 A lender's legal claim on a vehicle securing a loan. A seller with an open lien
 cannot transfer a clean title until the loan is paid.
 
+## Data sources & methodology
+
+- NMVTIS (National Motor Vehicle Title Information System, vehiclehistory.gov)
+  provides title status, title-brand history, and the most recent reported
+  odometer reading, cross-referenced across all 50 states to catch title
+  washing. Overseen by the U.S. Department of Justice.
+- NICB (National Insurance Crime Bureau, nicb.org/vincheck) provides theft
+  records and total-loss/salvage records reported by participating member
+  insurers. Coverage depends on which insurers report.
+- NHTSA (National Highway Traffic Safety Administration, nhtsa.gov/recalls)
+  provides open manufacturer safety recalls.
+- State DMVs report current title state, registration status, and ownership
+  timeline into NMVTIS.
+
+Honest limitations: reporting is not universal (depends on source
+participation), records can lag a very recent event, and a clean report means
+no problems were reported to these databases — not an independent inspection.
+Full detail: ${SITE_URL}/data-sources
+
 ## Pricing
 
 - Full report access — ${fee} today, then ${monthly}/month after a ${days}-day trial. Cancel anytime.
@@ -79,6 +98,12 @@ cannot transfer a clean title until the loan is paid.
 
 CarVinLookup publishes practical, original buying guides:
 ${posts.map((p) => `- ${p.title}: ${SITE_URL}/blog/${p.slug}`).join('\n')}
+
+## Reference
+
+- VIN & title glossary (definitions for every term above): ${SITE_URL}/glossary
+- Data sources & methodology: ${SITE_URL}/data-sources
+- Sample reports: ${SITE_URL}/#examples
 
 ## Contact / brand
 
