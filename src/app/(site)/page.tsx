@@ -8,6 +8,7 @@ import ReportTabs from '@/components/home/ReportTabs';
 import SupportBand from '@/components/home/SupportBand';
 import ProblemBlock from '@/components/home/ProblemBlock';
 import { BRANDS } from '@/lib/brands';
+import { SAMPLE_REPORTS } from '@/lib/sample-reports';
 import { TRIAL_PLAN, formatPrice } from '@/lib/pricing';
 import { faqPageLd, vinCheckHowToLd } from '@/lib/structured-data';
 import {
@@ -49,14 +50,6 @@ const CHECKS = [
   { icon: BadgeDollarSign, color: 'text-violet-600 bg-violet-50', title: 'Open liens', desc: 'Outstanding loans or liens recorded against the vehicle.' },
   { icon: Database, color: 'text-sky-600 bg-sky-50', title: 'Title & registration', desc: 'Current title state, registration status, and ownership timeline.' },
   { icon: FileText, color: 'text-rose-600 bg-rose-50', title: 'Vehicle identity', desc: 'Make, model, year, body type, engine, and factory specifications.' },
-];
-
-// Sample VINs wired to the demo API: last char S = theft, W = salvage, F = lien.
-const EXAMPLES = [
-  { vin: '4T1G11AK5MU546321', title: '2021 Toyota Camry', status: 'Clean history', badge: 'bg-emerald-600', finding: 'No brands, liens, or theft records found. Verified odometer.', img: 'https://images.unsplash.com/photo-1621007947382-bb3c3994e3fb?auto=format&fit=crop&w=800&q=60', alt: 'White Toyota sedan parked outdoors' },
-  { vin: 'JF1VA2M62K980015S', title: '2019 Subaru WRX', status: 'Theft record', badge: 'bg-red-600', finding: 'Active theft record reported to the NICB. Walk away or verify recovery.', img: 'https://images.unsplash.com/photo-1626668893632-6f3a4466d22f?auto=format&fit=crop&w=800&q=60', alt: 'Blue Subaru sports sedan on a road' },
-  { vin: '1G1ZE5ST5FF21984W', title: '2015 Chevrolet Malibu', status: 'Salvage title', badge: 'bg-amber-600', finding: 'Branded salvage after an insurance total loss. Expect heavy repairs.', img: 'https://images.unsplash.com/photo-1552519507-da3b142c6e3d?auto=format&fit=crop&w=800&q=60', alt: 'Red Chevrolet coupe in a studio' },
-  { vin: '1FTFW1ED5PFA1234F', title: '2023 Ford F-150', status: 'Active lien', badge: 'bg-violet-600', finding: 'A lender still holds a lien — the seller cannot transfer a clean title yet.', img: 'https://images.unsplash.com/photo-1605559424843-9e4c228bf1c2?auto=format&fit=crop&w=800&q=60', alt: 'Black Ford pickup truck on a desert road' },
 ];
 
 // TODO: replace with REAL reviews + an aggregate rating before launch (fabricated
@@ -166,12 +159,12 @@ export default function Home() {
             Four real-world scenarios. Open any sample report to see exactly what you&apos;d get before buying.
           </p>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {EXAMPLES.map((ex) => (
+            {SAMPLE_REPORTS.map((ex) => (
               <a key={ex.vin} href={`/report/${ex.vin}`} className="group bg-white rounded-2xl border border-slate-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all overflow-hidden flex flex-col">
                 <div className="relative h-40 overflow-hidden bg-slate-200">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img src={ex.img} alt={ex.alt} width={800} height={450} loading="lazy" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                  <span className={`absolute top-3 left-3 ${ex.badge} text-white text-xs font-bold px-3 py-1 rounded-full shadow-md`}>{ex.status}</span>
+                  <span className={`absolute top-3 left-3 ${ex.badgeClass} text-white text-xs font-bold px-3 py-1 rounded-full shadow-md`}>{ex.statusLabel}</span>
                 </div>
                 <div className="p-5 flex flex-col flex-1">
                   <h3 className="font-bold text-slate-900">{ex.title}</h3>

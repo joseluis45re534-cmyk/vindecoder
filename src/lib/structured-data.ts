@@ -125,6 +125,25 @@ export function vinCheckHowToLd(): Json {
   };
 }
 
+/**
+ * Schema for a curated SAMPLE report page (src/lib/sample-reports.ts). Uses
+ * CreativeWork, not Product/Vehicle, and the description explicitly says
+ * "illustrative example" — this must never read as a real individual vehicle
+ * record, and must never carry AggregateRating/Review.
+ */
+export function sampleReportLd(sample: { vin: string; title: string; url: string }): Json {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'CreativeWork',
+    name: `Sample vehicle history report — ${sample.title}`,
+    description: `An illustrative example vehicle history report for a ${sample.title}, showing the kind of title, accident, odometer, theft, lien, and recall data a real CarVinLookup report covers. Not a record of an actual vehicle.`,
+    url: sample.url,
+    isPartOf: { '@id': `${SITE_URL}/#website` },
+    about: { '@id': `${SITE_URL}/#service` },
+    audience: { '@type': 'Audience', audienceType: 'Used car buyers' },
+  };
+}
+
 export function breadcrumbLd(items: { name: string; url: string }[]): Json {
   return {
     '@context': 'https://schema.org',
@@ -134,6 +153,23 @@ export function breadcrumbLd(items: { name: string; url: string }[]): Json {
       position: i + 1,
       name: it.name,
       item: it.url,
+    })),
+  };
+}
+
+/** DefinedTermSet + DefinedTerm for /glossary — one citable definition per term. */
+export function definedTermSetLd(terms: { term: string; definition: string }[]): Json {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'DefinedTermSet',
+    '@id': `${SITE_URL}/glossary#glossary`,
+    name: 'VIN & Vehicle Title Glossary',
+    url: `${SITE_URL}/glossary`,
+    hasDefinedTerm: terms.map(({ term, definition }) => ({
+      '@type': 'DefinedTerm',
+      name: term,
+      description: definition,
+      inDefinedTermSet: `${SITE_URL}/glossary#glossary`,
     })),
   };
 }

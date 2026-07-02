@@ -1,10 +1,18 @@
 import type { MetadataRoute } from "next";
 import { SITE_URL } from "@/lib/site";
+import { SAMPLE_REPORTS } from "@/lib/sample-reports";
 
 export const runtime = "edge";
 
 // Generated reports are thin, paywalled, per-user pages — keep them out of
-// every index (search + AI). Everything else is open.
+// every index (search + AI). The exception: the curated SAMPLE report paths
+// (lib/sample-reports.ts) are deliberately indexable educational content —
+// allow those specific paths. Per the robots.txt spec, the most specific
+// matching rule wins regardless of order, so listing these exact paths in
+// `allow` opens only them while every other /report/* path (i.e. every real
+// customer report) stays blocked by the broader disallow below.
+const SAMPLE_REPORT_PATHS = SAMPLE_REPORTS.map((r) => `/report/${r.vin}`);
+const ALLOW = ["/", ...SAMPLE_REPORT_PATHS];
 const DISALLOW = ["/report/", "/api/", "/admin"];
 
 // Explicitly welcome the major AI search crawlers and agent fetchers so the brand
@@ -42,8 +50,8 @@ const AI_CRAWLERS = [
 export default function robots(): MetadataRoute.Robots {
   return {
     rules: [
-      { userAgent: "*", allow: "/", disallow: DISALLOW },
-      ...AI_CRAWLERS.map((userAgent) => ({ userAgent, allow: "/", disallow: DISALLOW })),
+      { userAgent: "*", allow: ALLOW, disallow: DISALLOW },
+      ...AI_CRAWLERS.map((userAgent) => ({ userAgent, allow: ALLOW, disallow: DISALLOW })),
     ],
     sitemap: `${SITE_URL}/sitemap.xml`,
     host: SITE_URL,
