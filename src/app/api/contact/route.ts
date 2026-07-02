@@ -2,12 +2,24 @@ import { NextResponse } from 'next/server';
 import { getEnv } from '@/lib/cf';
 import { getDb } from '@/db';
 import { contactMessages } from '@/db/schema';
+import { allowRequest } from '@/lib/report-cache';
 
 export const runtime = 'edge';
 
 const EMAIL_RE = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
 
 export async function POST(request: Request) {
+  const env = await getEnv();
+
+  // Spam guard: cap contact submissions per IP (degrades open w/o D1).
+  const ip =
+    request.headers.get('cf-connecting-ip') ||
+    request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
+    'unknown';
+  if (!(await allowRequest(env, `contact:${ip}`, 8))) {
+    return NextResponse.json({ error: 'Too many messages — please try again later.' }, { status: 429 });
+  }
+
   const body = (await request.json().catch(() => ({}))) as {
     name?: string;
     email?: string;
@@ -24,7 +36,6 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Please enter a message.' }, { status: 400 });
   }
 
-  const env = await getEnv();
   try {
     if (env.DB) {
       const db = getDb(env as { DB: D1Database });

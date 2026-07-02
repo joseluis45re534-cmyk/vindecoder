@@ -53,6 +53,11 @@ export async function POST(request: Request) {
     try {
       const existing = await db.select().from(chatSessions).where(eq(chatSessions.id, sid)).limit(1);
       if (existing.length) {
+        // Ownership: a message can only be posted to a session by the visitor
+        // that owns it — stops one visitor writing into another's thread.
+        if (existing[0].visitor_id !== visitorId) {
+          return NextResponse.json({ error: 'Session not found' }, { status: 403 });
+        }
         status = (existing[0].status as SessionStatus) || 'bot';
       } else {
         await db.insert(chatSessions).values({ id: sid, visitor_id: visitorId, status: 'bot' });

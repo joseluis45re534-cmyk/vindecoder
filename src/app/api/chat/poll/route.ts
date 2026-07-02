@@ -10,7 +10,9 @@ export const runtime = 'edge';
 // human-agent replies and status changes. Returns the full thread; the client
 // dedupes by message id. No-DB → nothing to poll.
 export async function GET(request: Request) {
-  const sid = new URL(request.url).searchParams.get('sessionId') || '';
+  const url = new URL(request.url);
+  const sid = url.searchParams.get('sessionId') || '';
+  const visitorId = url.searchParams.get('visitorId') || '';
   if (!sid) return NextResponse.json({ error: 'sessionId required' }, { status: 400 });
 
   const env = await getEnv();
@@ -21,7 +23,11 @@ export async function GET(request: Request) {
   const db = getDb(env as { DB: D1Database });
   try {
     const session = await db.select().from(chatSessions).where(eq(chatSessions.id, sid)).limit(1);
-    if (!session.length) {
+    // Ownership: only the visitor who owns this session can read its thread.
+    // A session id alone can leak; requiring the matching visitor_id stops one
+    // visitor from reading another's chat (which may contain PII). Return an
+    // empty/closed shape rather than 403 so we don't confirm the id exists.
+    if (!session.length || !visitorId || session[0].visitor_id !== visitorId) {
       return NextResponse.json({ sessionId: sid, persisted: true, status: 'closed', messages: [] });
     }
     const rows = await db

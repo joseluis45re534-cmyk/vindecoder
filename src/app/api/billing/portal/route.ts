@@ -29,29 +29,25 @@ export async function POST(request: Request) {
     const base = siteUrl(env);
     const returnUrl = body.reportId ? `${base}/report/${body.reportId}` : `${base}/account`;
 
+    // AUTHORIZATION: the customer is resolved ONLY from the authenticated user's
+    // own email — never from a client-supplied session_id. A checkout session_id
+    // leaks (it's in the post-checkout URL / Referer / history), and possessing
+    // it is NOT proof of identity; trusting it let anyone open another customer's
+    // billing portal (view card/last4, cancel their subscription). Managing
+    // billing requires signing in.
+    const supabase = await createClient();
+    const {
+        data: { user },
+    } = await supabase.auth.getUser();
+    if (!user?.email) {
+        return NextResponse.json({ error: 'Please sign in to manage your subscription.' }, { status: 401 });
+    }
+
     try {
-        // Resolve the Stripe customer: from the checkout session (fresh purchase
-        // flow) or, when absent, from the logged-in user's stored customer id
-        // (dashboard flow).
-        let customer: string | undefined;
-        if (body.sessionId) {
-            const session = await stripe.checkout.sessions.retrieve(body.sessionId);
-            customer = typeof session.customer === 'string' ? session.customer : session.customer?.id;
-        }
+        const customers = await stripe.customers.list({ email: user.email, limit: 1 });
+        const customer = customers.data[0]?.id;
         if (!customer) {
-            // Dashboard flow: resolve the Stripe customer from the logged-in
-            // Supabase user's email.
-            const supabase = await createClient();
-            const {
-                data: { user },
-            } = await supabase.auth.getUser();
-            if (user?.email) {
-                const customers = await stripe.customers.list({ email: user.email, limit: 1 });
-                customer = customers.data[0]?.id;
-            }
-        }
-        if (!customer) {
-            return NextResponse.json({ error: 'No subscription found to manage.' }, { status: 400 });
+            return NextResponse.json({ error: 'No subscription found for your account.' }, { status: 400 });
         }
 
         const portal = await stripe.billingPortal.sessions.create({ customer, return_url: returnUrl });

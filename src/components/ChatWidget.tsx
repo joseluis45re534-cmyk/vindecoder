@@ -55,7 +55,9 @@ export default function ChatWidget() {
   const poll = useCallback(async () => {
     if (!sessionId.current) return;
     try {
-      const res = await fetch(`/api/chat/poll?sessionId=${encodeURIComponent(sessionId.current)}`);
+      const res = await fetch(
+        `/api/chat/poll?sessionId=${encodeURIComponent(sessionId.current)}&visitorId=${encodeURIComponent(visitorId.current)}`,
+      );
       const data = (await res.json()) as { persisted?: boolean; status?: typeof status; messages?: Msg[] };
       if (data.persisted) {
         setPersisted(true);

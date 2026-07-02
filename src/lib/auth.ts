@@ -55,12 +55,31 @@ export function clearCookie(): string {
 
 export const COOKIE_NAME = COOKIE;
 
-// Sensible dev fallbacks so the panel is usable before secrets are set.
+// Dev fallbacks so the panel is usable before secrets are set — but in
+// PRODUCTION we must never fall back to a public default. If a secret is missing
+// in prod, return an unguessable per-call value so admin auth fails CLOSED:
+// login can't succeed (password never matches) and forged sessions can't verify
+// (the known dev secret no longer signs anything). The alternative — shipping
+// without ADMIN_PASSWORD/ADMIN_SESSION_SECRET — would leave the whole admin
+// panel open with password "admin" and forgeable sessions.
+function secretOrFailClosed(value: string | undefined, devFallback: string): string {
+    if (value) return value;
+    if (process.env.NODE_ENV === 'production') return `${crypto.randomUUID()}${crypto.randomUUID()}`;
+    return devFallback;
+}
 export function adminSecret(env: { ADMIN_SESSION_SECRET?: string }): string {
-    return env.ADMIN_SESSION_SECRET || 'dev-insecure-secret-change-me';
+    return secretOrFailClosed(env.ADMIN_SESSION_SECRET, 'dev-insecure-secret-change-me');
 }
 export function adminPassword(env: { ADMIN_PASSWORD?: string }): string {
-    return env.ADMIN_PASSWORD || 'admin';
+    return secretOrFailClosed(env.ADMIN_PASSWORD, 'admin');
+}
+
+/** Constant-time string comparison — avoids a login timing oracle. */
+export function timingSafeEqual(a: string, b: string): boolean {
+    const n = Math.max(a.length, b.length);
+    let diff = a.length ^ b.length;
+    for (let i = 0; i < n; i++) diff |= (a.charCodeAt(i) || 0) ^ (b.charCodeAt(i) || 0);
+    return diff === 0;
 }
 
 function readCookie(request: Request, name: string): string | undefined {

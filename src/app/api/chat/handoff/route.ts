@@ -23,6 +23,10 @@ export async function POST(request: Request) {
   try {
     const existing = await db.select().from(chatSessions).where(eq(chatSessions.id, sid)).limit(1);
     if (existing.length) {
+      // Ownership: only the owning visitor can escalate a session to a human.
+      if (existing[0].visitor_id !== visitorId) {
+        return NextResponse.json({ error: 'Session not found' }, { status: 403 });
+      }
       await db.update(chatSessions).set({ status: 'waiting', last_message_at: new Date().toISOString() }).where(eq(chatSessions.id, sid));
     } else {
       await db.insert(chatSessions).values({ id: sid, visitor_id: visitorId, status: 'waiting' });
