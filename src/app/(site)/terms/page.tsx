@@ -29,7 +29,7 @@ export default function TermsPage() {
         <h2>Payments &amp; refunds</h2>
         <p>
           Report prices are shown at checkout. Because reports are delivered instantly and digitally, refunds are handled per
-          our refund policy — contact support@carvinlookup.com if a report failed to generate.
+          our refund policy — contact support@carvinlookup.us if a report failed to generate.
         </p>
         <h2>Limitation of liability</h2>
         <p>

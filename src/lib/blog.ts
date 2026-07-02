@@ -35,6 +35,12 @@ export const DEMO_POSTS: BlogPost[] = [
     aiAssisted: true,
     body: `Every car sold in the United States carries a 17-character Vehicle Identification Number (VIN). It is not a random string — each position is defined by federal standard (FMVSS 115 / ISO 3779), and once you know the pattern you can decode a lot before you ever pay for a report.
 
+**Key takeaways**
+
+- Every VIN has exactly 17 characters, each with a defined meaning under federal standard FMVSS 115 / ISO 3779.
+- Position 9 is a check digit — a math formula that catches typos and some fabricated VINs.
+- Decoding a VIN tells you what a car *should* be. It doesn't tell you what *happened* to it — for that you need a title and records check (see [our data sources](/data-sources)).
+
 ## Where to find the VIN
 
 The three most reliable spots:
@@ -70,7 +76,7 @@ Letters and numbers cycle on a 30-year schedule. A few anchors: **A = 1980 / 201
 
 ## Why decoding by eye isn't enough
 
-Reading the VIN tells you what the car *should* be. It does **not** tell you what happened to it — salvage titles, flood damage, odometer rollbacks, and open liens never appear in the number itself. That history lives in NMVTIS, NICB, and state DMV records, which is exactly what a full report pulls together.
+Reading the VIN tells you what the car *should* be. It does **not** tell you what happened to it — salvage titles, flood damage, odometer rollbacks, and open liens never appear in the number itself. That history lives in NMVTIS, NICB, and state DMV records, which is exactly what a full report pulls together. For the terms you'll see in a report, see our [VIN & title glossary](/glossary); for what each agency actually provides, see [data sources & methodology](/data-sources).
 
 > **The takeaway:** decode the VIN to confirm the car is what the seller claims, then run a history report to learn what they might not be telling you.`,
   },
@@ -89,12 +95,20 @@ Reading the VIN tells you what the car *should* be. It does **not** tell you wha
     aiAssisted: true,
     body: `A branded title is the single biggest red flag in a used-car listing — and the words dealers use are easy to blur together. Here is the difference that actually matters to your wallet and your safety.
 
+**Key takeaways**
+
+- Salvage, rebuilt, junk, and flood are four *different* title brands with different legal and financial consequences — not interchangeable terms.
+- A rebuilt title is legal to drive, but the salvage history stays on the title forever and typically cuts resale value 20–50%.
+- "Title washing" — moving a car across state lines to drop a brand — is exactly what a multi-state VIN check catches.
+
 ## The four brands you'll see
 
-- **Salvage:** An insurer declared the car a total loss — repair cost exceeded roughly 70–90% of its value (the threshold varies by state). A salvage car is **not legal to drive** until it passes a re-inspection.
-- **Rebuilt (or "Reconstructed"):** A salvage car that was repaired and passed a state inspection. It is legal to drive, but the brand stays on the title forever.
-- **Junk:** Totaled and certified as only good for parts or scrap. It should never be back on the road.
-- **Flood:** Damaged by water. These are dangerous in a specific way — corrosion and electrical faults can appear months later.
+| Brand | Meaning | Legal to drive? | Resale impact |
+|-------|---------|------------------|----------------|
+| Salvage | Insurer declared a total loss — repair cost exceeded roughly 70–90% of value (threshold varies by state) | No, until it passes a state re-inspection | Not sellable as a driveable car; value is largely parts/scrap |
+| Rebuilt / Reconstructed | A salvage car that was repaired and passed a state inspection | Yes | Drops 20–50% versus a clean-title equivalent |
+| Junk | Totaled and certified as fit only for parts or scrap | No | Not a road vehicle |
+| Flood | Water-damaged | Depends on state and inspection | Steep discount; corrosion and electrical faults often surface later |
 
 ## What a brand costs you
 
@@ -105,7 +119,7 @@ Reading the VIN tells you what the car *should* be. It does **not** tell you wha
 
 ## How to protect yourself
 
-Run the VIN before you visit. A history report shows whether a title brand was ever applied **in any state** — important because "title washing" moves a car across state lines to drop the brand. If the seller's clean title contradicts the NMVTIS record, you've just saved yourself thousands.
+Run the VIN before you visit. A history report checks [NMVTIS](https://vehiclehistory.gov) to see whether a title brand was ever applied **in any state** — important because "title washing" moves a car across state lines to drop the brand. If the seller's clean title contradicts the NMVTIS record, you've just saved yourself thousands. See our [VIN & title glossary](/glossary) for definitions of every term above, and [data sources & methodology](/data-sources) for what NMVTIS actually checks.
 
 > A rebuilt title isn't automatically a scam — some are honestly repaired and fairly priced. But you should *know* it's branded, *why*, and pay accordingly. Never let it be a surprise after purchase.`,
   },
@@ -124,6 +138,12 @@ Run the VIN before you visit. A history report shows whether a title brand was e
     aiAssisted: true,
     body: `After every major hurricane, tens of thousands of flood-damaged cars are dried out, detailed, and shipped to states far from the storm to be sold to people who have no idea. Water damage is uniquely dangerous because it keeps causing problems — electrical gremlins, mold, and rust that surface long after the sale.
 
+**Key takeaways**
+
+- Flood damage keeps causing problems after a cosmetic clean-up — electrical faults, mold, and corrosion often surface months later.
+- A 5-minute physical check (smell, hidden moisture, electronics) catches what a quick test drive won't.
+- Pull the VIN history too — a [flood or salvage title brand](/glossary) applied in any state should show up in a report even if the car was retitled elsewhere.
+
 ## A 5-minute physical inspection
 
 - **Smell first.** A musty or heavy air-freshener smell is a warning. Sellers mask odor for a reason.
@@ -134,9 +154,9 @@ Run the VIN before you visit. A history report shows whether a title brand was e
 
 ## Pull the records, too
 
-Your eyes can miss a professional clean-up. The VIN history is harder to fool. A report flags a **flood or salvage brand applied in any state**, which matters because title washing relocates the car specifically to erase that brand.
+Your eyes can miss a professional clean-up. The VIN history is harder to fool. A report checks [NMVTIS](https://vehiclehistory.gov) for a **flood or salvage brand applied in any state**, which matters because title washing relocates the car specifically to erase that brand.
 
-Run the [VIN](/#vin-search) and compare it against the seller's paperwork. If NMVTIS shows a flood event and the title in front of you says "clean," walk away.
+Run the [VIN](/#vin-search) and compare it against the seller's paperwork. If NMVTIS shows a flood event and the title in front of you says "clean," walk away. See our [data sources & methodology](/data-sources) for exactly what gets checked, and the [VIN & title glossary](/glossary) for what each term means.
 
 > Flood damage is the one problem that gets *worse* after you buy. Spend the five minutes and the few dollars before, not the thousands after.`,
   },

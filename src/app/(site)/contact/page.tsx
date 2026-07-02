@@ -21,7 +21,7 @@ export default function ContactPage() {
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 mb-10">
           {[
             { icon: Mail, t: 'Email', d: 'support@carvinlookup.us' },
-            { icon: Clock, t: 'Hours', d: 'Mon–Fri, 9am–6pm ET' },
+            { icon: Clock, t: 'Hours', d: '24/7 — always available' },
             { icon: ShieldCheck, t: 'Dealers', d: 'dealers@carvinlookup.us' },
           ].map(({ icon: Icon, t, d }) => (
             <div key={t} className="bg-white rounded-2xl border border-slate-100 p-6 card-lift">

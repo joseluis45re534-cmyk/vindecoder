@@ -31,7 +31,7 @@ export default function PrivacyPage() {
         <h2>Data sources</h2>
         <p>Vehicle records originate from NMVTIS, NICB, and state DMV databases and are governed by their respective terms.</p>
         <h2>Your choices</h2>
-        <p>You can request access to or deletion of your account data by contacting support@carvinlookup.com.</p>
+        <p>You can request access to or deletion of your account data by contacting support@carvinlookup.us.</p>
       </article>
     </main>
   );
