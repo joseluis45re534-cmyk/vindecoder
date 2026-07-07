@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
-import { Mail, Clock, ShieldCheck } from 'lucide-react';
+import { Mail, Clock, ShieldCheck, MapPin, Phone } from 'lucide-react';
 import ContactForm from '@/components/ContactForm';
+import { SUPPORT_EMAIL, SUPPORT_PHONE, SITE_ADDRESS } from '@/lib/site';
 
 export const runtime = 'edge';
 
@@ -18,11 +19,17 @@ export default function ContactPage() {
         <p className="text-slate-500 mb-10 text-lg">
           Questions about a report, billing, or a dealer plan? We&apos;re happy to help.
         </p>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 mb-10">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 mb-10">
           {[
-            { icon: Mail, t: 'Email', d: 'support@carvinlookup.us' },
+            { icon: Mail, t: 'Email', d: SUPPORT_EMAIL },
+            ...(SUPPORT_PHONE ? [{ icon: Phone, t: 'Phone', d: SUPPORT_PHONE }] : []),
             { icon: Clock, t: 'Hours', d: '24/7 — always available' },
             { icon: ShieldCheck, t: 'Dealers', d: 'dealers@carvinlookup.us' },
+            {
+              icon: MapPin,
+              t: 'Address',
+              d: `${SITE_ADDRESS.line1}, ${SITE_ADDRESS.line2}, ${SITE_ADDRESS.city}, ${SITE_ADDRESS.region} ${SITE_ADDRESS.postalCode} ${SITE_ADDRESS.country}`,
+            },
           ].map(({ icon: Icon, t, d }) => (
             <div key={t} className="bg-white rounded-2xl border border-slate-100 p-6 card-lift">
               <span className="inline-flex w-11 h-11 rounded-xl bg-blue-50 text-blue-600 items-center justify-center mb-4">

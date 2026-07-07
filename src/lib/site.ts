@@ -25,3 +25,17 @@ export const SITE_DESCRIPTION =
   'Run an instant U.S. vehicle history report by VIN or license plate. Check title brands, salvage and flood damage, theft records, open liens, and odometer rollback from NMVTIS, NICB, and DMV records.';
 
 export const SITE_TAGLINE = 'U.S. Vehicle History Reports by VIN';
+
+// Single source of truth for NAP (name / address / phone) so the footer and the
+// Organization JSON-LD never diverge. Set SUPPORT_PHONE once you have a number.
+export const SUPPORT_EMAIL = 'support@carvinlookup.us';
+// Typed as string (not the '' literal) so the "phone present" branches compile.
+export const SUPPORT_PHONE: string = ''; // e.g. '+1-303-555-0100' — leave '' to hide it
+export const SITE_ADDRESS = {
+  line1: '1500 N Grant St',
+  line2: 'Ste N',
+  city: 'Denver',
+  region: 'CO',
+  postalCode: '80203',
+  country: 'US',
+};

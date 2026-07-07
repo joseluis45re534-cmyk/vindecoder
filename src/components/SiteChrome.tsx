@@ -1,6 +1,6 @@
 import Link from "next/link";
-import { ShieldCheck } from "lucide-react";
-import { SITE_NAME } from "@/lib/site";
+import { ShieldCheck, Mail, Phone, MapPin } from "lucide-react";
+import { SITE_NAME, SUPPORT_EMAIL, SUPPORT_PHONE, SITE_ADDRESS } from "@/lib/site";
 import Logo from "@/components/Logo";
 import MobileMenu from "@/components/MobileMenu";
 import AccountNav from "@/components/account/AccountNav";
@@ -69,6 +69,26 @@ export function SiteFooter() {
             <p className="text-sm leading-relaxed max-w-xs">
               Instant U.S. vehicle history reports from NMVTIS, NICB, and state DMV records. Know before you buy.
             </p>
+            <address className="not-italic mt-5 space-y-2.5 text-sm">
+              <a href={`mailto:${SUPPORT_EMAIL}`} className="flex items-center gap-2 hover:text-white transition-colors">
+                <Mail className="w-4 h-4 shrink-0 text-blue-400" aria-hidden="true" />
+                {SUPPORT_EMAIL}
+              </a>
+              {SUPPORT_PHONE && (
+                <a href={`tel:${SUPPORT_PHONE.replace(/[^+\d]/g, "")}`} className="flex items-center gap-2 hover:text-white transition-colors">
+                  <Phone className="w-4 h-4 shrink-0 text-blue-400" aria-hidden="true" />
+                  {SUPPORT_PHONE}
+                </a>
+              )}
+              <div className="flex items-start gap-2">
+                <MapPin className="w-4 h-4 shrink-0 text-blue-400 mt-0.5" aria-hidden="true" />
+                <span className="not-italic leading-relaxed">
+                  {SITE_ADDRESS.line1}{SITE_ADDRESS.line2 ? `, ${SITE_ADDRESS.line2}` : ""}<br />
+                  {SITE_ADDRESS.city}, {SITE_ADDRESS.region} {SITE_ADDRESS.postalCode}<br />
+                  {SITE_ADDRESS.country}
+                </span>
+              </div>
+            </address>
           </div>
 
           {/* Popular brands */}

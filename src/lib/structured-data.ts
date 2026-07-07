@@ -2,7 +2,7 @@
 // agents and search engines extract correct, current facts. Pure functions
 // returning plain objects; render them with <JsonLd data={...} />.
 
-import { SITE_URL, SITE_NAME, SITE_DESCRIPTION } from '@/lib/site';
+import { SITE_URL, SITE_NAME, SITE_DESCRIPTION, SUPPORT_EMAIL, SUPPORT_PHONE, SITE_ADDRESS } from '@/lib/site';
 import { TRIAL_PLAN, formatPrice } from '@/lib/pricing';
 
 type Json = Record<string, unknown>;
@@ -30,6 +30,24 @@ export function organizationLd(): Json {
     description: SITE_DESCRIPTION,
     logo: { '@type': 'ImageObject', url: `${SITE_URL}/icon-512.png` },
     areaServed: { '@type': 'Country', name: 'United States' },
+    email: SUPPORT_EMAIL,
+    ...(SUPPORT_PHONE ? { telephone: SUPPORT_PHONE } : {}),
+    address: {
+      '@type': 'PostalAddress',
+      streetAddress: `${SITE_ADDRESS.line1}${SITE_ADDRESS.line2 ? `, ${SITE_ADDRESS.line2}` : ''}`,
+      addressLocality: SITE_ADDRESS.city,
+      addressRegion: SITE_ADDRESS.region,
+      postalCode: SITE_ADDRESS.postalCode,
+      addressCountry: SITE_ADDRESS.country,
+    },
+    contactPoint: {
+      '@type': 'ContactPoint',
+      contactType: 'customer support',
+      email: SUPPORT_EMAIL,
+      areaServed: 'US',
+      availableLanguage: 'English',
+      ...(SUPPORT_PHONE ? { telephone: SUPPORT_PHONE } : {}),
+    },
   };
 }
 
