@@ -98,6 +98,7 @@ export const TRIAL_PLAN: Plan = {
         'Real vehicle photos',
         'Open safety recalls',
         'Full specs & 40+ data points',
+        'Downloadable PDF report',
     ],
 };
 

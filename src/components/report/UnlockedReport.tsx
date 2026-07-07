@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import {
-  Loader2, FileText, AlertTriangle, Car, Gauge, ShieldCheck, BadgeDollarSign, Gavel, Camera, Bell, RefreshCw, CheckCircle2,
+  Loader2, FileText, AlertTriangle, Car, Gauge, ShieldCheck, BadgeDollarSign, Gavel, Camera, Bell, RefreshCw, CheckCircle2, Download,
 } from 'lucide-react';
 
 interface ReportData {
@@ -79,6 +79,32 @@ export default function UnlockedReport({ vin, sessionId }: { vin: string; sessio
   const [msg, setMsg] = useState('');
   const [photoFailed, setPhotoFailed] = useState(false);
   const [brandFailed, setBrandFailed] = useState(false);
+  const [downloading, setDownloading] = useState(false);
+  const [dlError, setDlError] = useState('');
+
+  const downloadPdf = useCallback(async () => {
+    setDownloading(true);
+    setDlError('');
+    try {
+      const params = new URLSearchParams({ vin });
+      if (sessionId) params.set('session_id', sessionId);
+      const res = await fetch(`/api/report/pdf?${params.toString()}`);
+      if (!res.ok) throw new Error('pdf');
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `carvinlookup-${vin}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+    } catch {
+      setDlError('Could not generate the PDF — please try again.');
+    } finally {
+      setDownloading(false);
+    }
+  }, [vin, sessionId]);
 
   const load = useCallback(async () => {
     setState('loading');
@@ -153,12 +179,24 @@ export default function UnlockedReport({ vin, sessionId }: { vin: string; sessio
 
   return (
     <div className="bg-white rounded-3xl shadow-sm border border-slate-100 p-6 sm:p-7">
-      <div className="flex items-center justify-between mb-5">
+      <div className="flex items-center justify-between gap-3 mb-5">
         <h3 className="font-display font-bold text-slate-900">Your full report</h3>
-        <span className="inline-flex items-center gap-1.5 text-[11px] font-bold text-emerald-700 bg-emerald-50 px-3 py-1 rounded-full">
-          <CheckCircle2 className="w-3.5 h-3.5" aria-hidden="true" /> Unlocked
-        </span>
+        <div className="flex items-center gap-2 shrink-0">
+          <button
+            type="button"
+            onClick={downloadPdf}
+            disabled={downloading}
+            className="inline-flex items-center gap-1.5 text-[12px] font-bold text-white bg-primary px-3 py-1.5 rounded-full hover:brightness-110 active:scale-[0.98] disabled:opacity-60 transition"
+          >
+            {downloading ? <Loader2 className="w-3.5 h-3.5 animate-spin" aria-hidden="true" /> : <Download className="w-3.5 h-3.5" aria-hidden="true" />}
+            {downloading ? 'Preparing…' : 'Download PDF'}
+          </button>
+          <span className="hidden sm:inline-flex items-center gap-1.5 text-[11px] font-bold text-emerald-700 bg-emerald-50 px-3 py-1 rounded-full">
+            <CheckCircle2 className="w-3.5 h-3.5" aria-hidden="true" /> Unlocked
+          </span>
+        </div>
       </div>
+      {dlError && <p className="text-xs text-red-600 mb-4 -mt-2" role="alert">{dlError}</p>}
       {report?.photoUrl && !photoFailed ? (
         <div className="relative w-full h-48 rounded-2xl overflow-hidden bg-slate-100 border border-slate-200 mb-4">
           {/* eslint-disable-next-line @next/next/no-img-element */}
