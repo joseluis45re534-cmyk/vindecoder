@@ -2,7 +2,7 @@
 // Identity now lives in Supabase Auth; this module only joins a verified email
 // to the D1 orders/reports that belong to it. DB-touching (D1/Drizzle).
 
-import { desc, eq, inArray } from 'drizzle-orm';
+import { and, desc, eq, inArray } from 'drizzle-orm';
 import { getDb, type Env } from '@/db';
 import { orders, reports } from '@/db/schema';
 
@@ -11,6 +11,18 @@ function db(env: Partial<Env>) {
 }
 
 const norm = (email: string) => email.trim().toLowerCase();
+
+/** True if this email has a paid order for this VIN — the per-user access check. */
+export async function emailOwnsReport(env: Partial<Env>, email: string, vin: string): Promise<boolean> {
+    const d = db(env);
+    if (!d) return false;
+    const rows = await d
+        .select({ id: orders.id })
+        .from(orders)
+        .where(and(eq(orders.email, norm(email)), eq(orders.report_id, vin), eq(orders.status, 'paid')))
+        .limit(1);
+    return rows.length > 0;
+}
 
 // ---------- order recording (Stripe webhook) ----------
 

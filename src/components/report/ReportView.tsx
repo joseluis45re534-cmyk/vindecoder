@@ -428,12 +428,12 @@ export default function ReportView({ id, sample }: { id: string; sample?: Sample
                   </p>
                   <ManageSubscriptionButton sessionId={sessionId} reportId={id} />
                   <div className="w-full border-t border-slate-100 my-5" />
-                  <p className="text-xs text-slate-500 mb-3">Save this report to your account to access it anytime.</p>
+                  <p className="text-xs text-slate-500 mb-3">This report is saved to your account.</p>
                   <Link
-                    href="/register?next=/account"
+                    href="/account"
                     className="inline-flex items-center justify-center gap-1.5 w-full bg-slate-900 text-white text-sm font-semibold py-2.5 rounded-xl hover:bg-slate-800 transition-colors"
                   >
-                    Create a free account
+                    Go to your dashboard
                   </Link>
                 </div>
               </div>

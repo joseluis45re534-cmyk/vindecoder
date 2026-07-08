@@ -1,20 +1,24 @@
 'use client';
 
-import { useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { motion, useReducedMotion } from 'framer-motion';
 import { Loader2, Lock, ShieldCheck } from 'lucide-react';
 import { trialDisclosure } from '@/lib/stripe-billing';
 
 // The trial CTA: a required consent checkbox gates a single "Start for $1 today"
 // button that opens hosted Stripe Checkout, followed by the plain-text disclosure.
+// Account-first: if the user isn't signed in, checkout returns 401 and we route
+// them to register, then resume automatically here (via ?checkout=1).
 export default function TrialCheckout({ reportId }: { reportId: string }) {
     const reduce = useReducedMotion();
+    const search = useSearchParams();
     const [consent, setConsent] = useState(false);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
+    const resumed = useRef(false);
 
-    const start = async () => {
-        if (!consent || loading) return;
+    const doCheckout = useCallback(async () => {
         setLoading(true);
         setError('');
         try {
@@ -23,6 +27,12 @@ export default function TrialCheckout({ reportId }: { reportId: string }) {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ planId: 'trial', reportId }),
             });
+            if (res.status === 401) {
+                // Not signed in — create an account, then come back and resume.
+                const next = encodeURIComponent(`/report/${reportId}?checkout=1`);
+                window.location.href = `/register?next=${next}`;
+                return;
+            }
             const data = (await res.json()) as { url?: string; error?: string };
             if (res.ok && data.url) window.location.href = data.url;
             else setError(data.error || 'Checkout failed');
@@ -31,6 +41,18 @@ export default function TrialCheckout({ reportId }: { reportId: string }) {
         } finally {
             setLoading(false);
         }
+    }, [reportId]);
+
+    // Resume checkout once, automatically, after returning from register/sign-in.
+    useEffect(() => {
+        if (!resumed.current && search.get('checkout') === '1') {
+            resumed.current = true;
+            doCheckout();
+        }
+    }, [search, doCheckout]);
+
+    const start = () => {
+        if (consent && !loading) doCheckout();
     };
 
     const interactive = !reduce && consent;

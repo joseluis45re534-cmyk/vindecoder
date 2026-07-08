@@ -24,6 +24,12 @@ export default function CheckoutButtons({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ planId, reportId }),
       });
+      if (res.status === 401) {
+        // Account-first: send them to register, then back here to try again.
+        const next = encodeURIComponent(window.location.pathname + window.location.search);
+        window.location.href = `/register?next=${next}`;
+        return;
+      }
       const data = (await res.json()) as { url?: string; error?: string; configured?: boolean };
       if (res.ok && data.url) {
         window.location.href = data.url;

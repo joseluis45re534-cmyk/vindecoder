@@ -4,12 +4,30 @@ import { getEnv, siteUrl } from '@/lib/cf';
 import { getPlan, isTrialPlan } from '@/lib/pricing';
 import { getPricing, getPaymentConfig } from '@/lib/settings';
 import { trialPhaseOnePriceData } from '@/lib/stripe-billing';
+import { createClient } from '@/lib/supabase/server';
 
 export const runtime = 'edge';
 
 export async function POST(request: Request) {
     const env = await getEnv();
-    const body = (await request.json().catch(() => ({}))) as { planId?: string; reportId?: string; email?: string };
+    const body = (await request.json().catch(() => ({}))) as { planId?: string; reportId?: string };
+
+    // ── ACCOUNT-FIRST: require a signed-in user, and bill THEIR account email.
+    // This ties every purchase to an account (retention) and is what makes
+    // per-user report entitlement work. We use the session email, never a
+    // client-supplied one. Guarded so a missing Supabase config fails clearly.
+    let email: string | undefined;
+    try {
+        if (process.env.NEXT_PUBLIC_SUPABASE_URL) {
+            const supabase = await createClient();
+            email = (await supabase.auth.getUser()).data.user?.email ?? undefined;
+        }
+    } catch {
+        /* treated as not-signed-in below */
+    }
+    if (!email) {
+        return NextResponse.json({ error: 'Please create an account to continue.', requiresAuth: true }, { status: 401 });
+    }
 
     const plans = await getPricing(env);
     const plan = getPlan(body.planId || 'single', plans);
@@ -34,7 +52,7 @@ export async function POST(request: Request) {
         ? `${base}/report/${body.reportId}?paid=1&session_id={CHECKOUT_SESSION_ID}`
         : `${base}/?paid=1&session_id={CHECKOUT_SESSION_ID}`;
 
-    const metadata = { planId: plan.id, reportId: body.reportId || '' };
+    const metadata = { planId: plan.id, reportId: body.reportId || '', email };
 
     try {
         // Trial subscription ($1 today → $29/mo): charge the $1/3-day price
@@ -44,7 +62,7 @@ export async function POST(request: Request) {
             const session = await stripe.checkout.sessions.create({
                 mode: 'subscription',
                 line_items: [{ price_data: trialPhaseOnePriceData(), quantity: 1 }],
-                customer_email: body.email,
+                customer_email: email,
                 success_url: success,
                 cancel_url: `${base}/?canceled=1`,
                 metadata,
@@ -68,7 +86,7 @@ export async function POST(request: Request) {
                     quantity: 1,
                 },
             ],
-            customer_email: body.email,
+            customer_email: email,
             success_url: success,
             cancel_url: `${base}/?canceled=1`,
             metadata,
