@@ -8,6 +8,7 @@ const LINKS = [
   { href: '/#how-it-works', label: 'How it works' },
   { href: '/vin-check', label: 'VIN check by brand' },
   { href: '/pricing', label: 'Pricing' },
+  { href: '/how-to', label: 'How-to guides' },
   { href: '/blog', label: 'Blog' },
   { href: '/#faq', label: 'FAQ' },
 ];

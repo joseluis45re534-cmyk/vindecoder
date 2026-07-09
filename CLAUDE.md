@@ -12,6 +12,26 @@ Project conventions for carvinlookup.us (Next.js App Router + TypeScript + Tailw
 - **Never fabricate stats, reviews, authors, or sources.** If a number or claim can't be verified against the product or a real source, don't schema-encode it — flag it in code with a `TODO` comment and leave it out of structured data. See `src/app/(site)/page.tsx` for the existing pattern (the homepage's "4.8" rating and testimonials are explicitly marked as placeholders pending real data).
 - **Cite only verified, live external URLs.** Before citing a government/authority source (NMVTIS, NICB, NHTSA, etc.), verify the URL is live via WebFetch/WebSearch — don't cite from memory.
 
+## Programmatic content clusters (SEO)
+
+Large SEO page-groups are **data-driven from a single source-of-truth file**; the routes, `sitemap.ts`, `llms.txt`, and nav all read from it, so you add content by editing the data file — never by hand-listing URLs. Each cluster follows the `BRANDS` → `/vin-check/[brand]` pattern.
+
+| Cluster | Source of truth | Routes |
+|---|---|---|
+| Blog posts | `src/lib/blog.ts` (`DEMO_POSTS`) | `/blog`, `/blog/[slug]` |
+| How-to guides | `src/lib/how-to.ts` (`HOW_TO_GUIDES`) | `/how-to`, `/how-to/[slug]` |
+| Comparisons / alternatives | `src/lib/comparisons.ts` (`COMPETITORS`) | `/compare`, `/compare/[slug]`, `/[x]-alternative` |
+| Specialty checks | `src/lib/checks.ts` (`CHECK_PAGES`) | `/salvage-check`, `/lien-check`, `/vin-decoder`, `/license-plate-lookup`, … |
+| Window stickers | `src/lib/window-stickers.ts` (`STICKER_MAKES`) | `/window-sticker`, `/window-sticker/[make]`, `/window-sticker/[make]/[model]` |
+| Auctions (educational) | `src/lib/auctions.ts` (`DAMAGE_TYPES`, `VEHICLE_TYPES`) | `/auctions`, `/auctions/damage/[type]`, `/auctions/type/[type]` |
+| Problem pages | `src/lib/problem-pages.ts` + `/most-stolen-cars` | `/problems`, `/most-*-cars`, `/worst-cars-to-buy` |
+| Calculators | interactive client components in `src/components/calculators/` | `/auto-loan-calculator`, `/lease-calculator`, `/depreciation-calculator` |
+
+Rules when adding to a cluster:
+- **Add the entry to the data file, then verify `sitemap.ts` + `llms.txt` include it** (both import these lists — a new entry should appear automatically).
+- **No self-cannibalization.** Don't create two pages targeting the same keyword/intent (e.g. a `/how-to/spot-odometer-rollback` guide *and* a `/blog/how-to-spot-odometer-rollback` post). Pick one canonical home and cross-link.
+- **No fabrication (reinforced).** Competitor comparison pages stay to general, widely-known positioning — never invent a competitor's price/feature. Window-sticker and check pages describe what the report/sticker contains and funnel to the live VIN lookup; they never hardcode a specific car's MSRP/specs. Listicles cite real public sources (e.g. NICB for `/most-stolen-cars`) with a live link, or are written as educational explainers when no authoritative per-model data exists.
+
 ## Sample vs. real reports (`/report/[id]`)
 
 `src/app/(site)/report/[id]/page.tsx` is a Server Component that branches on whether the VIN matches a curated entry in `src/lib/sample-reports.ts`:

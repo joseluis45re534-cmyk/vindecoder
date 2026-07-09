@@ -2,6 +2,9 @@ import { SITE_URL } from '@/lib/site';
 import { TRIAL_PLAN, formatPrice } from '@/lib/pricing';
 import { BRANDS } from '@/lib/brands';
 import { allPosts } from '@/lib/blog';
+import { allGuides } from '@/lib/how-to';
+import { COMPETITORS } from '@/lib/comparisons';
+import { allCheckPages } from '@/lib/checks';
 
 export const runtime = 'edge';
 
@@ -13,6 +16,8 @@ export async function GET() {
   const monthly = formatPrice(TRIAL_PLAN.recurringCents ?? 2900);
   const days = TRIAL_PLAN.trialDays ?? 3;
   const posts = allPosts();
+  const guides = allGuides();
+  const checks = allCheckPages();
   const topBrands = BRANDS.slice(0, 14);
 
   const body = `# CarVinLookup
@@ -45,6 +50,10 @@ CarVinLookup helps used-car buyers in the United States check a vehicle before p
 - VIN check (home): ${SITE_URL}/
 - Pricing: ${SITE_URL}/pricing
 - Blog (buying guides): ${SITE_URL}/blog
+- How-to guides: ${SITE_URL}/how-to
+- Window sticker lookup by VIN: ${SITE_URL}/window-sticker
+- Salvage auction guide: ${SITE_URL}/auctions
+- Compare providers: ${SITE_URL}/compare
 
 ## Popular brand VIN checks
 
@@ -53,6 +62,19 @@ ${topBrands.map((b) => `- ${b.name} VIN check: ${SITE_URL}/vin-check/${b.slug}`)
 ## Guides
 
 ${posts.map((p) => `- ${p.title}: ${SITE_URL}/blog/${p.slug}`).join('\n')}
+
+## How-to guides
+
+${guides.map((g) => `- ${g.title}: ${SITE_URL}/how-to/${g.slug}`).join('\n')}
+
+## Specialty checks
+
+${checks.map((c) => `- ${c.h1}: ${SITE_URL}/${c.slug}`).join('\n')}
+
+## Compare & alternatives
+
+- Compare providers: ${SITE_URL}/compare
+${COMPETITORS.map((c) => `- Best ${c.name} alternative: ${SITE_URL}/${c.slug}-alternative`).join('\n')}
 
 ## Data sources
 

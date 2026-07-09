@@ -144,6 +144,33 @@ export function vinCheckHowToLd(): Json {
 }
 
 /**
+ * Generic HowTo builder for the /how-to/[slug] guides. Steps feed the visible
+ * ordered list and this schema from the same source (src/lib/how-to.ts).
+ */
+export function howToLd(input: {
+  name: string;
+  description: string;
+  url: string;
+  steps: { name: string; text: string }[];
+  totalTime?: string;
+}): Json {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'HowTo',
+    name: input.name,
+    description: input.description,
+    ...(input.totalTime ? { totalTime: input.totalTime } : {}),
+    step: input.steps.map((s, i) => ({
+      '@type': 'HowToStep',
+      position: i + 1,
+      name: s.name,
+      text: s.text,
+      url: input.url,
+    })),
+  };
+}
+
+/**
  * Schema for a curated SAMPLE report page (src/lib/sample-reports.ts). Uses
  * CreativeWork, not Product/Vehicle, and the description explicitly says
  * "illustrative example" — this must never read as a real individual vehicle
