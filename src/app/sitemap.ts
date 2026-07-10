@@ -4,9 +4,10 @@ import { allPosts } from "@/lib/blog";
 import { allGuides } from "@/lib/how-to";
 import { COMPETITORS, comparisonSlug } from "@/lib/comparisons";
 import { allCheckPages } from "@/lib/checks";
+import { US_STATES } from "@/lib/us-states";
 import { STICKER_MAKES, allStickerModels } from "@/lib/window-stickers";
 import { DAMAGE_TYPES, VEHICLE_TYPES } from "@/lib/auctions";
-import { BRANDS } from "@/lib/brands";
+import { BRANDS, getBrand } from "@/lib/brands";
 import { SAMPLE_REPORTS } from "@/lib/sample-reports";
 
 export const runtime = "edge";
@@ -83,6 +84,23 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: 0.5,
   }));
 
+  // Model-level VIN-check pages exist only where the parent brand page does.
+  const modelVinChecks: MetadataRoute.Sitemap = allStickerModels()
+    .filter((m) => getBrand(m.makeSlug))
+    .map((m) => ({
+      url: `${SITE_URL}/vin-check/${m.makeSlug}/${m.modelSlug}`,
+      lastModified: now,
+      changeFrequency: "monthly",
+      priority: 0.6,
+    }));
+
+  const statePlates: MetadataRoute.Sitemap = US_STATES.map((s) => ({
+    url: `${SITE_URL}/license-plate-lookup/${s.slug}`,
+    lastModified: now,
+    changeFrequency: "monthly",
+    priority: 0.5,
+  }));
+
   const auctions: MetadataRoute.Sitemap = [
     ...DAMAGE_TYPES.map((d) => ({
       url: `${SITE_URL}/auctions/damage/${d.slug}`,
@@ -130,6 +148,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
     ...checks,
     ...stickerMakes,
     ...stickerModels,
+    ...modelVinChecks,
+    ...statePlates,
     ...auctions,
     ...compare,
     ...sampleReports,

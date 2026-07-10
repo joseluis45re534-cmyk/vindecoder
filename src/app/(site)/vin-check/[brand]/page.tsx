@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { ShieldCheck, FileText, Database, AlertTriangle, Gauge, Search } from 'lucide-react';
 import { getBrand, BRANDS } from '@/lib/brands';
+import { getStickerMake } from '@/lib/window-stickers';
 import { SITE_URL, SITE_NAME } from '@/lib/site';
 import SearchForm from '@/components/SearchForm';
 
@@ -52,6 +53,7 @@ export default async function BrandPage({
   if (!brand) notFound();
 
   const others = BRANDS.filter((b) => b.slug !== brand.slug).slice(0, 20);
+  const stickerModels = getStickerMake(slug)?.models ?? [];
 
   const jsonLd = {
     '@context': 'https://schema.org',
@@ -140,12 +142,22 @@ export default async function BrandPage({
         </ul>
 
         <h2>Popular {brand.name} models to VIN check</h2>
-        <p>These are the {brand.name} models buyers check most often:</p>
-        <ul>
-          {brand.models.map((m) => (
-            <li key={m}>{brand.name} {m}</li>
-          ))}
-        </ul>
+        <p>Check the history of a specific {brand.name} model:</p>
+        {stickerModels.length > 0 ? (
+          <ul>
+            {stickerModels.map((m) => (
+              <li key={m.slug}>
+                <Link href={`/vin-check/${brand.slug}/${m.slug}`}>{brand.name} {m.name} VIN check</Link>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <ul>
+            {brand.models.map((m) => (
+              <li key={m}>{brand.name} {m}</li>
+            ))}
+          </ul>
+        )}
 
         <h2>How to check a {brand.name} VIN number</h2>
         <ol>

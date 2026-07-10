@@ -6,6 +6,7 @@ import {
   Check, ShieldCheck, Search, type LucideIcon,
 } from 'lucide-react';
 import { getCheckPage, CHECK_PAGES, type CheckIconKey } from '@/lib/checks';
+import { US_STATES } from '@/lib/us-states';
 import { SITE_URL, SITE_NAME } from '@/lib/site';
 import { TRIAL_PLAN, formatPrice } from '@/lib/pricing';
 import JsonLd from '@/components/JsonLd';
@@ -146,6 +147,26 @@ export function CheckLandingPage({ slug }: { slug: string }) {
           ))}
         </ol>
       </section>
+
+      {/* Browse by state (license-plate lookup only) */}
+      {c.slug === 'license-plate-lookup' && (
+        <section className="bg-white border-t border-slate-100 py-14 px-4 sm:px-6 lg:px-8">
+          <div className="max-w-5xl mx-auto">
+            <h2 className="text-2xl font-extrabold text-slate-900 mb-6">License plate lookup by state</h2>
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2.5">
+              {US_STATES.map((s) => (
+                <Link
+                  key={s.slug}
+                  href={`/license-plate-lookup/${s.slug}`}
+                  className="text-sm font-medium bg-slate-50 border border-slate-200 hover:border-blue-300 hover:text-blue-600 text-slate-600 px-4 py-2.5 rounded-xl transition-colors"
+                >
+                  {s.name}
+                </Link>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* FAQ */}
       <section className="bg-white border-t border-slate-100 py-14 px-4 sm:px-6 lg:px-8">
