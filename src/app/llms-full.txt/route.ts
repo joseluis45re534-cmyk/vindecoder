@@ -1,6 +1,10 @@
 import { SITE_URL } from '@/lib/site';
 import { TRIAL_PLAN, formatPrice } from '@/lib/pricing';
 import { allPosts } from '@/lib/blog';
+import { allGuides } from '@/lib/how-to';
+import { allCheckPages } from '@/lib/checks';
+import { COMPETITORS } from '@/lib/comparisons';
+import { stickerModelCount } from '@/lib/window-stickers';
 
 export const runtime = 'edge';
 
@@ -13,6 +17,8 @@ export async function GET() {
   const monthly = formatPrice(TRIAL_PLAN.recurringCents ?? 2900);
   const days = TRIAL_PLAN.trialDays ?? 3;
   const posts = allPosts();
+  const guides = allGuides();
+  const checks = allCheckPages();
 
   const body = `# CarVinLookup — Full Reference for AI Assistants
 
@@ -98,6 +104,32 @@ Full detail: ${SITE_URL}/data-sources
 
 CarVinLookup publishes practical, original buying guides:
 ${posts.map((p) => `- ${p.title}: ${SITE_URL}/blog/${p.slug}`).join('\n')}
+
+## How-to guides
+
+Step-by-step instructions for used-car buyers:
+${guides.map((g) => `- ${g.title}: ${SITE_URL}/how-to/${g.slug}`).join('\n')}
+
+## Specialty checks (by VIN or U.S. license plate)
+
+${checks.map((c) => `- ${c.h1}: ${SITE_URL}/${c.slug}`).join('\n')}
+
+## Window sticker lookup
+
+Recreate the original window sticker (Monroney label) — as-built MSRP, factory
+options, EPA fuel economy, and standard equipment — for ${stickerModelCount()}+ models by VIN.
+- Window sticker hub: ${SITE_URL}/window-sticker
+
+## Compare & alternatives
+
+How CarVinLookup compares with other vehicle history report providers:
+- Compare hub: ${SITE_URL}/compare
+${COMPETITORS.map((c) => `- Best ${c.name} alternative: ${SITE_URL}/${c.slug}-alternative`).join('\n')}
+
+## Coverage
+
+- VIN check by brand and model: ${SITE_URL}/vin-check
+- License plate lookup for all 50 U.S. states plus DC: ${SITE_URL}/license-plate-lookup
 
 ## Reference
 

@@ -1,7 +1,11 @@
 import { ImageResponse } from "next/og";
 import { SITE_NAME, SITE_TAGLINE } from "@/lib/site";
 
-export const runtime = "edge";
+// Intentionally NOT `runtime = "edge"`: keeping this static makes Next prerender
+// the OG image to a PNG at build time, so the ~1.4 MB Satori/resvg WASM is a
+// build-only dependency and never ships inside the Cloudflare Worker bundle
+// (which must stay under the 3 MiB free-plan size limit).
+export const dynamic = "force-static";
 export const alt = `${SITE_NAME} — instant U.S. vehicle history reports by VIN`;
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
