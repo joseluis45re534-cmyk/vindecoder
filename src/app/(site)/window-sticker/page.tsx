@@ -21,7 +21,7 @@ export const metadata: Metadata = {
     description: 'Get the original window sticker for any car by VIN — MSRP, options, and equipment as built.',
     url: `${SITE_URL}/window-sticker`,
     locale: 'en_US',
-    images: [{ url: '/opengraph-image', width: 1200, height: 630, alt: 'Window sticker lookup by VIN' }],
+    images: [{ url: '/opengraph-image.png', width: 1200, height: 630, alt: 'Window sticker lookup by VIN' }],
   },
 };
 

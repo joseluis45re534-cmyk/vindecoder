@@ -54,7 +54,7 @@ export default async function BlogPostPage({
         publisher: {
           '@type': 'Organization',
           name: SITE_NAME,
-          logo: { '@type': 'ImageObject', url: `${SITE_URL}/opengraph-image` },
+          logo: { '@type': 'ImageObject', url: `${SITE_URL}/opengraph-image.png` },
         },
         mainEntityOfPage: { '@type': 'WebPage', '@id': `${SITE_URL}/blog/${post.slug}` },
       },

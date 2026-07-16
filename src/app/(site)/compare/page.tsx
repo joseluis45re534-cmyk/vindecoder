@@ -20,7 +20,7 @@ export const metadata: Metadata = {
     description: 'CarVinLookup vs. the major vehicle history report providers — compared side by side.',
     url: `${SITE_URL}/compare`,
     locale: 'en_US',
-    images: [{ url: '/opengraph-image', width: 1200, height: 630, alt: 'Compare VIN report providers' }],
+    images: [{ url: '/opengraph-image.png', width: 1200, height: 630, alt: 'Compare VIN report providers' }],
   },
 };
 

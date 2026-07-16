@@ -22,9 +22,9 @@ export function problemMetadata(slug: string): Metadata {
       description: p.metaDescription,
       url,
       locale: 'en_US',
-      images: [{ url: '/opengraph-image', width: 1200, height: 630, alt: p.name }],
+      images: [{ url: '/opengraph-image.png', width: 1200, height: 630, alt: p.name }],
     },
-    twitter: { card: 'summary_large_image', title: p.metaTitle, description: p.metaDescription, images: ['/opengraph-image'] },
+    twitter: { card: 'summary_large_image', title: p.metaTitle, description: p.metaDescription, images: ['/opengraph-image.png'] },
   };
 }
 

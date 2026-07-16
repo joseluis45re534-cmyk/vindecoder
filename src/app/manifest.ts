@@ -16,7 +16,7 @@ export default function manifest(): MetadataRoute.Manifest {
     icons: [
       { src: "/icon-512.png", sizes: "512x512", type: "image/png", purpose: "any" },
       { src: "/icon-512.png", sizes: "512x512", type: "image/png", purpose: "maskable" },
-      { src: "/opengraph-image", sizes: "1200x630", type: "image/png" },
+      { src: "/opengraph-image.png", sizes: "1200x630", type: "image/png" },
     ],
   };
 }

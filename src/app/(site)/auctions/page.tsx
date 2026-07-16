@@ -21,7 +21,7 @@ export const metadata: Metadata = {
     description: 'Understand auction damage types and vehicle categories, and check any VIN before you bid.',
     url: `${SITE_URL}/auctions`,
     locale: 'en_US',
-    images: [{ url: '/opengraph-image', width: 1200, height: 630, alt: 'Salvage auction guide' }],
+    images: [{ url: '/opengraph-image.png', width: 1200, height: 630, alt: 'Salvage auction guide' }],
   },
 };
 

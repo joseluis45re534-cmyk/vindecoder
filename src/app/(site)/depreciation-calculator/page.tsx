@@ -20,7 +20,7 @@ export const metadata: Metadata = {
     description: 'Estimate a vehicle future value year by year.',
     url: `${SITE_URL}/depreciation-calculator`,
     locale: 'en_US',
-    images: [{ url: '/opengraph-image', width: 1200, height: 630, alt: 'Car depreciation calculator' }],
+    images: [{ url: '/opengraph-image.png', width: 1200, height: 630, alt: 'Car depreciation calculator' }],
   },
 };
 

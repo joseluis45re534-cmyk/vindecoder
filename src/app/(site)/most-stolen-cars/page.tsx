@@ -19,7 +19,7 @@ export const metadata: Metadata = {
     description: 'The most-stolen vehicles per NICB, why they are targeted, and how to check a VIN for theft.',
     url: `${SITE_URL}/most-stolen-cars`,
     locale: 'en_US',
-    images: [{ url: '/opengraph-image', width: 1200, height: 630, alt: 'Most stolen cars' }],
+    images: [{ url: '/opengraph-image.png', width: 1200, height: 630, alt: 'Most stolen cars' }],
   },
 };
 

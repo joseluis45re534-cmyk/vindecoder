@@ -34,9 +34,9 @@ export async function generateMetadata({
       description,
       url,
       locale: 'en_US',
-      images: [{ url: '/opengraph-image', width: 1200, height: 630, alt: `CarVinLookup vs ${c.name}` }],
+      images: [{ url: '/opengraph-image.png', width: 1200, height: 630, alt: `CarVinLookup vs ${c.name}` }],
     },
-    twitter: { card: 'summary_large_image', title, description, images: ['/opengraph-image'] },
+    twitter: { card: 'summary_large_image', title, description, images: ['/opengraph-image.png'] },
   };
 }
 

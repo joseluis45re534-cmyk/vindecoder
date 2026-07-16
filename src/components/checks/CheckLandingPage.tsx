@@ -42,9 +42,9 @@ export function checkMetadata(slug: string): Metadata {
       description: c.metaDescription,
       url,
       locale: 'en_US',
-      images: [{ url: '/opengraph-image', width: 1200, height: 630, alt: c.h1 }],
+      images: [{ url: '/opengraph-image.png', width: 1200, height: 630, alt: c.h1 }],
     },
-    twitter: { card: 'summary_large_image', title: c.metaTitle, description: c.metaDescription, images: ['/opengraph-image'] },
+    twitter: { card: 'summary_large_image', title: c.metaTitle, description: c.metaDescription, images: ['/opengraph-image.png'] },
   };
 }
 

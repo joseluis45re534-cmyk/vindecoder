@@ -20,7 +20,7 @@ export const metadata: Metadata = {
     description: 'Estimate your monthly car payment and total interest.',
     url: `${SITE_URL}/auto-loan-calculator`,
     locale: 'en_US',
-    images: [{ url: '/opengraph-image', width: 1200, height: 630, alt: 'Auto loan calculator' }],
+    images: [{ url: '/opengraph-image.png', width: 1200, height: 630, alt: 'Auto loan calculator' }],
   },
 };
 

@@ -20,7 +20,7 @@ export const metadata: Metadata = {
     description: 'Stolen, totaled, and flood-damaged cars, and how to check a VIN before you buy.',
     url: `${SITE_URL}/problems`,
     locale: 'en_US',
-    images: [{ url: '/opengraph-image', width: 1200, height: 630, alt: 'Used-car problems' }],
+    images: [{ url: '/opengraph-image.png', width: 1200, height: 630, alt: 'Used-car problems' }],
   },
 };
 

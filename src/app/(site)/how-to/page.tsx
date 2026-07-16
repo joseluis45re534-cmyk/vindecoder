@@ -19,7 +19,7 @@ export const metadata: Metadata = {
     description: 'Step-by-step guides on VIN checks, history reports, used-car fraud, and buying safely.',
     url: `${SITE_URL}/how-to`,
     locale: 'en_US',
-    images: [{ url: '/opengraph-image', width: 1200, height: 630, alt: 'CarVinLookup how-to guides' }],
+    images: [{ url: '/opengraph-image.png', width: 1200, height: 630, alt: 'CarVinLookup how-to guides' }],
   },
 };
 
