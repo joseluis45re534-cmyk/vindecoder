@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getEnv } from '@/lib/cf';
-import { normalizeVin, isValidVin, getFullReport, goodcarBrandImageUrl, GoodCarNotFoundError } from '@/lib/goodcar';
+import { normalizeVin, isValidVin, getFullReport, VinCheckNotFoundError } from '@/lib/vincheck';
+import { goodcarBrandImageUrl } from '@/lib/goodcar'; // provider-agnostic make-logo fallback
 import { getCachedReport, setCachedReport } from '@/lib/report-cache';
 import { exactVinPhoto } from '@/lib/vehicle-api';
 import { verifyReportEntitlement } from '@/lib/report-entitlement';
@@ -25,7 +26,7 @@ export async function GET(request: Request) {
   // only if missing (e.g. cache expired) — same paid path as /api/report.
   let report = await getCachedReport(env, vin);
   if (!report) {
-    if (!env.GOODCAR_API_KEY) {
+    if (!env.VINCHECK_API_KEY) {
       return NextResponse.json({ error: 'Report service is temporarily unavailable.' }, { status: 503 });
     }
     try {
@@ -37,7 +38,7 @@ export async function GET(request: Request) {
       await setCachedReport(env, vin, full);
       report = full;
     } catch (err) {
-      if (err instanceof GoodCarNotFoundError) {
+      if (err instanceof VinCheckNotFoundError) {
         return NextResponse.json({ error: 'No records found for this VIN.' }, { status: 404 });
       }
       console.error('[report/pdf] fetch failed:', err);

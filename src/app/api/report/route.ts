@@ -1,6 +1,17 @@
 import { NextResponse } from 'next/server';
 import { getEnv } from '@/lib/cf';
-import { getFullReport, normalizeVin, isValidVin, goodcarBrandImageUrl, GoodCarNotFoundError } from '@/lib/goodcar';
+import {
+  getFullReport,
+  normalizeVin,
+  isValidVin,
+  VinCheckNotFoundError,
+  VinCheckInsufficientBalanceError,
+  VinCheckInProgressError,
+  VinCheckProviderError,
+  VinCheckRateLimitError,
+  VinCheckTimeoutError,
+} from '@/lib/vincheck';
+import { goodcarBrandImageUrl } from '@/lib/goodcar'; // provider-agnostic make-logo fallback
 import { getCachedReport, setCachedReport } from '@/lib/report-cache';
 import { exactVinPhoto } from '@/lib/vehicle-api';
 import { verifyReportEntitlement } from '@/lib/report-entitlement';
@@ -18,39 +29,59 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Payment required to view this report.' }, { status: 402 });
   }
 
-  // Idempotent: a paid user re-viewing hits cache and never re-bills GoodCar.
+  // Idempotent: a paid user re-viewing hits our cache and never re-queries VinCheck.
   const cached = await getCachedReport(env, vin);
   if (cached) {
-    // Backfill the branded fallback for reports cached before this field existed.
     if (!cached.brandImageUrl) cached.brandImageUrl = goodcarBrandImageUrl(cached.specs?.make);
     return NextResponse.json({ success: true, vin, report: cached, cached: true });
   }
 
-  if (!env.GOODCAR_API_KEY) {
+  if (!env.VINCHECK_API_KEY) {
     return NextResponse.json({ error: 'Report service is temporarily unavailable.', retryable: true }, { status: 503 });
   }
 
   try {
-    // PAID GoodCar report + best-effort exact-VIN photo (key-free), in parallel.
-    // GoodCar's mainCarImage is frequently empty, so fall back to the verified
-    // exact-VIN CDN photo when present — never a same-model stand-in.
+    // PAID VinCheck report + best-effort exact-VIN photo (key-free), in parallel.
+    // Idempotency-Key defaults to `report:{vin}` inside getFullReport, so retries
+    // never double-charge and VinCheck's own 30-day VIN cache is honored.
     const [report, photoUrl] = await Promise.all([
-      getFullReport(vin), // PAID — runs exactly once per VIN per TTL
+      getFullReport(vin), // PAID — charged on success only; safe to retry (idempotent)
       exactVinPhoto(vin),
     ]);
     if (!report.photoUrl && photoUrl) {
       report.photoUrl = photoUrl;
       report.photos = [photoUrl];
     }
+    report.brandImageUrl = goodcarBrandImageUrl(report.specs?.make);
     await setCachedReport(env, vin, report);
     return NextResponse.json({ success: true, vin, report });
   } catch (err) {
-    if (err instanceof GoodCarNotFoundError) {
+    if (err instanceof VinCheckNotFoundError) {
       return NextResponse.json({ error: 'No records found for this VIN.', notFound: true }, { status: 404 });
     }
-    // The user has paid — never charge-and-show-nothing. Keep the entitlement and
-    // ask the client to retry; the next call will re-attempt the fetch (no double-bill,
-    // since a success caches and short-circuits).
+    // ── CRITICAL: our prepaid VinCheck balance is exhausted, but the CUSTOMER has
+    // already paid us. Never revoke entitlement and never show "no report". The
+    // report was NOT charged (402 = not generated), so a retry after top-up bills
+    // exactly once. Alert the operator loudly to top up.
+    if (err instanceof VinCheckInsufficientBalanceError) {
+      console.error('[vincheck] ⚠ INSUFFICIENT BALANCE — customer paid but report cannot be generated. Top up at vincheck.it.com admin. VIN:', vin, err);
+      return NextResponse.json(
+        { error: "Your report is being finalized — please retry in a few minutes.", retryable: true },
+        { status: 503 },
+      );
+    }
+    // 409 still-processing, 502 provider/generation, 429 rate-limit, timeout —
+    // none are charged; keep entitlement and ask the client to retry.
+    if (
+      err instanceof VinCheckInProgressError ||
+      err instanceof VinCheckProviderError ||
+      err instanceof VinCheckRateLimitError ||
+      err instanceof VinCheckTimeoutError
+    ) {
+      console.warn('[report] transient VinCheck error after entitlement — client will retry:', (err as Error).name);
+      return NextResponse.json({ error: "We're preparing your report — please retry in a moment.", retryable: true }, { status: 503 });
+    }
+    // The user has paid — never charge-and-show-nothing. Keep entitlement; retry.
     console.error('[report] fetch failed after entitlement:', err);
     return NextResponse.json({ error: "We're preparing your report — please retry in a moment.", retryable: true }, { status: 503 });
   }

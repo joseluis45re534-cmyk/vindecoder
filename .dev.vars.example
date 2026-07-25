@@ -36,7 +36,14 @@ SUPABASE_SERVICE_ROLE_KEY=ey...
 # --- Vehicle data (auto.dev) ---
 AUTODEV_API_KEY=
 
-# --- Vehicle data (GoodCar B2B API) — server-only, NEVER NEXT_PUBLIC_ ---
+# --- Vehicle data (VinCheck Partner API v1) — ACTIVE provider, server-only ---
+# NEVER expose as NEXT_PUBLIC_. Use the vc_test_ key in dev (free, sample data),
+# the vc_live_ key in production (charged per report; keep a positive balance).
+VINCHECK_API_KEY=vc_test_...
+VINCHECK_API_BASE=https://vincheck.it.com/api/v1
+VINCHECK_TIMEOUT_MS=30000
+
+# --- Vehicle data (GoodCar B2B API) — LEGACY, superseded by VinCheck ---
 GOODCAR_API_BASE=https://goodcar.com
 GOODCAR_API_KEY=
 GOODCAR_AUTH_HEADER=Authorization        # or X-API-Key

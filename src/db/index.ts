@@ -26,12 +26,18 @@ export interface Env {
     NEXT_PUBLIC_SITE_URL?: string;
     // Vehicle data provider
     AUTODEV_API_KEY?: string;
-    // GoodCar B2B API (VIN decode + vehicle history)
+    // GoodCar B2B API (legacy VIN provider — superseded by VinCheck)
     GOODCAR_API_BASE?: string;
     GOODCAR_API_KEY?: string;
     GOODCAR_AUTH_HEADER?: string; // default "Authorization"
     GOODCAR_AUTH_PREFIX?: string; // default "Bearer"
     GOODCAR_TIMEOUT_MS?: string;
+    // VinCheck Partner API v1 (active VIN preview + paid report provider).
+    // Server-side secret — never exposed to the browser. Use the vc_test_ key in
+    // dev/preview, the vc_live_ key in production.
+    VINCHECK_API_KEY?: string;
+    VINCHECK_API_BASE?: string; // default https://vincheck.it.com/api/v1
+    VINCHECK_TIMEOUT_MS?: string;
     PREVIEW_RATE_LIMIT_PER_HOUR?: string;
     REPORT_CACHE_TTL_DAYS?: string;
 }
