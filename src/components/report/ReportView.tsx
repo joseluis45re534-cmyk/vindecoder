@@ -38,6 +38,13 @@ interface Preview {
     recalls: number;
     photos: number;
   };
+  /** VinCheck estimated market value (free preview) — shown above the paywall. */
+  marketValue?: {
+    average?: number | null;
+    low?: number | null;
+    high?: number | null;
+    currency?: string;
+  } | null;
 }
 
 const EASE = [0.22, 1, 0.36, 1] as const;
@@ -126,6 +133,7 @@ export default function ReportView({ id, sample }: { id: string; sample?: Sample
               titleRecords: number; accidentOrDamage: number; odometerReadings: number;
               auctionRecords: number; recalls: number; photos: number;
             };
+            marketValue?: { average?: number | null; low?: number | null; high?: number | null; currency?: string } | null;
           };
           error?: string;
           notFound?: boolean;
@@ -148,6 +156,7 @@ export default function ReportView({ id, sample }: { id: string; sample?: Sample
             photoUrl: s.photoUrl,
             brandImageUrl: s.brandImageUrl,
             recordsFound: s.recordsFound,
+            marketValue: s.marketValue,
           });
         } else {
           // notFound → block checkout (the error branch renders and no report/CTA shows).
@@ -193,6 +202,32 @@ export default function ReportView({ id, sample }: { id: string; sample?: Sample
     { k: 'Transmission', v: data.transmission },
     { k: 'Country', v: data.country },
   ].filter((f) => f.v) as { k: string; v: string }[];
+
+  // VinCheck free-preview record counts → the unblurred "we found N records"
+  // teaser (mirrors the provider's own preview). These counts ARE safe to show
+  // pre-payment; only the underlying detail lives behind the paywall.
+  const rf = data.recordsFound;
+  const totalRecords = rf
+    ? rf.titleRecords + rf.accidentOrDamage + rf.odometerReadings + rf.auctionRecords + rf.recalls + rf.photos
+    : 0;
+  const recordTiles: { icon: typeof FileText; label: string; count: number; alert: boolean }[] = rf
+    ? [
+        { icon: FileText, label: 'Title & owner', count: rf.titleRecords, alert: false },
+        { icon: AlertTriangle, label: 'Accident / damage', count: rf.accidentOrDamage, alert: rf.accidentOrDamage > 0 },
+        { icon: Gauge, label: 'Odometer readings', count: rf.odometerReadings, alert: false },
+        { icon: Gavel, label: 'Auction sales', count: rf.auctionRecords, alert: false },
+        { icon: Bell, label: 'Open recalls', count: rf.recalls, alert: rf.recalls > 0 },
+        { icon: Camera, label: 'Photos on file', count: rf.photos, alert: false },
+      ]
+    : [];
+  const mv = data.marketValue;
+  const mvAvg = mv && typeof mv.average === 'number' ? mv.average : null;
+  const mvLow = mv && typeof mv.low === 'number' ? mv.low : null;
+  const mvHigh = mv && typeof mv.high === 'number' ? mv.high : null;
+  const mvCurrency = mv?.currency || 'USD';
+  const fmtMoney = (n: number) =>
+    new Intl.NumberFormat('en-US', { style: 'currency', currency: mvCurrency, maximumFractionDigits: 0 }).format(n);
+
   // Only ever show this exact vehicle's real dealer photo. When none exists, fall
   // back to GoodCar's make emblem (a brand logo, clearly labeled) — never a
   // same-model stand-in or lifestyle stock — then a neutral placeholder. Sample
@@ -391,46 +426,100 @@ export default function ReportView({ id, sample }: { id: string; sample?: Sample
               </motion.div>
             </motion.div>
 
-            {/* Frosted "data behind the blur" teaser */}
-            <motion.div className="relative bg-white rounded-3xl shadow-sm border border-slate-100 p-6 sm:p-7 overflow-hidden" {...fadeUp}>
-              <h3 className="font-display font-bold text-slate-900 mb-4">Report preview</h3>
-              <div className="space-y-3 blur-[5px] select-none pointer-events-none" aria-hidden="true">
-                {(data.recordsFound
-                  ? ([
-                      ['Title records', data.recordsFound.titleRecords ? `${data.recordsFound.titleRecords} found` : 'None found'],
-                      ['Accident / damage', data.recordsFound.accidentOrDamage ? `${data.recordsFound.accidentOrDamage} found` : 'None found'],
-                      ['Odometer readings', data.recordsFound.odometerReadings ? `${data.recordsFound.odometerReadings} found` : 'None found'],
-                      ['Auction records', data.recordsFound.auctionRecords ? `${data.recordsFound.auctionRecords} found` : 'None found'],
-                      ['Open recalls', data.recordsFound.recalls ? `${data.recordsFound.recalls} found` : 'None found'],
-                      ['Photos on file', data.recordsFound.photos ? `${data.recordsFound.photos} found` : 'None found'],
-                    ] as [string, string][])
-                  : ([
-                      ['Title & brand history', 'Included'],
-                      ['Accident & damage', 'Included'],
-                      ['Odometer readings', 'Included'],
-                      ['Auction & sale history', 'Included'],
-                      ['Open recalls', 'Included'],
-                      ['Vehicle photos', 'Included'],
-                    ] as [string, string][])
-                ).map(([k, v]) => (
-                  <div key={k} className="flex items-center justify-between bg-slate-50 rounded-xl px-4 py-3">
-                    <span className="text-sm text-slate-500">{k}</span>
-                    <span className="text-sm font-bold text-slate-900">{v}</span>
+            {/* VinCheck-style "we found N records" teaser — counts are shown
+                UNBLURRED (safe pre-payment); the detail sits behind checkout. */}
+            {rf ? (
+              <motion.div className="bg-white rounded-3xl shadow-sm border border-slate-100 p-6 sm:p-7" {...fadeUp}>
+                <div className="flex items-start gap-3.5 mb-5">
+                  <span className="shrink-0 inline-flex w-11 h-11 rounded-xl items-center justify-center text-primary bg-primary/10">
+                    <FileText className="w-5 h-5" aria-hidden="true" />
+                  </span>
+                  <div>
+                    <h3 className="font-display font-bold text-slate-900 leading-tight">
+                      {totalRecords > 0
+                        ? `We found ${totalRecords} record${totalRecords === 1 ? '' : 's'} for this VIN`
+                        : 'VIN verified — no adverse records surfaced'}
+                    </h3>
+                    <p className="text-sm text-slate-500 mt-0.5">
+                      Confirmed before you pay. Unlock the full report to see every detail.
+                    </p>
                   </div>
-                ))}
-              </div>
-              <div className="absolute inset-0 flex flex-col items-center justify-center bg-white/40 backdrop-blur-[1px]">
-                <span className="w-12 h-12 rounded-2xl bg-slate-900 flex items-center justify-center mb-3 shadow-lg">
-                  <Lock className="w-5 h-5 text-white" aria-hidden="true" />
-                </span>
-                <p className="font-bold text-slate-900">Unlock to reveal the full history</p>
-                <p className="text-sm text-slate-500 mt-1">
-                  {data.recordsFound
-                    ? `${data.recordsFound.titleRecords + data.recordsFound.accidentOrDamage + data.recordsFound.odometerReadings + data.recordsFound.auctionRecords + data.recordsFound.recalls + data.recordsFound.photos} records found`
-                    : '40+ verified data points'}
-                </p>
-              </div>
-            </motion.div>
+                </div>
+
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                  {recordTiles.map(({ icon: Icon, label, count, alert }) => (
+                    <div
+                      key={label}
+                      className={`rounded-2xl border p-3.5 flex flex-col gap-1 ${
+                        alert ? 'border-rose-200 bg-rose-50/60' : 'border-slate-100 bg-slate-50'
+                      }`}
+                    >
+                      <Icon
+                        className={`w-4.5 h-4.5 ${alert ? 'text-rose-500' : 'text-slate-400'}`}
+                        aria-hidden="true"
+                      />
+                      <span className={`text-2xl font-bold font-display leading-none ${alert ? 'text-rose-600' : 'text-slate-900'}`}>
+                        {count}
+                      </span>
+                      <span className="text-xs text-slate-500 leading-tight">{label}</span>
+                    </div>
+                  ))}
+                </div>
+
+                {mvAvg !== null && (
+                  <div className="mt-4 flex items-center justify-between gap-3 rounded-2xl bg-slate-900 text-white px-4 py-3.5">
+                    <div className="flex items-center gap-2.5">
+                      <BadgeDollarSign className="w-5 h-5 text-emerald-400" aria-hidden="true" />
+                      <span className="text-sm font-medium text-slate-200">Estimated market value</span>
+                    </div>
+                    <div className="text-right">
+                      <div className="font-display font-bold leading-none">{fmtMoney(mvAvg)}</div>
+                      {mvLow !== null && mvHigh !== null && (
+                        <div className="text-[11px] text-slate-400 mt-0.5">
+                          {fmtMoney(mvLow)}–{fmtMoney(mvHigh)}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                <a
+                  href="#order"
+                  className="mt-4 flex items-center justify-center gap-2 rounded-2xl bg-slate-50 border border-slate-100 px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-100 transition-colors"
+                >
+                  <Lock className="w-4 h-4" aria-hidden="true" />
+                  Unlock the full history — {totalRecords > 0 ? `${totalRecords} records` : '40+ data points'}
+                </a>
+              </motion.div>
+            ) : (
+              /* No record counts available (rare — decode without preview counts).
+                 Fall back to the generic frosted teaser. */
+              <motion.div className="relative bg-white rounded-3xl shadow-sm border border-slate-100 p-6 sm:p-7 overflow-hidden" {...fadeUp}>
+                <h3 className="font-display font-bold text-slate-900 mb-4">Report preview</h3>
+                <div className="space-y-3 blur-[5px] select-none pointer-events-none" aria-hidden="true">
+                  {([
+                    ['Title & brand history', 'Included'],
+                    ['Accident & damage', 'Included'],
+                    ['Odometer readings', 'Included'],
+                    ['Auction & sale history', 'Included'],
+                    ['Open recalls', 'Included'],
+                    ['Vehicle photos', 'Included'],
+                  ] as [string, string][]).map(([k, v]) => (
+                    <div key={k} className="flex items-center justify-between bg-slate-50 rounded-xl px-4 py-3">
+                      <span className="text-sm text-slate-500">{k}</span>
+                      <span className="text-sm font-bold text-slate-900">{v}</span>
+                    </div>
+                  ))}
+                </div>
+                <div className="absolute inset-0 flex flex-col items-center justify-center bg-white/40 backdrop-blur-[1px]">
+                  <span className="w-12 h-12 rounded-2xl bg-slate-900 flex items-center justify-center mb-3 shadow-lg">
+                    <Lock className="w-5 h-5 text-white" aria-hidden="true" />
+                  </span>
+                  <p className="font-bold text-slate-900">Unlock to reveal the full history</p>
+                  <p className="text-sm text-slate-500 mt-1">40+ verified data points</p>
+                </div>
+              </motion.div>
+            )}
               </>
             )}
           </div>

@@ -44,8 +44,38 @@ function hasData(v: unknown): boolean {
 
 const plural = (n: number, w: string) => `${n} ${w}${n === 1 ? '' : 's'}`;
 
-// Short, human summary per section from the mapped GoodCar data.
+// Short, human summary per section. Handles both the active VinCheck provider
+// (sections arrive as a `{ count: n }` summary, or a detailed array in live
+// mode) and the legacy GoodCar object shape (owners / lastReportedMileage / …).
 function summarize(key: string, v: unknown): string {
+  // VinCheck record-count summary: `{ count: n }` (test mode / summary-only).
+  if (v && typeof v === 'object' && !Array.isArray(v) && typeof (v as Record<string, unknown>).count === 'number') {
+    const n = (v as { count: number }).count;
+    const noun: Record<string, string> = {
+      titleHistory: 'title record',
+      salvageTotalLoss: 'record',
+      accidents: 'record',
+      odometer: 'reading',
+      auctionSales: 'record',
+      recalls: 'open recall',
+      photos: 'photo',
+    };
+    return plural(n, noun[key] || 'record');
+  }
+
+  // Detailed array (VinCheck live per-record data, or a GoodCar list).
+  if (Array.isArray(v)) {
+    const noun: Record<string, string> = {
+      titleHistory: 'record',
+      accidents: 'record',
+      odometer: 'reading',
+      auctionSales: 'sale record',
+      photos: 'photo',
+      recalls: 'open recall',
+    };
+    return plural(v.length, noun[key] || 'record');
+  }
+
   const o = (v && typeof v === 'object' ? (v as Record<string, unknown>) : {}) as Record<string, unknown>;
   switch (key) {
     case 'titleHistory': {
@@ -56,16 +86,10 @@ function summarize(key: string, v: unknown): string {
     }
     case 'salvageTotalLoss': {
       const n = (Array.isArray(o.junk) ? o.junk.length : 0) + (Array.isArray(o.totalLoss) ? o.totalLoss.length : 0);
-      return plural(n, 'record');
+      return n ? plural(n, 'record') : 'Records found';
     }
     case 'odometer':
       return o.lastReportedMileage ? `${o.lastReportedMileage} mi` : o.estimatedMileage ? `~${o.estimatedMileage} mi` : 'Reported';
-    case 'auctionSales':
-      return plural(Array.isArray(v) ? v.length : 0, 'sale record');
-    case 'photos':
-      return plural(Array.isArray(v) ? v.length : 0, 'photo');
-    case 'recalls':
-      return plural(Array.isArray(v) ? v.length : 0, 'open recall');
     case 'marketValue':
       return 'Estimates available';
     default:
