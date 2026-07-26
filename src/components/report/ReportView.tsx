@@ -27,7 +27,10 @@ interface Preview {
   trim?: string;
   drivetrain?: string;
   transmission?: string;
+  fuelType?: string;
   photoUrl?: string;
+  /** Real auction gallery (VinCheck preview `images[]`). */
+  images?: string[];
   brandImageUrl?: string;
   /** VinCheck record counts for the paywall teaser (free preview). */
   recordsFound?: {
@@ -128,7 +131,7 @@ export default function ReportView({ id, sample }: { id: string; sample?: Sample
           specs?: {
             vin?: string; year?: string; make?: string; model?: string; trim?: string;
             bodyStyle?: string; drivetrain?: string; engine?: string; transmission?: string; country?: string;
-            photoUrl?: string; brandImageUrl?: string;
+            fuelType?: string; photoUrl?: string; images?: string[]; brandImageUrl?: string;
             recordsFound?: {
               titleRecords: number; accidentOrDamage: number; odometerReadings: number;
               auctionRecords: number; recalls: number; photos: number;
@@ -151,9 +154,11 @@ export default function ReportView({ id, sample }: { id: string; sample?: Sample
             trim: s.trim,
             drivetrain: s.drivetrain,
             transmission: s.transmission,
+            fuelType: s.fuelType,
             // Verified exact-VIN photo from the key-free retail CDN when one exists,
             // else undefined → GoodCar make emblem → neutral placeholder.
             photoUrl: s.photoUrl,
+            images: s.images,
             brandImageUrl: s.brandImageUrl,
             recordsFound: s.recordsFound,
             marketValue: s.marketValue,
@@ -199,6 +204,7 @@ export default function ReportView({ id, sample }: { id: string; sample?: Sample
     { k: 'Drivetrain', v: data.drivetrain },
     { k: 'Trim', v: data.trim },
     { k: 'Engine', v: cleanEngine },
+    { k: 'Fuel', v: data.fuelType },
     { k: 'Transmission', v: data.transmission },
     { k: 'Country', v: data.country },
   ].filter((f) => f.v) as { k: string; v: string }[];
@@ -210,16 +216,21 @@ export default function ReportView({ id, sample }: { id: string; sample?: Sample
   const totalRecords = rf
     ? rf.titleRecords + rf.accidentOrDamage + rf.odometerReadings + rf.auctionRecords + rf.recalls + rf.photos
     : 0;
-  const recordTiles: { icon: typeof FileText; label: string; count: number; alert: boolean }[] = rf
+  // VinCheck's free preview returns a count per category, or `null` when it
+  // hasn't computed one pre-payment (mapped to 0). We only surface tiles for
+  // categories with a real count (> 0) — never asserting "0 title records" for a
+  // VIN whose full report may in fact carry title/odometer history.
+  const recordTiles = (rf
     ? [
         { icon: FileText, label: 'Title & owner', count: rf.titleRecords, alert: false },
         { icon: AlertTriangle, label: 'Accident / damage', count: rf.accidentOrDamage, alert: rf.accidentOrDamage > 0 },
         { icon: Gauge, label: 'Odometer readings', count: rf.odometerReadings, alert: false },
         { icon: Gavel, label: 'Auction sales', count: rf.auctionRecords, alert: false },
-        { icon: Bell, label: 'Open recalls', count: rf.recalls, alert: rf.recalls > 0 },
         { icon: Camera, label: 'Photos on file', count: rf.photos, alert: false },
+        { icon: Bell, label: 'Open recalls', count: rf.recalls, alert: true },
       ]
-    : [];
+    : []
+  ).filter((t) => t.count > 0) as { icon: typeof FileText; label: string; count: number; alert: boolean }[];
   const mv = data.marketValue;
   const mvAvg = mv && typeof mv.average === 'number' ? mv.average : null;
   const mvLow = mv && typeof mv.low === 'number' ? mv.low : null;
@@ -370,7 +381,32 @@ export default function ReportView({ id, sample }: { id: string; sample?: Sample
               </div>
             </motion.div>
 
-            {/* Once paid, the real GoodCar report replaces the locked teasers. */}
+            {/* Real auction gallery (VinCheck preview images[]) — Copart/IAAI photos
+                of this exact VIN. Only shown when the VIN has auction history. */}
+            {!sample && data.images && data.images.length > 1 && (
+              <motion.div className="bg-white rounded-3xl shadow-sm border border-slate-100 p-5 sm:p-6" {...fadeUp}>
+                <div className="flex items-center gap-2 mb-3">
+                  <Camera className="w-4 h-4 text-slate-400" aria-hidden="true" />
+                  <h3 className="font-display font-bold text-slate-900 text-sm">
+                    {data.images.length} photos on file
+                  </h3>
+                </div>
+                <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
+                  {data.images.slice(0, 8).map((src, i) => (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      key={src}
+                      src={src}
+                      alt={`${title} — photo ${i + 1}`}
+                      loading="lazy"
+                      className="w-full aspect-[4/3] object-cover rounded-xl border border-slate-200 bg-slate-100"
+                    />
+                  ))}
+                </div>
+              </motion.div>
+            )}
+
+            {/* Once paid, the real VinCheck report replaces the locked teasers. */}
             {paid && <UnlockedReport vin={id} sessionId={sessionId} />}
 
             {!paid && sample && (

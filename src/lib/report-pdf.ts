@@ -132,74 +132,120 @@ export async function buildReportPdf(report: FullReport, generatedAtISO: string)
     page.drawText(`VIN  ${report.vin}`, { x: MARGIN, y: y - 10, size: 11, font, color: GRAY });
     y -= 22;
 
-    // ── Sections ──
-    const th = o(report.titleHistory);
-    const owners = a(th.owners);
-    heading('Title & Ownership History');
-    if (owners.length) {
-        owners.forEach((rec, i) => {
-            const ow = o(rec);
-            const period = o(ow.ownershipPeriod);
-            const parts = [
-                `Owner ${i + 1}`,
-                s(ow.state) && `State: ${s(ow.state)}`,
-                s(ow.purchasedYear) && `Since: ${s(ow.purchasedYear)}`,
-                s(ow.odometer) && `Odometer: ${s(ow.odometer)} mi`,
-                (period.years != null || period.months != null) && `Owned: ${Number(period.years) || 0}y ${Number(period.months) || 0}m`,
-            ].filter(Boolean) as string[];
-            paragraph(parts.join('   ·   '), { size: 10, indent: 4 });
-        });
-    } else {
-        paragraph('No ownership records found.', { color: GRAY });
+    // One record → "key: value  ·  key: value" (VinCheck records are heterogeneous).
+    const recordLine = (rec: unknown): string =>
+        Object.entries(o(rec))
+            .filter(([, v]) => v != null && typeof v !== 'object' && String(v).trim() !== '')
+            .map(([k, v]) => `${k}: ${s(v)}`)
+            .join('   ·   ');
+
+    // ── Risk assessment (VinCheck riskProfile) ──
+    {
+        const rp = o(report.riskProfile);
+        if (Object.keys(rp).length) {
+            heading('Risk Assessment');
+            const headlineTxt = s(rp.headline);
+            const tier = s(rp.tier);
+            const score = s(rp.score);
+            if (headlineTxt) paragraph(headlineTxt, { size: 11, f: bold, indent: 4 });
+            if (tier || score) paragraph(`Risk tier: ${tier || '—'}${score ? `   ·   Score: ${score}/100` : ''}`, { indent: 4, color: GRAY });
+            const summary = s(rp.summary);
+            if (summary) paragraph(summary, { size: 9, indent: 4 });
+            a(rp.factors).forEach((f) => {
+                const ff = o(f);
+                const label = s(ff.label);
+                const detail = s(ff.detail);
+                if (label) paragraph(`• ${label}${detail ? ': ' + detail : ''}`, { size: 9, indent: 8, color: GRAY });
+            });
+        }
     }
 
+    // ── Title & brand history ──
+    const th = o(report.titleHistory);
+    const brands = a(th.brands);
+    const history = a(th.history);
     const issues = a(th.issues);
+    heading('Title & Brand History');
+    if (brands.length) {
+        brands.forEach((rec) => {
+            const b = o(rec);
+            const label = [s(b.brand), s(b.appliedBy) && `by ${s(b.appliedBy)}`, s(b.applied) && `(${s(b.applied)})`].filter(Boolean).join(' ');
+            paragraph(`• ${label || 'Branded title record'}`, { size: 10, f: bold, indent: 4 });
+        });
+    } else {
+        paragraph('No branded-title records found.', { color: GRAY, indent: 4 });
+    }
+    if (history.length) {
+        paragraph('Title timeline:', { size: 9, indent: 4, color: GRAY });
+        history.forEach((rec) => {
+            const h = o(rec);
+            const bits = [s(h.date), s(h.type), s(h.state), s(h.mileage) && `${s(h.mileage)} mi`].filter(Boolean) as string[];
+            paragraph(bits.join('   ·   '), { size: 9, indent: 8, color: GRAY });
+        });
+    }
     if (issues.length) {
-        heading('Title Brand Checks');
         issues.forEach((rec) => {
             const it = o(rec);
-            const t = s(it.title) || 'Check';
-            const d = s(it.description) || '—';
-            paragraph(`${t}: ${d}`, { size: 9, indent: 4 });
+            const t = s(it.title) || 'Title issue';
+            const d = s(it.description) || '';
+            paragraph(`${t}${d ? ': ' + d : ''}`, { size: 8.5, indent: 4 });
         });
     }
 
     heading('Salvage / Total Loss');
     {
-        const sl = o(report.salvageTotalLoss);
-        const junk = a(sl.junk).length;
-        const loss = a(sl.totalLoss).length;
-        if (junk || loss) paragraph(`${junk} junk/salvage record(s), ${loss} insurance total-loss record(s).`, { indent: 4 });
-        else paragraph('No salvage or total-loss records found.', { color: GRAY, indent: 4 });
+        const salvage = a(report.salvageTotalLoss);
+        if (salvage.length) {
+            paragraph(`${salvage.length} junk / salvage / insurer total-loss record(s) on file.`, { indent: 4 });
+            salvage.slice(0, 8).forEach((rec, i) => paragraph(`Record ${i + 1} — ${recordLine(rec)}`, { size: 8.5, indent: 8, color: GRAY }));
+        } else {
+            paragraph('No salvage or total-loss records found.', { color: GRAY, indent: 4 });
+        }
     }
 
     heading('Odometer');
     {
-        const od = o(report.odometer);
-        if (report.odometer) {
-            const last = s(od.lastReportedMileage);
-            const est = s(od.estimatedMileage);
-            if (last) paragraph(`Last reported mileage: ${last} mi`, { indent: 4 });
-            if (est) paragraph(`Estimated mileage: ${est} mi`, { indent: 4 });
-            const records = a(od.records).length;
-            if (records) paragraph(`${records} odometer reading(s) on record.`, { color: GRAY, indent: 4 });
-            paragraph('No rollback detected in reported readings.', { color: GRAY, indent: 4 });
+        const odo = a(report.odometer);
+        if (odo.length) {
+            const latest = odo.find((r) => /latest/i.test(s(o(r).date) || '')) || odo[0];
+            const lm = s(o(latest).mileage);
+            if (lm) paragraph(`Latest reported mileage: ${lm} mi`, { indent: 4 });
+            paragraph(`${odo.length} odometer reading(s) on record:`, { color: GRAY, indent: 4 });
+            odo.slice(0, 10).forEach((rec) => {
+                const r = o(rec);
+                const bits = [s(r.date), s(r.source), s(r.mileage) && `${s(r.mileage)} mi`].filter(Boolean) as string[];
+                paragraph(bits.join('   ·   '), { size: 9, indent: 8, color: GRAY });
+            });
         } else {
             paragraph('No odometer records found.', { color: GRAY, indent: 4 });
         }
     }
 
     heading('Theft Records');
-    paragraph('No active theft records found in the checked databases.', { color: GRAY, indent: 4 });
+    {
+        const theft = o(report.theft);
+        const status = s(theft.status);
+        if (status) paragraph(status, { color: theft.flagged ? DARK : GRAY, indent: 4 });
+        else paragraph('No active theft records found in the checked databases.', { color: GRAY, indent: 4 });
+    }
 
     heading('Liens & Loans');
-    paragraph('No open lien records found in the checked databases.', { color: GRAY, indent: 4 });
+    {
+        const liens = a(report.liensLoans);
+        if (liens.length) {
+            paragraph(`${liens.length} lien record(s) on file.`, { indent: 4 });
+            liens.slice(0, 8).forEach((rec, i) => paragraph(`Record ${i + 1} — ${recordLine(rec)}`, { size: 8.5, indent: 8, color: GRAY }));
+        } else {
+            paragraph('No open lien records found in the checked databases.', { color: GRAY, indent: 4 });
+        }
+    }
 
     heading('Accident History');
     {
-        const acc = report.accidents;
-        if (acc && (Array.isArray(acc) ? acc.length : Object.keys(o(acc)).length)) {
-            paragraph('Accident/damage records were reported — see details on record.', { indent: 4 });
+        const acc = a(report.accidents);
+        if (acc.length) {
+            paragraph(`${acc.length} accident/damage record(s) reported.`, { indent: 4 });
+            acc.slice(0, 8).forEach((rec, i) => paragraph(`Record ${i + 1} — ${recordLine(rec)}`, { size: 8.5, indent: 8, color: GRAY }));
         } else {
             paragraph('No accident or damage records found.', { color: GRAY, indent: 4 });
         }
@@ -216,7 +262,8 @@ export async function buildReportPdf(report: FullReport, generatedAtISO: string)
                 const odo = pick(sr, ['odometer', 'mileage']);
                 const price = pick(sr, ['price', 'salePrice', 'amount']);
                 const bits = [date && `Date: ${date}`, odo && `Odometer: ${odo} mi`, price && `Price: ${price}`].filter(Boolean) as string[];
-                paragraph(`Record ${i + 1}${bits.length ? ' — ' + bits.join('  ·  ') : ''}`, { size: 9, indent: 8, color: GRAY });
+                const fallback = bits.length ? bits.join('  ·  ') : recordLine(rec);
+                paragraph(`Record ${i + 1}${fallback ? ' — ' + fallback : ''}`, { size: 9, indent: 8, color: GRAY });
             });
         } else {
             paragraph('No auction or sale records found.', { color: GRAY, indent: 4 });
@@ -243,8 +290,18 @@ export async function buildReportPdf(report: FullReport, generatedAtISO: string)
     {
         const mv = o(report.marketValue);
         if (report.marketValue && Object.keys(mv).length) {
-            heading('Market Value');
-            paragraph('Market value estimates are available for this vehicle.', { indent: 4 });
+            heading('Estimated Market Value');
+            const cur = s(mv.currency) || 'USD';
+            const fmt = (n: unknown) => {
+                const v = Number(n);
+                return Number.isFinite(v) ? new Intl.NumberFormat('en-US', { style: 'currency', currency: cur, maximumFractionDigits: 0 }).format(v) : undefined;
+            };
+            const avg = fmt(mv.average);
+            const lo = fmt(mv.low);
+            const hi = fmt(mv.high);
+            if (avg) paragraph(`Average: ${avg}`, { indent: 4 });
+            if (lo && hi) paragraph(`Range: ${lo} – ${hi}`, { color: GRAY, indent: 4 });
+            if (!avg && !lo) paragraph('Market value estimates are available for this vehicle.', { indent: 4 });
         }
     }
 

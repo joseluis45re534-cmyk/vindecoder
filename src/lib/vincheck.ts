@@ -145,6 +145,9 @@ export interface RecordsFound {
   photos: number;
 }
 
+// The preview's `records_found` counts. VinCheck returns `null` for a category
+// it has no data on (→ 0), and OMITS `recalls` entirely (recall counts only
+// appear in the paid report), so recalls defaults to 0 in the preview teaser.
 function mapRecordsFound(rf: AnyObj): RecordsFound {
   return {
     titleRecords: num(rf.title_records) ?? 0,
@@ -156,17 +159,34 @@ function mapRecordsFound(rf: AnyObj): RecordsFound {
   };
 }
 
-function mapVehicleSpecs(vehicle: AnyObj, vin: string, previewImage?: string): VehicleSpecs {
+// Maps VinCheck's vehicle block → VehicleSpecs. The preview uses `vehicle`
+// {year,make,model,trim,bodyType,engineType,driveType,fuelType}; the paid report
+// uses `report.specs`/`report.decoder` (same keys + madeIn/cylinders/…). We read
+// both the VinCheck names (bodyType/engineType/driveType/madeIn/fuelType) and the
+// generic ones (bodyStyle/engine/drivetrain/country) so either payload maps.
+function mapVehicleSpecs(v: AnyObj, vin: string, opts?: { photoUrl?: string; images?: string[] }): VehicleSpecs {
+  const engineType = str(v.engineType) || str(v.engine) || str(v.engine_description);
+  const displacement = str(v.displacement);
+  const cylinders = str(v.cylinders);
+  // Prefer the descriptive engineType ("V-Shaped 6cyl 3.5L"); else compose from parts.
+  const engine =
+    engineType || [cylinders && `${cylinders}-cyl`, displacement && `${displacement}L`].filter(Boolean).join(' ') || undefined;
+  const images = opts?.images && opts.images.length ? opts.images : undefined;
   return {
     vin,
-    year: str(vehicle.year),
-    make: str(vehicle.make),
-    model: str(vehicle.model),
-    trim: str(vehicle.trim),
-    engine: str(vehicle.engine),
-    country: str(vehicle.assembled_in),
-    photoUrl: previewImage,
-    raw: vehicle,
+    year: str(v.year),
+    make: str(v.make),
+    model: str(v.model),
+    trim: str(v.trim),
+    bodyStyle: str(v.bodyType) || str(v.bodyStyle) || str(v.style),
+    drivetrain: str(v.driveType) || str(v.drivetrain),
+    engine,
+    transmission: str(v.transmission),
+    country: str(v.madeIn) || str(v.assembled_in) || str(v.country),
+    fuelType: str(v.fuelType) || str(v.fuel_type),
+    photoUrl: opts?.photoUrl || images?.[0],
+    images,
+    raw: v,
   };
 }
 
@@ -188,7 +208,11 @@ export interface PreviewResult extends VehicleSpecs {
 }
 
 function mapPreview(p: AnyObj, vin: string): PreviewResult {
-  const specs = mapVehicleSpecs(obj(p.vehicle), vin, str(p.preview_image_url));
+  // `images[]` is the real Copart/IAAI gallery; `preview_image_url` is its hero
+  // (may be null when the VIN has no auction history → empty gallery).
+  const images = arr(p.images).map(str).filter((u): u is string => !!u);
+  const hero = str(p.preview_image_url) || images[0];
+  const specs = mapVehicleSpecs(obj(p.vehicle), vin, { photoUrl: hero, images });
   return {
     ...specs,
     recordsFound: mapRecordsFound(obj(p.records_found)),
@@ -197,57 +221,90 @@ function mapPreview(p: AnyObj, vin: string): PreviewResult {
   };
 }
 
-// Maps VinCheck's report object → our FullReport. VinCheck surfaces record
-// COUNTS reliably (records_found) plus, in live mode, detailed per-section data
-// under the section keys listed in report.sections. We map the detailed data
-// when present and fall back to a `{ count }` summary so a section still renders
-// as "present". Theft and liens are NOT provided by VinCheck (→ null, same as
-// the prior GoodCar provider).
+// Maps VinCheck's paid-report payload → our FullReport. The real shape (see the
+// partner examples) nests everything under `report`, with camelCase section
+// keys. Specs live at report.specs (NOT report.vehicle). Every section is an
+// ARRAY of record objects (empty [] when none). VinCheck DOES provide liens
+// (lienRecords) and salvage/total-loss (junkSalvage + insuranceLoss); theft has
+// no standalone array but is scored in riskProfile.factors[key=theft]. There is
+// no records_found or estimated_market_value inside the report — counts are
+// derived from array lengths.
+const arrStr = (v: unknown): string[] => arr(v).map(str).filter((u): u is string => !!u);
+
 function mapReport(top: AnyObj, vin: string): FullReport {
   const r = obj(top.report);
-  const rf = mapRecordsFound(obj(r.records_found));
-  const specs = mapVehicleSpecs(obj(r.vehicle), vin);
-  const marketValue = mapMarketValue(obj(r.estimated_market_value));
-  const photosArr = arr(r.photos ?? r.auction_photos_list);
 
-  // Detailed section if the live payload carries it, else a count summary.
-  const section = (detail: unknown, count: number): unknown =>
-    detail != null && (Array.isArray(detail) ? detail.length : Object.keys(obj(detail)).length)
-      ? detail
-      : count > 0
-        ? { count }
-        : null;
+  // Specs: report.specs (full) → report.decoder → top-level vehicle (basic).
+  const specsSrc = Object.keys(obj(r.specs)).length
+    ? obj(r.specs)
+    : Object.keys(obj(r.decoder)).length
+      ? obj(r.decoder)
+      : obj(top.vehicle);
+  const photos = arrStr(r.photos);
+  const specs = mapVehicleSpecs(specsSrc, vin, { images: photos });
 
-  const titleHistory = section(r.title, rf.titleRecords);
-  const accidents = section(r.accidents, rf.accidentOrDamage);
-  const odometer = section(r.odometer, rf.odometerReadings);
-  const auctionSales = section(r.auction_photos ?? r.auctions, rf.auctionRecords);
-  const recalls = section(r.recalls, rf.recalls);
-  const photos = photosArr.length ? photosArr : rf.photos > 0 ? { count: rf.photos } : null;
+  // Title: confirmed brands + issues + the ownership/title timeline + raw NMVTIS.
+  const titleBrands = arr(r.titleBrands);
+  const titleIssues = arr(r.titleIssues);
+  const titleTimeline = arr(r.titleHistory);
+  const nmvtis = Object.keys(obj(r.nmvtis)).length ? obj(r.nmvtis) : null;
+  const titleHistory =
+    titleBrands.length || titleIssues.length || titleTimeline.length || nmvtis
+      ? { brands: titleBrands, issues: titleIssues, history: titleTimeline, nmvtis }
+      : null;
+
+  // Salvage / total-loss: NMVTIS junk/salvage records + insurer total-loss records.
+  const salvage = [...arr(r.junkSalvage), ...arr(r.insuranceLoss)];
+  const accidents = arr(r.accidents);
+  const odometer = arr(r.odometerHistory).length ? arr(r.odometerHistory) : arr(r.odometer);
+  const liens = arr(r.lienRecords);
+  // Auction + private sale history (several possible keys, all arrays).
+  const auctions = [...arr(r.auctions), ...arr(r.auctionRecords), ...arr(r.carSales), ...arr(r.saleHistory)];
+  const recalls = arr(r.recalls);
+
+  const riskProfile = Object.keys(obj(r.riskProfile)).length ? obj(r.riskProfile) : null;
+  // Theft: surface the risk engine's theft factor as an honest status object.
+  const theftFactor = arr(obj(r.riskProfile).factors).find((f) => obj(f).key === 'theft');
+  const theft = theftFactor
+    ? { status: str(obj(theftFactor).detail) || 'Checked', flagged: obj(theftFactor).bad === true }
+    : null;
+
+  const nz = (a: unknown[]): unknown[] | null => (a.length ? a : null);
 
   const sections = {
     titleHistory,
-    salvageTotalLoss: null, // VinCheck folds salvage/total-loss into title/accidents
-    accidents,
-    odometer,
-    theft: null, //      not provided by VinCheck
-    liensLoans: null, // not provided by VinCheck
-    auctionSales,
-    photos,
-    recalls,
-    marketValue,
+    salvageTotalLoss: nz(salvage),
+    accidents: nz(accidents),
+    odometer: nz(odometer),
+    theft,
+    liensLoans: nz(liens),
+    auctionSales: nz(auctions),
+    photos: photos.length ? photos : null,
+    recalls: nz(recalls),
+    marketValue: mapMarketValue(obj(r.estimated_market_value)), // null when absent
+    titleBrands: nz(titleBrands),
+    nmvtis,
+    riskProfile,
   };
-  const present = Object.values(sections).filter((v) => v != null).length;
-  const firstPhoto = photosArr.map(str).find(Boolean);
+
+  // "Present" = sections with substantive records (theft's no-record status and a
+  // null marketValue don't inflate the count).
+  const substantive = [
+    titleHistory, sections.salvageTotalLoss, sections.accidents, sections.odometer,
+    sections.liensLoans, sections.auctionSales, sections.photos, sections.recalls,
+  ].filter((v) => v != null).length;
+
+  const dataPointCount =
+    titleBrands.length + titleIssues.length + titleTimeline.length + salvage.length +
+    accidents.length + odometer.length + liens.length + auctions.length + recalls.length + photos.length;
 
   return {
     vin,
     specs,
     ...sections,
-    photoUrl: firstPhoto,
-    sectionCount: present,
-    dataPointCount:
-      rf.titleRecords + rf.accidentOrDamage + rf.odometerReadings + rf.auctionRecords + rf.recalls + rf.photos,
+    photoUrl: photos[0],
+    sectionCount: substantive,
+    dataPointCount,
     raw: top,
   };
 }

@@ -53,12 +53,40 @@ Routes swap providers by import only — the public shape matches `goodcar.ts`
   `getAccount().balanceCents`.**
 - Cost per report: **$3.99** live (`399`), `150` in test mode.
 
-## Records NOT provided
+## Report sections (confirmed against the live example payloads)
 
-VinCheck sections are **title, accidents, odometer, auction, recalls,
-valuation** — there is **no theft (NICB) or lien** data (both map to `null`,
-same as the prior GoodCar provider). Site copy that promises theft/lien checks
-should be reconciled with this.
+The paid report (`POST /reports`) nests everything under `report`, with
+**camelCase** keys and each section an **array of record objects** (empty `[]`
+when none). `src/lib/vincheck.ts#mapReport` maps them to `FullReport`:
+
+| FullReport field | VinCheck source key(s) |
+|---|---|
+| `specs` | `report.specs` (→ `report.decoder` → top-level `vehicle`) |
+| `titleHistory` | `report.titleBrands` + `report.titleIssues` + `report.titleHistory` + `report.nmvtis` |
+| `salvageTotalLoss` | `report.junkSalvage` + `report.insuranceLoss` |
+| `accidents` | `report.accidents` |
+| `odometer` | `report.odometerHistory` (→ `report.odometer`) |
+| `theft` | derived from `report.riskProfile.factors[key=theft]` (status + flagged) |
+| `liensLoans` | `report.lienRecords` |
+| `auctionSales` | `report.auctions` + `auctionRecords` + `carSales` + `saleHistory` |
+| `photos` | `report.photos` |
+| `recalls` | `report.recalls` |
+| `riskProfile` | `report.riskProfile` (tier / score / headline / summary / factors) |
+
+**Corrects the earlier note:** VinCheck **does** provide liens (`lienRecords`),
+salvage/total-loss (`junkSalvage` + `insuranceLoss`), and a theft status (scored
+in `riskProfile`), so the checkout's theft/lien promises are backed by data.
+
+### Preview vs. report shape gotchas
+- The **preview** `vehicle` uses `bodyType`/`engineType`/`driveType`/`fuelType`;
+  the **report** specs live at `report.specs` (same keys + `madeIn`, `cylinders`).
+  `mapVehicleSpecs` reads both VinCheck and generic names.
+- Preview `records_found` **omits `recalls`** and returns `null` (not `0`) for a
+  category it hasn't computed pre-payment. The preview teaser only shows tiles
+  for categories with a real count (never asserts "0 title records").
+- Preview `images[]` is the real Copart/IAAI gallery (`preview_image_url` = hero).
+- Neither preview nor report carried `estimated_market_value` in the examples →
+  `marketValue` is `null` when absent (the value bar simply hides).
 
 ## Go-live checklist
 

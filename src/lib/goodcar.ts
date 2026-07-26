@@ -24,6 +24,8 @@ export interface VehicleSpecs {
   fuelType?: string;
   /** Real photo of THIS exact vehicle (auto.dev retail CDN), when one exists. */
   photoUrl?: string;
+  /** Real gallery photos (VinCheck preview `images[]` — Copart/IAAI auction shots). */
+  images?: string[];
   /** GoodCar per-make logo — branded fallback when no real photo exists. */
   brandImageUrl?: string;
   raw?: unknown;
@@ -42,6 +44,10 @@ export interface FullReport {
   photos?: unknown;
   recalls?: unknown;
   marketValue?: unknown;
+  /** VinCheck-only rich sections (optional; absent from the GoodCar provider). */
+  titleBrands?: unknown; //   confirmed NMVTIS/state title brands (salvage, junk, …)
+  nmvtis?: unknown; //        raw NMVTIS brand + title-history record
+  riskProfile?: unknown; //   scored risk assessment (tier/score/factors/summary)
   sectionCount: number;
   dataPointCount: number;
   /** content.main.mainCarImage — the paid report's vehicle photo, when present. */
