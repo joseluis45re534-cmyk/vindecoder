@@ -29,6 +29,15 @@ interface Preview {
   transmission?: string;
   photoUrl?: string;
   brandImageUrl?: string;
+  /** VinCheck record counts for the paywall teaser (free preview). */
+  recordsFound?: {
+    titleRecords: number;
+    accidentOrDamage: number;
+    odometerReadings: number;
+    auctionRecords: number;
+    recalls: number;
+    photos: number;
+  };
 }
 
 const EASE = [0.22, 1, 0.36, 1] as const;
@@ -113,6 +122,10 @@ export default function ReportView({ id, sample }: { id: string; sample?: Sample
             vin?: string; year?: string; make?: string; model?: string; trim?: string;
             bodyStyle?: string; drivetrain?: string; engine?: string; transmission?: string; country?: string;
             photoUrl?: string; brandImageUrl?: string;
+            recordsFound?: {
+              titleRecords: number; accidentOrDamage: number; odometerReadings: number;
+              auctionRecords: number; recalls: number; photos: number;
+            };
           };
           error?: string;
           notFound?: boolean;
@@ -134,6 +147,7 @@ export default function ReportView({ id, sample }: { id: string; sample?: Sample
             // else undefined → GoodCar make emblem → neutral placeholder.
             photoUrl: s.photoUrl,
             brandImageUrl: s.brandImageUrl,
+            recordsFound: s.recordsFound,
           });
         } else {
           // notFound → block checkout (the error branch renders and no report/CTA shows).
@@ -381,14 +395,24 @@ export default function ReportView({ id, sample }: { id: string; sample?: Sample
             <motion.div className="relative bg-white rounded-3xl shadow-sm border border-slate-100 p-6 sm:p-7 overflow-hidden" {...fadeUp}>
               <h3 className="font-display font-bold text-slate-900 mb-4">Report preview</h3>
               <div className="space-y-3 blur-[5px] select-none pointer-events-none" aria-hidden="true">
-                {[
-                  ['Title brand', 'Clean — no brands recorded'],
-                  ['Last reported odometer', '63,118 mi'],
-                  ['Accident records', 'No accidents reported'],
-                  ['Open liens', 'None found'],
-                  ['Previous owners', '2 owners'],
-                  ['Auction records', '1 sale record'],
-                ].map(([k, v]) => (
+                {(data.recordsFound
+                  ? ([
+                      ['Title records', data.recordsFound.titleRecords ? `${data.recordsFound.titleRecords} found` : 'None found'],
+                      ['Accident / damage', data.recordsFound.accidentOrDamage ? `${data.recordsFound.accidentOrDamage} found` : 'None found'],
+                      ['Odometer readings', data.recordsFound.odometerReadings ? `${data.recordsFound.odometerReadings} found` : 'None found'],
+                      ['Auction records', data.recordsFound.auctionRecords ? `${data.recordsFound.auctionRecords} found` : 'None found'],
+                      ['Open recalls', data.recordsFound.recalls ? `${data.recordsFound.recalls} found` : 'None found'],
+                      ['Photos on file', data.recordsFound.photos ? `${data.recordsFound.photos} found` : 'None found'],
+                    ] as [string, string][])
+                  : ([
+                      ['Title & brand history', 'Included'],
+                      ['Accident & damage', 'Included'],
+                      ['Odometer readings', 'Included'],
+                      ['Auction & sale history', 'Included'],
+                      ['Open recalls', 'Included'],
+                      ['Vehicle photos', 'Included'],
+                    ] as [string, string][])
+                ).map(([k, v]) => (
                   <div key={k} className="flex items-center justify-between bg-slate-50 rounded-xl px-4 py-3">
                     <span className="text-sm text-slate-500">{k}</span>
                     <span className="text-sm font-bold text-slate-900">{v}</span>
@@ -400,7 +424,11 @@ export default function ReportView({ id, sample }: { id: string; sample?: Sample
                   <Lock className="w-5 h-5 text-white" aria-hidden="true" />
                 </span>
                 <p className="font-bold text-slate-900">Unlock to reveal the full history</p>
-                <p className="text-sm text-slate-500 mt-1">40+ verified data points</p>
+                <p className="text-sm text-slate-500 mt-1">
+                  {data.recordsFound
+                    ? `${data.recordsFound.titleRecords + data.recordsFound.accidentOrDamage + data.recordsFound.odometerReadings + data.recordsFound.auctionRecords + data.recordsFound.recalls + data.recordsFound.photos} records found`
+                    : '40+ verified data points'}
+                </p>
               </div>
             </motion.div>
               </>
