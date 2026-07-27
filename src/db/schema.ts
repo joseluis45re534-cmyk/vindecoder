@@ -126,6 +126,30 @@ export const vinDecodes = sqliteTable('vin_decodes', {
     created_at: text('created_at').default(sql`CURRENT_TIMESTAMP`),
 });
 
+/** VIN lookup activity log — one row per free preview and per paid report, for
+ *  the admin activity view. Best-effort write; never blocks the user request. */
+export const lookups = sqliteTable('lookups', {
+    id: text('id').primaryKey(),
+    vin: text('vin').notNull(),
+    type: text('type', { enum: ['preview', 'report'] }).notNull(),
+    email: text('email'), //        set when the visitor is a signed-in user
+    make: text('make'),
+    model: text('model'),
+    year: integer('year'),
+    country: text('country'), //    cf-ipcountry
+    ip_hash: text('ip_hash'), //    SHA-256 of IP (never the raw IP)
+    records_found: integer('records_found'), // total records surfaced (preview) / data points (report)
+    status: text('status', { enum: ['ok', 'cached', 'not_found', 'error'] }).default('ok'),
+    test_mode: integer('test_mode', { mode: 'boolean' }).default(false),
+    request_id: text('request_id'), // VinCheck X-Request-Id, for support/reconciliation
+    created_at: text('created_at').default(sql`CURRENT_TIMESTAMP`),
+}, (t) => ({
+    lookupsVinIdx: index('lookups_vin_idx').on(t.vin),
+    lookupsTypeIdx: index('lookups_type_idx').on(t.type),
+    lookupsEmailIdx: index('lookups_email_idx').on(t.email),
+    lookupsCreatedIdx: index('lookups_created_idx').on(t.created_at),
+}));
+
 /** Per-IP rate-limit counters (anti-scrape for the free preview). */
 export const rateLimits = sqliteTable('rate_limits', {
     key: text('key').primaryKey(),

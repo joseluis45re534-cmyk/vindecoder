@@ -13,6 +13,12 @@ import {
 import { goodcarBrandImageUrl } from '@/lib/goodcar'; // provider-agnostic make-logo fallback
 import { getCachedDecode, setCachedDecode, allowRequest } from '@/lib/report-cache';
 import { exactVinPhoto } from '@/lib/vehicle-api';
+import { logLookup } from '@/lib/activity-log';
+
+// Total records surfaced in a preview (drives the admin activity log's count).
+function previewRecordTotal(rf?: { titleRecords: number; accidentOrDamage: number; odometerReadings: number; auctionRecords: number; recalls: number; photos: number }): number | null {
+  return rf ? rf.titleRecords + rf.accidentOrDamage + rf.odometerReadings + rf.auctionRecords + rf.recalls + rf.photos : null;
+}
 
 export const runtime = 'edge';
 
@@ -35,6 +41,7 @@ export async function POST(request: Request) {
     request.headers.get('cf-connecting-ip') ||
     request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
     'unknown';
+  const country = request.headers.get('cf-ipcountry') || null;
   const perHour = Number(env.PREVIEW_RATE_LIMIT_PER_HOUR) || 20;
   if (!(await allowRequest(env, `preview:${ip}`, perHour))) {
     return NextResponse.json({ error: 'Too many lookups right now — please try again in a little while.' }, { status: 429 });
@@ -44,6 +51,12 @@ export async function POST(request: Request) {
   const cached = await getCachedDecode(env, vin);
   if (cached) {
     if (!cached.brandImageUrl) cached.brandImageUrl = goodcarBrandImageUrl(cached.make);
+    const c = cached as typeof cached & { recordsFound?: Parameters<typeof previewRecordTotal>[0]; testMode?: boolean };
+    await logLookup(env, {
+      vin, type: 'preview', status: 'cached', country, ip,
+      make: cached.make, model: cached.model, year: cached.year,
+      recordsFound: previewRecordTotal(c.recordsFound), testMode: c.testMode,
+    });
     return NextResponse.json({ success: true, vin, specs: cached, cached: true });
   }
 
@@ -64,9 +77,15 @@ export async function POST(request: Request) {
     // preview is a superset of VehicleSpecs (adds recordsFound + marketValue),
     // both cached and returned so the paywall teaser can show the record counts.
     await setCachedDecode(env, vin, preview);
+    await logLookup(env, {
+      vin, type: 'preview', status: 'ok', country, ip, testMode: preview.testMode,
+      make: preview.make, model: preview.model, year: preview.year,
+      recordsFound: previewRecordTotal(preview.recordsFound),
+    });
     return NextResponse.json({ success: true, vin, specs: preview });
   } catch (err) {
     if (err instanceof VinCheckNotFoundError) {
+      await logLookup(env, { vin, type: 'preview', status: 'not_found', country, ip });
       return NextResponse.json({ error: "We couldn't find records for this VIN.", notFound: true }, { status: 404 });
     }
     if (err instanceof VinCheckAuthError) {

@@ -15,6 +15,7 @@ import { goodcarBrandImageUrl } from '@/lib/goodcar'; // provider-agnostic make-
 import { getCachedReport, setCachedReport } from '@/lib/report-cache';
 import { exactVinPhoto } from '@/lib/vehicle-api';
 import { verifyReportEntitlement } from '@/lib/report-entitlement';
+import { logLookup, currentUserEmail } from '@/lib/activity-log';
 
 export const runtime = 'edge';
 
@@ -29,10 +30,18 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Payment required to view this report.' }, { status: 402 });
   }
 
+  const country = request.headers.get('cf-ipcountry') || null;
+  const email = await currentUserEmail();
+
   // Idempotent: a paid user re-viewing hits our cache and never re-queries VinCheck.
   const cached = await getCachedReport(env, vin);
   if (cached) {
     if (!cached.brandImageUrl) cached.brandImageUrl = goodcarBrandImageUrl(cached.specs?.make);
+    await logLookup(env, {
+      vin, type: 'report', status: 'cached', email, country,
+      make: cached.specs?.make, model: cached.specs?.model, year: cached.specs?.year,
+      recordsFound: cached.dataPointCount,
+    });
     return NextResponse.json({ success: true, vin, report: cached, cached: true });
   }
 
@@ -54,6 +63,11 @@ export async function POST(request: Request) {
     }
     report.brandImageUrl = goodcarBrandImageUrl(report.specs?.make);
     await setCachedReport(env, vin, report);
+    await logLookup(env, {
+      vin, type: 'report', status: 'ok', email, country,
+      make: report.specs?.make, model: report.specs?.model, year: report.specs?.year,
+      recordsFound: report.dataPointCount,
+    });
     return NextResponse.json({ success: true, vin, report });
   } catch (err) {
     if (err instanceof VinCheckNotFoundError) {

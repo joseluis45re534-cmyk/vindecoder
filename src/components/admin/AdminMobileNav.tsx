@@ -12,6 +12,7 @@ import {
   Settings,
   ShieldCheck,
   Inbox,
+  Activity,
   Menu,
   X,
 } from 'lucide-react';
@@ -19,6 +20,7 @@ import AdminLogout from '@/components/admin/AdminLogout';
 
 const NAV = [
   { href: '/admin', label: 'Dashboard', icon: LayoutDashboard },
+  { href: '/admin/activity', label: 'VIN activity', icon: Activity },
   { href: '/admin/inbox', label: 'Inbox', icon: Inbox },
   { href: '/admin/orders', label: 'Payments', icon: CreditCard },
   { href: '/admin/pricing', label: 'Pricing', icon: Tags },

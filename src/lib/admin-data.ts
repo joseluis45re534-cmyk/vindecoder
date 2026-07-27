@@ -1,7 +1,7 @@
 import { getEnv } from '@/lib/cf';
 import { getDb } from '@/db';
-import { orders, users, events, posts } from '@/db/schema';
-import { desc } from 'drizzle-orm';
+import { orders, users, events, posts, lookups } from '@/db/schema';
+import { desc, like, or, eq, and, sql, type SQL } from 'drizzle-orm';
 
 // Each loader tries D1; if the binding/table isn't there yet (local dev or
 // pre-migration), it returns representative demo data so the panel renders.
@@ -97,6 +97,77 @@ export async function loadDashboard(): Promise<DashboardStats> {
     live,
     revenueSeries: [12, 19, 14, 23, 28, 22, 31, 35, 29, 38, 42, 47],
   };
+}
+
+// ── VIN lookup activity log ──
+
+export interface LookupRow {
+  id: string;
+  vin: string;
+  type: string;
+  email: string | null;
+  make: string | null;
+  model: string | null;
+  year: number | null;
+  country: string | null;
+  records_found: number | null;
+  status: string | null;
+  test_mode: boolean | null;
+  created_at: string | null;
+}
+
+const DEMO_LOOKUPS: LookupRow[] = [
+  { id: 'lk_1', vin: '1FTFW1RG5NFA12345', type: 'report', email: 'marcus.t@example.com', make: 'Ford', model: 'F-150', year: 2022, country: 'US', records_found: 52, status: 'ok', test_mode: false, created_at: '2026-07-27 10:14' },
+  { id: 'lk_2', vin: 'JTHCE1BL2E5024076', type: 'preview', email: null, make: 'Lexus', model: 'GS', year: 2014, country: 'US', records_found: 13, status: 'ok', test_mode: false, created_at: '2026-07-27 10:02' },
+  { id: 'lk_3', vin: '5YJ3E1EA7KF000000', type: 'preview', email: null, make: 'Tesla', model: 'Model 3', year: 2019, country: 'CA', records_found: 0, status: 'not_found', test_mode: false, created_at: '2026-07-27 09:48' },
+  { id: 'lk_4', vin: '1HGCM82633A004352', type: 'preview', email: 'jen.w@example.com', make: 'Honda', model: 'Accord', year: 2003, country: 'US', records_found: 8, status: 'cached', test_mode: false, created_at: '2026-07-27 09:31' },
+];
+
+export interface LookupFilters { q?: string; type?: string; page?: number }
+
+export interface LookupResult {
+  rows: LookupRow[];
+  live: boolean;
+  total: number;
+  page: number;
+  pageSize: number;
+  previews: number;
+  reports: number;
+}
+
+export async function loadLookups(filters: LookupFilters = {}): Promise<LookupResult> {
+  const pageSize = 50;
+  const page = Math.max(1, filters.page || 1);
+  const typeFilter = filters.type === 'preview' || filters.type === 'report' ? filters.type : undefined;
+  const q = filters.q?.trim();
+
+  try {
+    const env = await getEnv();
+    if (!env.DB) throw new Error('no db');
+    const db = getDb(env as { DB: D1Database });
+    const conds: SQL[] = [];
+    if (q) {
+      const pat = `%${q}%`;
+      conds.push(or(like(lookups.vin, pat), like(lookups.email, pat)) as SQL);
+    }
+    if (typeFilter) conds.push(eq(lookups.type, typeFilter));
+    const where = conds.length ? and(...conds) : undefined;
+
+    const rows = await db.select().from(lookups).where(where).orderBy(desc(lookups.created_at)).limit(pageSize).offset((page - 1) * pageSize);
+    const [{ c: total }] = await db.select({ c: sql<number>`count(*)` }).from(lookups).where(where);
+    const [{ c: previews }] = await db.select({ c: sql<number>`count(*)` }).from(lookups).where(eq(lookups.type, 'preview'));
+    const [{ c: reports }] = await db.select({ c: sql<number>`count(*)` }).from(lookups).where(eq(lookups.type, 'report'));
+    return { rows: rows as unknown as LookupRow[], live: true, total: Number(total) || 0, page, pageSize, previews: Number(previews) || 0, reports: Number(reports) || 0 };
+  } catch {
+    let rows = DEMO_LOOKUPS;
+    if (q) { const lq = q.toLowerCase(); rows = rows.filter((r) => r.vin.toLowerCase().includes(lq) || (r.email || '').toLowerCase().includes(lq)); }
+    if (typeFilter) rows = rows.filter((r) => r.type === typeFilter);
+    return {
+      rows, live: false, total: rows.length, page: 1, pageSize,
+      previews: DEMO_LOOKUPS.filter((r) => r.type === 'preview').length,
+      reports: DEMO_LOOKUPS.filter((r) => r.type === 'report').length,
+    };
+  }
 }
 
 export interface PostRow {
