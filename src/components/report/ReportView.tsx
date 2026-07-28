@@ -2,13 +2,14 @@
 
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { motion, useReducedMotion, useScroll, useTransform } from 'framer-motion';
 import {
   Loader2, Lock, ShieldCheck, AlertTriangle, Gauge, FileText,
   Camera, Gavel, BadgeDollarSign, Bell, Users, Car, CheckCircle2, Clock, RotateCcw, Mail, FlaskConical,
 } from 'lucide-react';
 import { TRIAL_PLAN, formatPrice } from '@/lib/pricing';
+import { track } from '@/lib/track';
 import type { SampleReport } from '@/lib/sample-reports';
 import PriceCountUp from '@/components/checkout/PriceCountUp';
 import TrialCheckout from '@/components/checkout/TrialCheckout';
@@ -118,6 +119,7 @@ export default function ReportView({ id, sample }: { id: string; sample?: Sample
 
   useEffect(() => {
     if (sample) return; // sample data is already set — never call the live API
+    track('vin_search', { vin: id }); // funnel: a VIN was looked up
     const run = async () => {
       try {
         // Free, pre-payment preview — GoodCar VIN Decoder via /api/preview.
@@ -175,6 +177,15 @@ export default function ReportView({ id, sample }: { id: string; sample?: Sample
     };
     if (id) run();
   }, [id, sample]);
+
+  // Funnel: one `purchase` event when the post-payment success page loads.
+  const purchaseTracked = useRef(false);
+  useEffect(() => {
+    if (paid && !sample && !purchaseTracked.current) {
+      purchaseTracked.current = true;
+      track('purchase', { vin: id });
+    }
+  }, [paid, sample, id]);
 
   if (loading) {
     return (

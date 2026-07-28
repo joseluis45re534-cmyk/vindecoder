@@ -4,6 +4,7 @@ import "./globals.css";
 import { SITE_URL, SITE_NAME, SITE_DESCRIPTION, SITE_TAGLINE } from "@/lib/site";
 import { siteGraphLd } from "@/lib/structured-data";
 import JsonLd from "@/components/JsonLd";
+import AnalyticsTracker from "@/components/AnalyticsTracker";
 
 export const viewport: Viewport = {
   width: "device-width",
@@ -101,6 +102,7 @@ export default function RootLayout({
         className={`${jakarta.variable} ${geistMono.variable} ${spaceGrotesk.variable} antialiased`}
       >
         <StructuredData />
+        <AnalyticsTracker />
         {children}
       </body>
     </html>

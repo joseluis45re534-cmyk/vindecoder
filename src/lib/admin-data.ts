@@ -99,6 +99,84 @@ export async function loadDashboard(): Promise<DashboardStats> {
   };
 }
 
+// ── First-party analytics (events table) ──
+
+export interface AnalyticsData {
+  live: boolean;
+  pageviews: number;
+  vinSearches: number;
+  checkoutsStarted: number;
+  purchases: number;
+  topPages: { path: string; views: number }[];
+  sources: { name: string; pct: number }[];
+}
+
+function classifySource(referrer: string | null): string {
+  if (!referrer) return 'Direct';
+  let host = '';
+  try { host = new URL(referrer).hostname.replace(/^www\./, ''); } catch { return 'Direct'; }
+  if (!host || host.endsWith('carvinlookup.us')) return 'Direct';
+  if (/google|bing|duckduckgo|yahoo|ecosia|baidu|yandex/.test(host)) return 'Organic search';
+  if (/chatgpt|openai|perplexity|claude|gemini|bard|copilot|you\.com/.test(host)) return 'AI search';
+  if (/facebook|instagram|twitter|t\.co|x\.com|reddit|tiktok|linkedin|youtube|pinterest/.test(host)) return 'Social';
+  return 'Referral';
+}
+
+const DEMO_ANALYTICS: AnalyticsData = {
+  live: false,
+  pageviews: 4820, vinSearches: 1290, checkoutsStarted: 190, purchases: 96,
+  topPages: [
+    { path: '/', views: 2140 },
+    { path: '/blog/salvage-title-vs-rebuilt-title', views: 612 },
+    { path: '/pricing', views: 488 },
+    { path: '/blog/how-to-read-a-vin-number', views: 421 },
+    { path: '/blog/check-car-for-flood-damage', views: 305 },
+  ],
+  sources: [
+    { name: 'Organic search', pct: 52 },
+    { name: 'AI search', pct: 18 },
+    { name: 'Direct', pct: 16 },
+    { name: 'Referral', pct: 9 },
+    { name: 'Social', pct: 5 },
+  ],
+};
+
+export async function loadAnalytics(): Promise<AnalyticsData> {
+  try {
+    const env = await getEnv();
+    if (!env.DB) throw new Error('no db');
+    const db = getDb(env as { DB: D1Database });
+    const rows = await db.select({ name: events.name, path: events.path, referrer: events.referrer }).from(events).limit(100000);
+    if (!rows.length) return DEMO_ANALYTICS; // nothing tracked yet — keep demo so the page isn't blank
+
+    const count = (n: string) => rows.filter((r) => r.name === n).length;
+
+    const pageCounts = new Map<string, number>();
+    const srcCounts = new Map<string, number>();
+    for (const r of rows) {
+      if (r.name !== 'pageview') continue;
+      if (r.path) pageCounts.set(r.path, (pageCounts.get(r.path) || 0) + 1);
+      const src = classifySource(r.referrer);
+      srcCounts.set(src, (srcCounts.get(src) || 0) + 1);
+    }
+    const topPages = [...pageCounts.entries()].map(([path, views]) => ({ path, views })).sort((a, b) => b.views - a.views).slice(0, 6);
+    const totalSrc = [...srcCounts.values()].reduce((a, b) => a + b, 0) || 1;
+    const sources = [...srcCounts.entries()].map(([name, c]) => ({ name, pct: Math.round((c / totalSrc) * 100) })).sort((a, b) => b.pct - a.pct).slice(0, 6);
+
+    return {
+      live: true,
+      pageviews: count('pageview'),
+      vinSearches: count('vin_search'),
+      checkoutsStarted: count('checkout_started'),
+      purchases: count('purchase'),
+      topPages,
+      sources,
+    };
+  } catch {
+    return DEMO_ANALYTICS;
+  }
+}
+
 // ── VIN lookup activity log ──
 
 export interface LookupRow {

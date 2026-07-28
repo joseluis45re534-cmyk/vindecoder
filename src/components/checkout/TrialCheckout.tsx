@@ -5,6 +5,7 @@ import { useSearchParams } from 'next/navigation';
 import { motion, useReducedMotion } from 'framer-motion';
 import { Loader2, Lock, ShieldCheck } from 'lucide-react';
 import { trialDisclosure } from '@/lib/stripe-billing';
+import { track } from '@/lib/track';
 
 // The trial CTA: a required consent checkbox gates a single "Start for $1 today"
 // button that opens hosted Stripe Checkout, followed by the plain-text disclosure.
@@ -21,6 +22,7 @@ export default function TrialCheckout({ reportId }: { reportId: string }) {
     const doCheckout = useCallback(async () => {
         setLoading(true);
         setError('');
+        track('checkout_started', { reportId }); // funnel: reached hosted checkout
         try {
             const res = await fetch('/api/checkout/stripe', {
                 method: 'POST',
