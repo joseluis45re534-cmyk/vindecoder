@@ -16,6 +16,11 @@ function friendlyError(err: unknown): string {
         (err && typeof err === 'object' && 'message' in err ? (err as { message?: unknown }).message : err) ?? '',
     ).trim();
     const m = raw.toLowerCase();
+    // Network-level failure (Supabase unreachable / misconfigured / offline) —
+    // supabase-js surfaces this as "Failed to fetch" / "NetworkError" / "Load failed".
+    if (m.includes('failed to fetch') || m.includes('networkerror') || m.includes('load failed') || m.includes('fetch failed')) {
+        return "We couldn't reach the account service right now. Please try again in a moment.";
+    }
     if (m.includes('invalid login credentials')) return 'Incorrect email or password.';
     if (m.includes('already registered') || m.includes('already exists') || m.includes('user already')) return 'An account with this email already exists — try signing in.';
     if (m.includes('email not confirmed')) return 'Please confirm your email first — check your inbox for the link.';
