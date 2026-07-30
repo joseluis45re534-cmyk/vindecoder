@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { desc, eq } from 'drizzle-orm';
+import { desc, eq, inArray } from 'drizzle-orm';
 import { getEnv } from '@/lib/cf';
 import { requireAdmin } from '@/lib/auth';
 import { getDb } from '@/db';
@@ -58,6 +58,25 @@ export async function POST(request: Request) {
   }
 
   return NextResponse.json({ ok: true, added: toAdd.length, skipped: uniq.length - toAdd.length });
+}
+
+// Review discovered candidates: approve (→ queued, eligible for drafting) or
+// reject (→ skipped). Accepts a single id or a list (bulk approve/reject).
+export async function PATCH(request: Request) {
+  const env = await getEnv();
+  if (!(await requireAdmin(request, env))) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  if (!env.DB) return NextResponse.json({ error: 'D1 database not bound.' }, { status: 503 });
+
+  const body = (await request.json().catch(() => ({}))) as { id?: string; ids?: string[]; action?: string };
+  const ids = [body.id, ...(body.ids || [])].filter((x): x is string => !!x);
+  const action = body.action;
+  if (!ids.length) return NextResponse.json({ error: 'id or ids required' }, { status: 400 });
+  if (action !== 'approve' && action !== 'reject') return NextResponse.json({ error: "action must be 'approve' or 'reject'" }, { status: 400 });
+
+  const db = getDb(env as { DB: D1Database });
+  const status = action === 'approve' ? ('queued' as const) : ('skipped' as const);
+  await db.update(keywords).set({ status }).where(inArray(keywords.id, ids));
+  return NextResponse.json({ ok: true, updated: ids.length, status });
 }
 
 export async function DELETE(request: Request) {

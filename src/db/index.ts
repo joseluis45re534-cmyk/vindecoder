@@ -22,8 +22,14 @@ export interface Env {
     NEXT_PUBLIC_SUPABASE_ANON_KEY?: string;
     SUPABASE_SERVICE_ROLE_KEY?: string;
     ANTHROPIC_API_KEY?: string;
+    ANTHROPIC_MODEL?: string;
     CRON_SECRET?: string;
     NEXT_PUBLIC_SITE_URL?: string;
+    // DataForSEO Labs API — SEO keyword discovery (Basic auth: login:password).
+    // Server-side secret. Powers the automated keyword-research → blog pipeline.
+    DATAFORSEO_LOGIN?: string;
+    DATAFORSEO_PASSWORD?: string;
+    DATAFORSEO_BASE?: string; // default https://api.dataforseo.com
     // Vehicle data provider
     AUTODEV_API_KEY?: string;
     // GoodCar B2B API (legacy VIN provider — superseded by VinCheck)

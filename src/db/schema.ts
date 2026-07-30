@@ -69,13 +69,20 @@ export const posts = sqliteTable('posts', {
     updated_at: text('updated_at').default(sql`CURRENT_TIMESTAMP`),
 });
 
-/** Keyword backlog that feeds the content pipeline. */
+/** Keyword backlog that feeds the content pipeline. `candidate` = discovered by
+ *  DataForSEO, awaiting admin review; `queued` = approved, eligible for drafting. */
 export const keywords = sqliteTable('keywords', {
     id: text('id').primaryKey(),
     term: text('term').notNull().unique(),
     intent: text('intent', { enum: ['informational', 'commercial', 'transactional', 'navigational'] }).default('informational'),
-    priority: integer('priority').default(0),
-    status: text('status', { enum: ['queued', 'drafting', 'done', 'skipped'] }).default('queued'),
+    priority: integer('priority').default(0), // opportunity score (volume vs difficulty)
+    status: text('status', { enum: ['candidate', 'queued', 'drafting', 'done', 'skipped'] }).default('queued'),
+    // DataForSEO metrics (null for manually-added terms).
+    search_volume: integer('search_volume'),
+    difficulty: integer('difficulty'), // 0-100 keyword difficulty
+    cpc: real('cpc'),
+    source: text('source'), // e.g. 'manual', 'dataforseo:ideas', 'dataforseo:suggestions'
+    cluster: text('cluster'), // seed category (brands, checks, how-to, problems)
     post_id: text('post_id'),
     created_at: text('created_at').default(sql`CURRENT_TIMESTAMP`),
 });

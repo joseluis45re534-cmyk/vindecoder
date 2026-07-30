@@ -1,14 +1,27 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
-import { Loader2, Trash2, Play, Save, CalendarClock, ListPlus, Database } from 'lucide-react';
+import { Loader2, Trash2, Play, Save, CalendarClock, ListPlus, Database, Sparkles, Check, X } from 'lucide-react';
 
 interface KeywordRow {
   id: string;
   term: string;
   status: string;
+  intent?: string | null;
+  priority?: number | null;
+  search_volume?: number | null;
+  difficulty?: number | null;
+  cluster?: string | null;
+  source?: string | null;
   created_at: string;
 }
+
+const CLUSTERS: { key: string; label: string }[] = [
+  { key: 'brands', label: 'Brands + models' },
+  { key: 'checks', label: 'Checks / salvage / title' },
+  { key: 'how-to', label: 'How-to / informational' },
+  { key: 'problems', label: 'Problems + comparisons' },
+];
 interface Schedule {
   enabled: boolean;
   mode: 'on_trigger' | 'daily' | 'weekly' | 'interval';
@@ -38,6 +51,7 @@ const DEFAULT_SCHEDULE: Schedule = {
 const TIMEZONES = ['America/New_York', 'America/Chicago', 'America/Denver', 'America/Los_Angeles', 'UTC'];
 const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const KW_STATUS: Record<string, string> = {
+  candidate: 'bg-violet-50 text-violet-700',
   queued: 'bg-blue-50 text-blue-700',
   drafting: 'bg-amber-50 text-amber-700',
   done: 'bg-emerald-50 text-emerald-700',
@@ -56,6 +70,13 @@ export default function BlogAutomation() {
   const [schedMsg, setSchedMsg] = useState('');
   const [running, setRunning] = useState(false);
   const [runMsg, setRunMsg] = useState('');
+  // Keyword discovery (DataForSEO)
+  const [selClusters, setSelClusters] = useState<string[]>(CLUSTERS.map((c) => c.key));
+  const [minVolume, setMinVolume] = useState(50);
+  const [maxDifficulty, setMaxDifficulty] = useState(45);
+  const [discovering, setDiscovering] = useState(false);
+  const [discoverMsg, setDiscoverMsg] = useState('');
+  const [busyIds, setBusyIds] = useState<Record<string, boolean>>({});
 
   const loadKeywords = useCallback(async () => {
     try {
@@ -112,6 +133,48 @@ export default function BlogAutomation() {
     await loadKeywords();
   };
 
+  const discover = async () => {
+    if (discovering || !selClusters.length) return;
+    setDiscovering(true);
+    setDiscoverMsg('Researching keywords…');
+    try {
+      const res = await fetch('/api/admin/blog/keywords/discover', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ clusters: selClusters, minVolume, maxDifficulty }),
+      });
+      const d = (await res.json()) as { inserted?: number; candidates?: number; apiCalls?: number; skippedExisting?: number; error?: string; errors?: string[] };
+      if (res.ok) {
+        setDiscoverMsg(`Found ${d.candidates ?? 0} new terms, added ${d.inserted ?? 0} candidate(s) (${d.apiCalls ?? 0} API calls, ${d.skippedExisting ?? 0} already tracked).`);
+        await loadKeywords();
+      } else {
+        setDiscoverMsg(d.error || d.errors?.[0] || 'Discovery failed.');
+      }
+    } catch {
+      setDiscoverMsg('Discovery failed — network error.');
+    } finally {
+      setDiscovering(false);
+    }
+  };
+
+  const review = async (ids: string[], action: 'approve' | 'reject') => {
+    if (!ids.length) return;
+    setBusyIds((b) => ({ ...b, ...Object.fromEntries(ids.map((id) => [id, true])) }));
+    try {
+      await fetch('/api/admin/blog/keywords', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(ids.length === 1 ? { id: ids[0], action } : { ids, action }),
+      });
+      await loadKeywords();
+    } finally {
+      setBusyIds({});
+    }
+  };
+
+  const toggleCluster = (key: string) =>
+    setSelClusters((s) => (s.includes(key) ? s.filter((k) => k !== key) : [...s, key]));
+
   const upd = (patch: Partial<Schedule>) => setSchedule((s) => (s ? { ...s, ...patch } : s));
 
   const saveSchedule = async () => {
@@ -154,6 +217,10 @@ export default function BlogAutomation() {
   const card = 'bg-white rounded-2xl border border-slate-100 shadow-sm p-6';
   const input = 'w-full rounded-xl border border-slate-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-400';
 
+  // Split discovered candidates (awaiting review) from the working backlog.
+  const candidates = rows.filter((r) => r.status === 'candidate');
+  const backlogRows = rows.filter((r) => r.status !== 'candidate');
+
   return (
     <div className="space-y-6">
       {!live && (
@@ -163,12 +230,130 @@ export default function BlogAutomation() {
         </div>
       )}
 
+      {/* Keyword discovery (DataForSEO) */}
+      <div className={card}>
+        <div className="flex items-center gap-2 mb-1">
+          <Sparkles className="w-5 h-5 text-violet-600" aria-hidden="true" />
+          <h3 className="font-bold text-slate-900">Discover keywords</h3>
+        </div>
+        <p className="text-sm text-slate-500 mb-3">
+          Mine DataForSEO for new search terms in your categories. Results land below as review candidates — approve the ones worth writing.
+        </p>
+        <div className="flex flex-wrap gap-2 mb-3">
+          {CLUSTERS.map((c) => {
+            const on = selClusters.includes(c.key);
+            return (
+              <button
+                key={c.key}
+                type="button"
+                onClick={() => toggleCluster(c.key)}
+                className={`text-xs font-semibold px-3 py-1.5 rounded-full border transition-colors ${on ? 'bg-violet-600 text-white border-violet-600' : 'bg-white text-slate-600 border-slate-200 hover:border-violet-300'}`}
+              >
+                {c.label}
+              </button>
+            );
+          })}
+        </div>
+        <div className="flex flex-wrap items-end gap-4">
+          <label className="block">
+            <span className="text-xs font-medium text-slate-600">Min volume/mo</span>
+            <input type="number" min={0} step={10} value={minVolume} onChange={(e) => setMinVolume(Number(e.target.value))} className={`mt-1 w-28 ${input}`} />
+          </label>
+          <label className="block">
+            <span className="text-xs font-medium text-slate-600">Max difficulty ({maxDifficulty})</span>
+            <input type="range" min={0} max={100} value={maxDifficulty} onChange={(e) => setMaxDifficulty(Number(e.target.value))} className="mt-2 w-40 accent-violet-600 block" />
+          </label>
+          <button
+            type="button"
+            onClick={discover}
+            disabled={discovering || !selClusters.length}
+            className="inline-flex items-center gap-2 bg-violet-600 hover:bg-violet-700 disabled:opacity-50 text-white font-semibold text-sm px-4 py-2 rounded-xl"
+          >
+            {discovering ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />} Discover
+          </button>
+          {discoverMsg && <span className="text-xs text-slate-500 max-w-xs">{discoverMsg}</span>}
+        </div>
+      </div>
+
+      {/* Candidate review */}
+      {candidates.length > 0 && (
+        <div className={card}>
+          <div className="flex items-center gap-2 mb-3">
+            <Check className="w-5 h-5 text-emerald-600" aria-hidden="true" />
+            <h3 className="font-bold text-slate-900">Review candidates</h3>
+            <span className="ml-auto flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => review(candidates.map((c) => c.id), 'approve')}
+                className="text-xs font-semibold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 px-3 py-1.5 rounded-lg"
+              >
+                Approve all
+              </button>
+              <button
+                type="button"
+                onClick={() => review(candidates.map((c) => c.id), 'reject')}
+                className="text-xs font-semibold text-slate-500 bg-slate-100 hover:bg-slate-200 px-3 py-1.5 rounded-lg"
+              >
+                Reject all
+              </button>
+            </span>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm min-w-[560px]">
+              <thead className="text-left text-slate-400 text-xs">
+                <tr>
+                  <th className="py-2 pr-3 font-semibold">Keyword</th>
+                  <th className="py-2 px-2 font-semibold">Vol/mo</th>
+                  <th className="py-2 px-2 font-semibold">Diff.</th>
+                  <th className="py-2 px-2 font-semibold">Intent</th>
+                  <th className="py-2 px-2 font-semibold">Cluster</th>
+                  <th className="py-2 pl-2 font-semibold text-right">Review</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {candidates.map((k) => (
+                  <tr key={k.id} className="hover:bg-slate-50">
+                    <td className="py-2 pr-3 text-slate-800 font-medium">{k.term}</td>
+                    <td className="py-2 px-2 text-slate-600">{k.search_volume?.toLocaleString() ?? '—'}</td>
+                    <td className="py-2 px-2 text-slate-600">{k.difficulty ?? '—'}</td>
+                    <td className="py-2 px-2 text-slate-500 capitalize">{k.intent || '—'}</td>
+                    <td className="py-2 px-2 text-slate-400">{k.cluster || '—'}</td>
+                    <td className="py-2 pl-2">
+                      <div className="flex items-center justify-end gap-1.5">
+                        <button
+                          type="button"
+                          onClick={() => review([k.id], 'approve')}
+                          disabled={busyIds[k.id]}
+                          aria-label="Approve keyword"
+                          className="inline-flex items-center justify-center w-7 h-7 rounded-lg bg-emerald-50 text-emerald-600 hover:bg-emerald-100 disabled:opacity-50"
+                        >
+                          {busyIds[k.id] ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Check className="w-4 h-4" />}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => review([k.id], 'reject')}
+                          disabled={busyIds[k.id]}
+                          aria-label="Reject keyword"
+                          className="inline-flex items-center justify-center w-7 h-7 rounded-lg bg-slate-100 text-slate-400 hover:bg-slate-200 disabled:opacity-50"
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
       {/* Keyword backlog */}
       <div className={card}>
         <div className="flex items-center gap-2 mb-1">
           <ListPlus className="w-5 h-5 text-blue-600" aria-hidden="true" />
           <h3 className="font-bold text-slate-900">Keyword backlog</h3>
-          <span className="ml-auto text-xs text-slate-500">{counts.queued || 0} queued · {counts.done || 0} done</span>
+          <span className="ml-auto text-xs text-slate-500">{counts.candidate ? `${counts.candidate} to review · ` : ''}{counts.queued || 0} queued · {counts.done || 0} done</span>
         </div>
         <p className="text-sm text-slate-500 mb-3">Add one keyword or paste a bulk list (one per line, or comma-separated).</p>
         <textarea
@@ -190,9 +375,9 @@ export default function BlogAutomation() {
           {kwMsg && <span className="text-xs text-slate-500">{kwMsg}</span>}
         </div>
 
-        {rows.length > 0 && (
+        {backlogRows.length > 0 && (
           <ul className="mt-4 divide-y divide-slate-100 max-h-64 overflow-y-auto border border-slate-100 rounded-xl">
-            {rows.map((k) => (
+            {backlogRows.map((k) => (
               <li key={k.id} className="flex items-center gap-2 px-3 py-2">
                 <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full capitalize shrink-0 ${KW_STATUS[k.status] || 'bg-slate-100'}`}>{k.status}</span>
                 <span className="text-sm text-slate-700 truncate flex-1">{k.term}</span>

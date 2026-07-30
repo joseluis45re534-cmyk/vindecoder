@@ -16,6 +16,13 @@ PAYPAL_CLIENT_ID=...
 PAYPAL_SECRET=...
 PAYPAL_ENV=sandbox   # or: live
 
+# --- SEO keyword discovery (DataForSEO Labs) ---
+# Basic-auth credentials from https://app.dataforseo.com/api-access — server-only.
+# Powers the automated keyword-research → blog pipeline (~$0.01 per API call).
+DATAFORSEO_LOGIN=you@example.com
+DATAFORSEO_PASSWORD=...
+# DATAFORSEO_BASE=https://api.dataforseo.com   # optional override
+
 # --- Blog automation (Claude) ---
 ANTHROPIC_API_KEY=sk-ant-...
 # Optional model override (defaults to claude-opus-4-8)

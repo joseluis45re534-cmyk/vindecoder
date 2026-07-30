@@ -1,7 +1,7 @@
 // The shared batch engine for blog automation — used by both the scheduled cron
 // route and the admin "Run now" button so their behavior can never diverge.
 
-import { eq } from 'drizzle-orm';
+import { eq, desc } from 'drizzle-orm';
 import { getDb, type Env } from '@/db';
 import { keywords, posts } from '@/db/schema';
 import { generatePost } from '@/lib/content-pipeline';
@@ -51,7 +51,14 @@ export async function runBatch(env: Partial<Env>, opts: { qty?: number; force?: 
   const sched = await getBlogSchedule(env);
   const qty = Math.max(1, Math.min(opts.qty ?? sched.qtyPerRun ?? 1, MAX_QTY));
 
-  const queued = await db.select().from(keywords).where(eq(keywords.status, 'queued')).limit(qty);
+  // Draft the highest-opportunity terms first (priority = DataForSEO score;
+  // manual keywords default to 0, then fall back to oldest-first).
+  const queued = await db
+    .select()
+    .from(keywords)
+    .where(eq(keywords.status, 'queued'))
+    .orderBy(desc(keywords.priority), keywords.created_at)
+    .limit(qty);
 
   const results: RunResult[] = [];
   let published = 0;
