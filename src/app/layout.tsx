@@ -6,6 +6,7 @@ import { siteGraphLd } from "@/lib/structured-data";
 import JsonLd from "@/components/JsonLd";
 import AnalyticsTracker from "@/components/AnalyticsTracker";
 import GoogleAnalytics from "@/components/GoogleAnalytics";
+import ConsentBanner from "@/components/ConsentBanner";
 
 export const viewport: Viewport = {
   width: "device-width",
@@ -106,6 +107,7 @@ export default function RootLayout({
         <GoogleAnalytics />
         <AnalyticsTracker />
         {children}
+        <ConsentBanner />
       </body>
     </html>
   );

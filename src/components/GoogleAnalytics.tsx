@@ -49,6 +49,9 @@ export default function GoogleAnalytics() {
         {`window.dataLayer = window.dataLayer || [];
 function gtag(){dataLayer.push(arguments);}
 window.gtag = gtag;
+// Consent Mode v2 — default everything DENIED until the visitor accepts (a prior
+// 'granted' cookie is honored so returning visitors aren't re-prompted).
+(function(){var m=document.cookie.match(/(?:^|; )cvl_consent=(granted|denied)/);var g=m&&m[1]==='granted'?'granted':'denied';gtag('consent','default',{ad_storage:g,ad_user_data:g,ad_personalization:g,analytics_storage:g,wait_for_update:500});})();
 gtag('js', new Date());
 ${config.join('\n')}`}
       </Script>
