@@ -183,7 +183,8 @@ export default function ReportView({ id, sample }: { id: string; sample?: Sample
   useEffect(() => {
     if (paid && !sample && !purchaseTracked.current) {
       purchaseTracked.current = true;
-      track('purchase', { vin: id });
+      // value/currency populate the GA4 `purchase` event for Google Ads conversions.
+      track('purchase', { vin: id, value: TRIAL_FEE / 100, currency: 'USD' });
     }
   }, [paid, sample, id]);
 

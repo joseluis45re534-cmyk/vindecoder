@@ -33,6 +33,10 @@ CRON_SECRET=replace-with-random-token
 # --- Site ---
 NEXT_PUBLIC_SITE_URL=https://carvinlookup.us
 
+# --- Analytics (public, inlined at BUILD time — set in Cloudflare Pages build vars) ---
+NEXT_PUBLIC_GA_ID=            # GA4 measurement ID, e.g. G-XXXXXXXXXX
+# NEXT_PUBLIC_GADS_ID=        # optional Google Ads tag, e.g. AW-XXXXXXXXX
+
 # --- Supabase Auth (user accounts + email confirmation) ---
 # Project → Settings → API. The URL + anon key are public (used in the browser);
 # the service_role key is secret (server-only) — NEVER expose it as NEXT_PUBLIC_.

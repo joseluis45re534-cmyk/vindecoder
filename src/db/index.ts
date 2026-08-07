@@ -25,6 +25,9 @@ export interface Env {
     ANTHROPIC_MODEL?: string;
     CRON_SECRET?: string;
     NEXT_PUBLIC_SITE_URL?: string;
+    // Analytics (public — inlined into the client bundle at build time).
+    NEXT_PUBLIC_GA_ID?: string; //   GA4 measurement ID, e.g. G-XXXXXXXXXX
+    NEXT_PUBLIC_GADS_ID?: string; // optional Google Ads tag, e.g. AW-XXXXXXXXX
     // DataForSEO Labs API — SEO keyword discovery (Basic auth: login:password).
     // Server-side secret. Powers the automated keyword-research → blog pipeline.
     DATAFORSEO_LOGIN?: string;

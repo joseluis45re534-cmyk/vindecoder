@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { Loader2, Mail, Lock, User, ShieldCheck, CheckCircle2, MailCheck } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
+import { gaEvent } from '@/lib/track';
 
 const PERKS = ['All your reports in one place', 'Manage your subscription', 'Secure & private'];
 
@@ -64,6 +65,7 @@ function Form({ mode }: { mode: 'login' | 'register' }) {
                     setError(friendlyError(error));
                     return;
                 }
+                gaEvent('sign_up', { method: 'email' }); // GA4 conversion
                 // No session means email confirmation is required.
                 if (!data.session) {
                     setConfirmSent(true);
