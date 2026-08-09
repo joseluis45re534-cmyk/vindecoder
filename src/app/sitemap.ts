@@ -5,9 +5,9 @@ import { allGuides } from "@/lib/how-to";
 import { COMPETITORS, comparisonSlug } from "@/lib/comparisons";
 import { allCheckPages } from "@/lib/checks";
 import { US_STATES } from "@/lib/us-states";
-import { STICKER_MAKES, allStickerModels } from "@/lib/window-stickers";
+import { STICKER_MAKES } from "@/lib/window-stickers";
 import { DAMAGE_TYPES, VEHICLE_TYPES } from "@/lib/auctions";
-import { BRANDS, getBrand } from "@/lib/brands";
+import { BRANDS } from "@/lib/brands";
 import { SAMPLE_REPORTS } from "@/lib/sample-reports";
 
 export const runtime = "edge";
@@ -84,22 +84,11 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: 0.6,
   }));
 
-  const stickerModels: MetadataRoute.Sitemap = allStickerModels().map((m) => ({
-    url: `${SITE_URL}/window-sticker/${m.makeSlug}/${m.modelSlug}`,
-    lastModified: now,
-    changeFrequency: "monthly",
-    priority: 0.5,
-  }));
-
-  // Model-level VIN-check pages exist only where the parent brand page does.
-  const modelVinChecks: MetadataRoute.Sitemap = allStickerModels()
-    .filter((m) => getBrand(m.makeSlug))
-    .map((m) => ({
-      url: `${SITE_URL}/vin-check/${m.makeSlug}/${m.modelSlug}`,
-      lastModified: now,
-      changeFrequency: "monthly",
-      priority: 0.6,
-    }));
+  // NOTE: the deep model tiers — /window-sticker/[make]/[model] and
+  // /vin-check/[brand]/[model] — are intentionally OMITTED from the sitemap and
+  // carry robots noindex (see their pages). On a young domain they'd only dilute
+  // crawl budget; concentrate it on the make/brand hubs + core content. Re-add
+  // both here (and drop the noindex) once the domain has indexing authority.
 
   const statePlates: MetadataRoute.Sitemap = US_STATES.map((s) => ({
     url: `${SITE_URL}/license-plate-lookup/${s.slug}`,
@@ -154,8 +143,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
     ...guides,
     ...checks,
     ...stickerMakes,
-    ...stickerModels,
-    ...modelVinChecks,
     ...statePlates,
     ...auctions,
     ...compare,

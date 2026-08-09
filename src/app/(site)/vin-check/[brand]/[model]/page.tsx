@@ -30,6 +30,11 @@ export async function generateMetadata({
   return {
     title,
     description,
+    // Crawl-budget concentration on a young domain: this deep, templated model
+    // tier is noindexed for now (follow:true keeps link equity flowing) so Google
+    // spends its limited crawl on the higher-value brand/check/blog pages.
+    // Re-enable once the domain has authority. Also removed from sitemap.ts.
+    robots: { index: false, follow: true },
     alternates: { canonical: `/vin-check/${brand}/${model}` },
     openGraph: {
       type: 'website',
