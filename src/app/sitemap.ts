@@ -12,8 +12,15 @@ import { SAMPLE_REPORTS } from "@/lib/sample-reports";
 
 export const runtime = "edge";
 
+// Stable content-revision date. Using `new Date()` here would stamp EVERY page's
+// <lastmod> as "today" on every sitemap fetch — telling Google all ~690 pages
+// change daily, which erodes trust in lastmod and wastes crawl budget on a young
+// domain. Bump this only when the programmatic content actually changes. Blog
+// posts keep their own real dates below.
+const CONTENT_REVISED = new Date('2026-08-09');
+
 export default function sitemap(): MetadataRoute.Sitemap {
-  const now = new Date();
+  const now = CONTENT_REVISED;
 
   const core: MetadataRoute.Sitemap = [
     { url: `${SITE_URL}/`, lastModified: now, changeFrequency: "weekly", priority: 1 },
