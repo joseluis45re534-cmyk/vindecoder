@@ -32,6 +32,15 @@ Rules when adding to a cluster:
 - **No self-cannibalization.** Don't create two pages targeting the same keyword/intent (e.g. a `/how-to/spot-odometer-rollback` guide *and* a `/blog/how-to-spot-odometer-rollback` post). Pick one canonical home and cross-link.
 - **No fabrication (reinforced).** Competitor comparison pages stay to general, widely-known positioning — never invent a competitor's price/feature. Window-sticker and check pages describe what the report/sticker contains and funnel to the live VIN lookup; they never hardcode a specific car's MSRP/specs. Listicles cite real public sources (e.g. NICB for `/most-stolen-cars`) with a live link, or are written as educational explainers when no authoritative per-model data exists.
 
+### Phased indexing — deep model tiers are intentionally `noindex` (crawl-budget)
+
+The two deepest, most templated tiers — **`/window-sticker/[make]/[model]`** and **`/vin-check/[brand]/[model]`** (~500 pages combined) — are deliberately **`robots: { index: false, follow: true }`** and **omitted from `sitemap.ts`**. Reason: on a young, low-authority domain, ~500 near-duplicate templated pages triggered Google's *"Discovered – currently not indexed"* (crawl budget rationed; the pages were never even crawled). Concentrating crawl budget on the ~230 higher-value pages (make/brand hubs, checks, blog, how-to, compare, states, auctions, core) gets those indexed faster. The pages still render and stay internally linked for users; `follow: true` keeps link equity flowing.
+
+- This is **temporary and deliberate** — not a bug. Don't "fix" it by re-indexing these tiers without a reason.
+- **To re-open once the domain has indexing authority** (months out, once the hubs + blog rank and Search Console shows healthy indexing): remove the `robots` block from `src/app/(site)/window-sticker/[make]/[model]/page.tsx` and `src/app/(site)/vin-check/[brand]/[model]/page.tsx`, and restore the `stickerModels` + `modelVinChecks` blocks in `sitemap.ts` (see the comment there). It's a clean revert of commits `45961ed`/`c17f9b5`.
+- **`sitemap.ts` uses a stable `CONTENT_REVISED` date, not `new Date()`** — a per-request `lastmod` tells Google every page changed "today" on every fetch, wasting crawl budget. Bump `CONTENT_REVISED` when programmatic content materially changes; blog posts keep their own real dates.
+- New clusters that are thin/templated should follow the same judgment: if they'd add hundreds of near-duplicate URLs, ship them `noindex` + out of the sitemap until the domain can support them.
+
 ## Sample vs. real reports (`/report/[id]`)
 
 `src/app/(site)/report/[id]/page.tsx` is a Server Component that branches on whether the VIN matches a curated entry in `src/lib/sample-reports.ts`:
