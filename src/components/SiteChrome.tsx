@@ -144,9 +144,9 @@ export function SiteFooter() {
             <h2 className="text-white text-sm font-semibold mb-4 uppercase tracking-wider">Guides</h2>
             <ul className="space-y-2.5 text-sm">
               <li><Link href="/blog" className="hover:text-white transition-colors">Blog</Link></li>
-              <li><Link href="/blog/how-to-read-a-vin-number" className="hover:text-white transition-colors">How to read a VIN</Link></li>
-              <li><Link href="/blog/salvage-title-vs-rebuilt-title" className="hover:text-white transition-colors">Salvage vs. rebuilt</Link></li>
-              <li><Link href="/blog/check-car-for-flood-damage" className="hover:text-white transition-colors">Flood damage guide</Link></li>
+              <li><Link href="/how-to/read-vin-report" className="hover:text-white transition-colors">How to read a VIN</Link></li>
+              <li><Link href="/salvage-check" className="hover:text-white transition-colors">Salvage vs. rebuilt</Link></li>
+              <li><Link href="/flood-damage-check" className="hover:text-white transition-colors">Flood damage guide</Link></li>
               <li><Link href="/auctions" className="hover:text-white transition-colors">Salvage auction guide</Link></li>
               <li><Link href="/problems" className="hover:text-white transition-colors">Used-car problems</Link></li>
               <li><Link href="/glossary" className="hover:text-white transition-colors">VIN &amp; title glossary</Link></li>

@@ -16,6 +16,12 @@ PAYPAL_CLIENT_ID=...
 PAYPAL_SECRET=...
 PAYPAL_ENV=sandbox   # or: live
 
+# --- Blog content (AutoSEO Content API) — SERVER-ONLY, never NEXT_PUBLIC_ ---
+# Read-only key from AutoSEO; powers /blog. Never expose to the browser.
+AUTOSEO_BLOG_API_KEY=
+# Optional HMAC secret for the publish webhook (/api/autoseo/revalidate).
+AUTOSEO_REVALIDATE_SECRET=
+
 # --- SEO keyword discovery (DataForSEO Labs) ---
 # Basic-auth credentials from https://app.dataforseo.com/api-access — server-only.
 # Powers the automated keyword-research → blog pipeline (~$0.01 per API call).

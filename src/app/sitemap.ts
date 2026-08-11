@@ -1,6 +1,6 @@
 import type { MetadataRoute } from "next";
 import { SITE_URL } from "@/lib/site";
-import { allPosts } from "@/lib/blog";
+import { getBlogSitemap } from "@/lib/autoseo";
 import { allGuides } from "@/lib/how-to";
 import { COMPETITORS, comparisonSlug } from "@/lib/comparisons";
 import { allCheckPages } from "@/lib/checks";
@@ -19,7 +19,7 @@ export const runtime = "edge";
 // posts keep their own real dates below.
 const CONTENT_REVISED = new Date('2026-08-09');
 
-export default function sitemap(): MetadataRoute.Sitemap {
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const now = CONTENT_REVISED;
 
   const core: MetadataRoute.Sitemap = [
@@ -56,10 +56,13 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: 0.8,
   }));
 
-  const posts: MetadataRoute.Sitemap = allPosts().map((p) => ({
-    url: `${SITE_URL}/blog/${p.slug}`,
-    lastModified: new Date(p.updated || p.date),
-    changeFrequency: "monthly",
+  // Blog posts come from AutoSEO's content API (slugs + updatedAt). Never throws
+  // (returns [] on failure/unconfigured) so the sitemap always renders.
+  const blogEntries = await getBlogSitemap();
+  const posts: MetadataRoute.Sitemap = blogEntries.map((e) => ({
+    url: `${SITE_URL}/blog/${e.slug}`,
+    lastModified: e.updatedAt ? new Date(e.updatedAt) : now,
+    changeFrequency: "weekly",
     priority: 0.6,
   }));
 

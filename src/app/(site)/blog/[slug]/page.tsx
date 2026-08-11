@@ -2,76 +2,65 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { ArrowLeft, ShieldCheck } from 'lucide-react';
-import { getPostBySlug, renderMarkdown } from '@/lib/blog';
-import { SITE_URL, SITE_NAME } from '@/lib/site';
+import JsonLd from '@/components/JsonLd';
+import { getArticle } from '@/lib/autoseo';
+import { SITE_URL } from '@/lib/site';
 
 export const runtime = 'edge';
+export const revalidate = 600; // ISR; AutoSEO webhook revalidates on publish
 
-export async function generateMetadata({
-  params,
-}: {
-  params: Promise<{ slug: string }>;
-}): Promise<Metadata> {
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
-  const post = getPostBySlug(slug);
-  if (!post) return { title: 'Not found' };
+  const a = await getArticle(slug);
+  if (!a) return { title: 'Not found', robots: { index: false, follow: false } };
+
+  // Canonical comes straight from AutoSEO (built from our baseUrl). Only fall
+  // back to composing it if the API returned null (shouldn't happen — we pass baseUrl).
+  const canonical = a.seo.canonical || `${SITE_URL}/blog/${a.slug}`;
+  const ogImage = a.seo.ogImage || a.image || undefined;
+
   return {
-    title: post.title,
-    description: post.description,
-    alternates: { canonical: `/blog/${post.slug}` },
+    title: a.metaTitle || a.title,
+    description: a.metaDescription || a.excerpt || undefined,
+    alternates: { canonical },
+    robots: a.seo.noindex ? { index: false, follow: true } : undefined,
     openGraph: {
       type: 'article',
-      title: post.title,
-      description: post.description,
-      url: `${SITE_URL}/blog/${post.slug}`,
-      publishedTime: post.date,
-      modifiedTime: post.updated || post.date,
-      images: [{ url: post.cover, alt: post.coverAlt }],
+      title: a.metaTitle || a.title,
+      description: a.metaDescription || a.excerpt || undefined,
+      url: canonical,
+      publishedTime: a.publishedAt,
+      modifiedTime: a.updatedAt || a.publishedAt,
+      images: ogImage ? [{ url: ogImage, alt: a.title }] : undefined,
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: a.metaTitle || a.title,
+      description: a.metaDescription || a.excerpt || undefined,
+      images: ogImage ? [ogImage] : undefined,
     },
   };
 }
 
-export default async function BlogPostPage({
-  params,
-}: {
-  params: Promise<{ slug: string }>;
-}) {
-  const { slug } = await params;
-  const post = getPostBySlug(slug);
-  if (!post) notFound();
+function fmtDate(iso: string) {
+  const d = new Date(iso);
+  return Number.isNaN(d.getTime()) ? '' : d.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+}
 
-  const jsonLd = {
-    '@context': 'https://schema.org',
-    '@graph': [
-      {
-        '@type': 'BlogPosting',
-        headline: post.title,
-        description: post.description,
-        image: post.cover,
-        datePublished: post.date,
-        dateModified: post.updated || post.date,
-        author: { '@type': 'Organization', name: post.author, url: SITE_URL },
-        publisher: {
-          '@type': 'Organization',
-          name: SITE_NAME,
-          logo: { '@type': 'ImageObject', url: `${SITE_URL}/opengraph-image.png` },
-        },
-        mainEntityOfPage: { '@type': 'WebPage', '@id': `${SITE_URL}/blog/${post.slug}` },
-      },
-      {
-        '@type': 'BreadcrumbList',
-        itemListElement: [
-          { '@type': 'ListItem', position: 1, name: 'Home', item: SITE_URL },
-          { '@type': 'ListItem', position: 2, name: 'Blog', item: `${SITE_URL}/blog` },
-          { '@type': 'ListItem', position: 3, name: post.title, item: `${SITE_URL}/blog/${post.slug}` },
-        ],
-      },
-    ],
-  };
+export default async function BlogArticlePage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
+  const a = await getArticle(slug);
+  if (!a) notFound();
 
   return (
     <main className="min-h-screen bg-white">
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      {/* Structured data straight from AutoSEO (Article + BreadcrumbList + FAQPage).
+          Never write our own here — it would duplicate. */}
+      {a.seo.jsonLdBlocks?.length ? (
+        <JsonLd data={a.seo.jsonLdBlocks} />
+      ) : a.seo.jsonLd ? (
+        <div dangerouslySetInnerHTML={{ __html: a.seo.jsonLd }} />
+      ) : null}
 
       <article className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <nav aria-label="Breadcrumb" className="mb-8">
@@ -80,7 +69,7 @@ export default async function BlogPostPage({
             <li aria-hidden="true">/</li>
             <li><Link href="/blog" className="hover:text-slate-900">Blog</Link></li>
             <li aria-hidden="true">/</li>
-            <li className="text-slate-700 font-medium truncate max-w-[200px] sm:max-w-none">{post.title}</li>
+            <li className="text-slate-700 font-medium truncate max-w-[200px] sm:max-w-none">{a.title}</li>
           </ol>
         </nav>
 
@@ -89,53 +78,77 @@ export default async function BlogPostPage({
         </Link>
 
         <div className="flex items-center gap-2 text-sm text-slate-400 mb-4">
-          <time dateTime={post.date}>
-            {new Date(post.date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
-          </time>
-          <span aria-hidden="true">·</span>
-          <span>{post.readingMinutes} min read</span>
-          {post.aiAssisted && (
+          <time dateTime={a.publishedAt}>{fmtDate(a.publishedAt)}</time>
+          {a.readingTimeMinutes ? (
             <>
               <span aria-hidden="true">·</span>
-              <span className="text-slate-400">AI-assisted, human-reviewed</span>
+              <span>{a.readingTimeMinutes} min read</span>
             </>
-          )}
+          ) : null}
         </div>
 
+        {/* The body carries no H1 — render the title exactly once, here. */}
         <h1 className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight leading-tight mb-6">
-          {post.title}
+          {a.title}
         </h1>
 
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={post.cover}
-          alt={post.coverAlt}
-          width={1200}
-          height={630}
-          className="w-full rounded-2xl mb-10 aspect-[16/9] object-cover"
-        />
+        {a.image && (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={a.image}
+            alt={a.title}
+            width={1200}
+            height={630}
+            className="w-full rounded-2xl mb-10 aspect-[16/9] object-cover"
+          />
+        )}
 
-        <div
-          className="prose-content"
-          dangerouslySetInnerHTML={{ __html: renderMarkdown(post.body) }}
-        />
+        {/* Table of contents from AutoSEO headings — ids already exist in the body. */}
+        {a.headings?.length > 1 && (
+          <nav aria-label="On this page" className="mb-10 rounded-2xl border border-slate-100 bg-slate-50 p-5">
+            <p className="text-xs font-bold uppercase tracking-wide text-slate-400 mb-3">On this page</p>
+            <ul className="space-y-1.5">
+              {a.headings.map((h) => (
+                <li key={h.id} style={{ paddingLeft: `${Math.max(0, h.level - 2) * 14}px` }}>
+                  <a href={`#${h.id}`} className="text-sm text-slate-600 hover:text-blue-600">{h.text}</a>
+                </li>
+              ))}
+            </ul>
+          </nav>
+        )}
+
+        {/* Body HTML from AutoSEO — render as-is (already HTML, absolute image URLs). */}
+        <div className="prose-content" dangerouslySetInnerHTML={{ __html: a.html }} />
 
         {/* Conversion CTA */}
         <div className="mt-12 bg-gradient-to-br from-blue-700 to-blue-900 rounded-2xl p-8 text-center">
           <ShieldCheck className="w-8 h-8 text-blue-200 mx-auto mb-3" aria-hidden="true" />
           <h2 className="text-2xl font-extrabold text-white mb-2">Run the VIN before you buy</h2>
           <p className="text-blue-100 mb-6">Title brands, theft records, liens, and odometer history in under a minute.</p>
-          <Link
-            href="/#vin-search"
-            className="inline-flex bg-white text-blue-700 font-bold px-7 py-3 rounded-full hover:scale-105 transition-transform"
-          >
+          <Link href="/#vin-search" className="inline-flex bg-white text-blue-700 font-bold px-7 py-3 rounded-full hover:scale-105 transition-transform">
             Check a VIN now
           </Link>
         </div>
 
-        <p className="mt-8 text-xs text-slate-400">
-          By {post.author}. CarVinLookup publishes educational guidance for used-car buyers; reports source data from NMVTIS, NICB, and state DMVs.
-        </p>
+        {/* Read next — real internal links between our own articles. */}
+        {a.related?.length > 0 && (
+          <section className="mt-12" aria-label="Read next">
+            <h2 className="text-xl font-extrabold text-slate-900 mb-5">Read next</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              {a.related.map((r) => (
+                <Link key={r.slug} href={`/blog/${r.slug}`} className="block rounded-2xl border border-slate-100 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all overflow-hidden bg-white">
+                  {r.image && (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={r.image} alt={r.title} loading="lazy" className="w-full h-28 object-cover" />
+                  )}
+                  <div className="p-4">
+                    <p className="text-sm font-bold text-slate-900 leading-snug line-clamp-3">{r.title}</p>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </section>
+        )}
       </article>
     </main>
   );

@@ -33,6 +33,9 @@ export interface Env {
     DATAFORSEO_LOGIN?: string;
     DATAFORSEO_PASSWORD?: string;
     DATAFORSEO_BASE?: string; // default https://api.dataforseo.com
+    // AutoSEO Content API — powers /blog. SERVER-ONLY (Bearer). Never NEXT_PUBLIC_.
+    AUTOSEO_BLOG_API_KEY?: string;
+    AUTOSEO_REVALIDATE_SECRET?: string; // HMAC secret for the publish webhook
     // Vehicle data provider
     AUTODEV_API_KEY?: string;
     // GoodCar B2B API (legacy VIN provider — superseded by VinCheck)

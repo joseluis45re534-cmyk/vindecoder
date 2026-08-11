@@ -28,19 +28,19 @@ const TERMS: Term[] = [
     term: 'VIN (Vehicle Identification Number)',
     definition:
       'A unique 17-character code assigned to every vehicle built for the U.S. market since 1981. It encodes the manufacturer, vehicle attributes, and a serial number, and is the key used to look up a vehicle’s title, registration, and history records.',
-    related: { label: 'How to read a VIN', href: '/blog/how-to-read-a-vin-number' },
+    related: { label: 'How to read a VIN', href: '/how-to/read-vin-report' },
   },
   {
     term: 'Check digit',
     definition:
       'The 9th character of a VIN — a digit or "X" calculated from the other 16 characters using a formula set out in federal regulation (49 CFR 565). It lets systems verify a VIN was transcribed correctly and helps catch certain kinds of tampering.',
-    related: { label: 'How to read a VIN', href: '/blog/how-to-read-a-vin-number' },
+    related: { label: 'How to read a VIN', href: '/how-to/read-vin-report' },
   },
   {
     term: 'WMI (World Manufacturer Identifier)',
     definition:
       'The first three characters of a VIN, identifying the country, manufacturer, and vehicle type. VINs starting with "1", "4", or "5" typically indicate a vehicle built in the United States.',
-    related: { label: 'How to read a VIN', href: '/blog/how-to-read-a-vin-number' },
+    related: { label: 'How to read a VIN', href: '/how-to/read-vin-report' },
   },
   {
     term: 'NMVTIS (National Motor Vehicle Title Information System)',
@@ -64,25 +64,25 @@ const TERMS: Term[] = [
     term: 'Salvage title',
     definition:
       'A title brand applied when an insurer declares a vehicle a total loss, usually because repair costs would exceed a set percentage of its value. A salvage-titled vehicle generally cannot be legally driven or registered until it’s repaired and passes a state inspection.',
-    related: { label: 'Salvage vs. rebuilt title', href: '/blog/salvage-title-vs-rebuilt-title' },
+    related: { label: 'Salvage vs. rebuilt title', href: '/salvage-check' },
   },
   {
     term: 'Rebuilt / reconstructed title',
     definition:
       'The title a salvage vehicle receives after it’s been repaired and passed the state’s required safety inspection. It discloses that the vehicle was once salvage — a fact that follows it for the rest of its life and typically lowers resale value.',
-    related: { label: 'Salvage vs. rebuilt title', href: '/blog/salvage-title-vs-rebuilt-title' },
+    related: { label: 'Salvage vs. rebuilt title', href: '/salvage-check' },
   },
   {
     term: 'Junk title',
     definition:
       'A title brand indicating a vehicle has been declared unfit for road use and is intended for parts or scrap. Junk-titled vehicles generally cannot be re-registered for road use.',
-    related: { label: 'Salvage vs. rebuilt title', href: '/blog/salvage-title-vs-rebuilt-title' },
+    related: { label: 'Salvage vs. rebuilt title', href: '/salvage-check' },
   },
   {
     term: 'Flood / water damage title',
     definition:
       'A title brand applied when a vehicle was submerged in water badly enough to be declared a total loss. Flood damage can cause electrical and corrosion problems that only surface months or years after a cursory repair.',
-    related: { label: 'How to check for flood damage', href: '/blog/check-car-for-flood-damage' },
+    related: { label: 'How to check for flood damage', href: '/flood-damage-check' },
   },
   {
     term: 'Lemon-law buyback',
@@ -93,7 +93,7 @@ const TERMS: Term[] = [
     term: 'Title washing',
     definition:
       'The illegal practice of re-registering a branded vehicle (salvage, flood, etc.) in a state with weaker title-brand rules to obtain a "clean" title that hides its history. Cross-state systems like NMVTIS exist specifically to make title washing harder to pull off.',
-    related: { label: 'Salvage vs. rebuilt title', href: '/blog/salvage-title-vs-rebuilt-title' },
+    related: { label: 'Salvage vs. rebuilt title', href: '/salvage-check' },
   },
   {
     term: 'Odometer rollback',
@@ -125,7 +125,7 @@ const TERMS: Term[] = [
     term: 'Branded title',
     definition:
       'An umbrella term for any title marked with a permanent history flag — salvage, rebuilt, junk, flood, or lemon-law buyback — that a state DMV records and discloses on future title transfers.',
-    related: { label: 'Salvage vs. rebuilt title', href: '/blog/salvage-title-vs-rebuilt-title' },
+    related: { label: 'Salvage vs. rebuilt title', href: '/salvage-check' },
   },
   {
     term: 'DMV (Department of Motor Vehicles)',
