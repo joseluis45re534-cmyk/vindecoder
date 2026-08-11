@@ -11,7 +11,13 @@ export const revalidate = 600; // ISR; AutoSEO webhook revalidates on publish
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
-  const a = await getArticle(slug);
+  let a: Awaited<ReturnType<typeof getArticle>>;
+  try {
+    a = await getArticle(slug);
+  } catch {
+    // API error / missing key — don't crash metadata; keep the page out of the index.
+    return { title: 'Guide', robots: { index: false, follow: true } };
+  }
   if (!a) return { title: 'Not found', robots: { index: false, follow: false } };
 
   // Canonical comes straight from AutoSEO (built from our baseUrl). Only fall
@@ -49,7 +55,24 @@ function fmtDate(iso: string) {
 
 export default async function BlogArticlePage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const a = await getArticle(slug);
+  let a: Awaited<ReturnType<typeof getArticle>>;
+  try {
+    a = await getArticle(slug);
+  } catch (err) {
+    // API error / missing key — degrade gracefully instead of a raw 500.
+    console.error('[blog] article fetch failed:', (err as Error).message);
+    return (
+      <main className="min-h-screen bg-white">
+        <div className="max-w-3xl mx-auto px-4 py-24 text-center">
+          <h1 className="text-2xl font-bold text-slate-900">This guide is temporarily unavailable</h1>
+          <p className="mt-3 text-slate-500">Please try again in a moment.</p>
+          <Link href="/blog" className="mt-6 inline-flex items-center gap-1.5 text-sm font-semibold text-blue-600 hover:text-blue-700">
+            <ArrowLeft className="w-4 h-4" /> All guides
+          </Link>
+        </div>
+      </main>
+    );
+  }
   if (!a) notFound();
 
   return (
