@@ -3,8 +3,7 @@ import Link from 'next/link';
 import { listArticles } from '@/lib/autoseo';
 
 export const runtime = 'edge';
-// ISR: refresh the index every ~10 min; the AutoSEO webhook revalidates on publish.
-export const revalidate = 600;
+export const dynamic = 'force-dynamic'; // always-fresh; AutoSEO fetched per request
 
 export const metadata: Metadata = {
   title: 'VIN & Used-Car Buying Guides',

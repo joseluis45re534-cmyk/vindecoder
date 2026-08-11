@@ -7,7 +7,7 @@ import { getArticle } from '@/lib/autoseo';
 import { SITE_URL } from '@/lib/site';
 
 export const runtime = 'edge';
-export const revalidate = 600; // ISR; AutoSEO webhook revalidates on publish
+export const dynamic = 'force-dynamic'; // always-fresh; AutoSEO fetched per request
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
@@ -26,7 +26,8 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const ogImage = a.seo.ogImage || a.image || undefined;
 
   return {
-    title: a.metaTitle || a.title,
+    // `absolute` so AutoSEO's SEO title is used verbatim (no "| CarVinLookup" suffix).
+    title: { absolute: a.metaTitle || a.title },
     description: a.metaDescription || a.excerpt || undefined,
     alternates: { canonical },
     robots: a.seo.noindex ? { index: false, follow: true } : undefined,

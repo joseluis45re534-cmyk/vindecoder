@@ -80,15 +80,15 @@ export async function isConfigured(): Promise<boolean> {
   return Boolean(await apiKey());
 }
 
-// Core server fetch. 10-minute revalidate cache. `notFoundOk` returns null on 404
-// (unknown/unpublished slug) instead of throwing.
-async function af<T>(path: string, opts: { revalidate?: number; notFoundOk?: boolean } = {}): Promise<T | null> {
+// Core server fetch. Plain fetch (NO `cache` / `next.revalidate` option — the
+// Cloudflare Workers runtime throws "The 'cache' field ... is not implemented"
+// for those, which is what broke every AutoSEO call). Pages are always-fresh,
+// which makes instant-publish trivial. `notFoundOk` returns null on 404.
+async function af<T>(path: string, opts: { notFoundOk?: boolean } = {}): Promise<T | null> {
   const key = await apiKey();
   if (!key) throw new AutoSeoError('AUTOSEO_BLOG_API_KEY not configured');
   const res = await fetch(`${BASE}${path}`, {
     headers: { Authorization: `Bearer ${key}`, Accept: 'application/json' },
-    // Server-side ISR cache (~10 min). The webhook route revalidates on publish.
-    next: { revalidate: opts.revalidate ?? 600 },
   });
   if (res.status === 404 && opts.notFoundOk) return null;
   if (!res.ok) throw new AutoSeoError(`AutoSEO ${res.status} for ${path}`, res.status);
@@ -124,7 +124,7 @@ export async function getArticle(slug: string): Promise<ArticleFull | null> {
 
 export async function getTags(): Promise<{ tag: string; slug: string; count: number }[]> {
   try {
-    const data = await af<{ tags: { tag: string; slug: string; count: number }[] }>(`/tags`, { revalidate: 3600 });
+    const data = await af<{ tags: { tag: string; slug: string; count: number }[] }>(`/tags`);
     return data?.tags ?? [];
   } catch {
     return [];
@@ -134,7 +134,7 @@ export async function getTags(): Promise<{ tag: string; slug: string; count: num
 /** Slugs + updatedAt for the sitemap. Never throws (sitemap must still render). */
 export async function getBlogSitemap(): Promise<{ slug: string; updatedAt: string }[]> {
   try {
-    const data = await af<{ entries: { slug: string; updatedAt: string }[]; count: number }>(`/sitemap`, { revalidate: 3600 });
+    const data = await af<{ entries: { slug: string; updatedAt: string }[]; count: number }>(`/sitemap`);
     return data?.entries ?? [];
   } catch (err) {
     console.error('[autoseo] getBlogSitemap failed:', (err as Error).message);

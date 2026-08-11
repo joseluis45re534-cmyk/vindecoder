@@ -19,7 +19,6 @@ export async function GET() {
     try {
       const res = await fetch('https://autoseo.it.com/api/content-api/v1/articles?page=1&pageSize=1', {
         headers: { Authorization: `Bearer ${env.AUTOSEO_BLOG_API_KEY}`, Accept: 'application/json' },
-        cache: 'no-store',
       });
       upstreamStatus = res.status;
       if (res.ok) {
