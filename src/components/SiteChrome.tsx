@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ShieldCheck, Mail, Phone, MapPin } from "lucide-react";
+import { ShieldCheck, Mail, Phone, MapPin, Heart } from "lucide-react";
 import { SITE_NAME, SUPPORT_EMAIL, SUPPORT_PHONE, SITE_ADDRESS } from "@/lib/site";
 import Logo from "@/components/Logo";
 import MobileMenu from "@/components/MobileMenu";
@@ -180,6 +180,10 @@ export function SiteFooter() {
             <span className="text-slate-700" aria-hidden="true">·</span>
             <Link href="/about" className="hover:text-white transition-colors">About</Link>
           </nav>
+          <p className="flex items-center justify-center gap-2 text-center text-emerald-300 font-medium mb-4">
+            <Heart className="w-4 h-4 shrink-0 text-emerald-400" aria-hidden="true" />
+            100% of our profits are donated to nonprofit charities.
+          </p>
           <div className="flex flex-col sm:flex-row justify-between items-center gap-3 text-center">
             <p>© {new Date().getFullYear()} {SITE_NAME}. All rights reserved. Data from NMVTIS, NICB &amp; state DMVs.</p>
             <p className="flex items-center gap-1.5">
