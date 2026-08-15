@@ -29,8 +29,12 @@ export const runtime = 'edge';
 // ─────────────────────────────────────────────────────────────────────────────
 export async function POST(request: Request) {
   const env = await getEnv();
-  const body = (await request.json().catch(() => ({}))) as { vin?: string };
+  const body = (await request.json().catch(() => ({}))) as { vin?: string; email?: string };
   const vin = normalizeVin(body.vin || '');
+  // Lead email captured by the preview gate (basic validation; logged with the VIN).
+  const email = typeof body.email === 'string' && /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(body.email.trim())
+    ? body.email.trim().toLowerCase()
+    : null;
 
   if (!isValidVin(vin)) {
     return NextResponse.json({ error: 'Enter a valid 17-character VIN.' }, { status: 400 });
@@ -53,7 +57,7 @@ export async function POST(request: Request) {
     if (!cached.brandImageUrl) cached.brandImageUrl = goodcarBrandImageUrl(cached.make);
     const c = cached as typeof cached & { recordsFound?: Parameters<typeof previewRecordTotal>[0]; testMode?: boolean };
     await logLookup(env, {
-      vin, type: 'preview', status: 'cached', country, ip,
+      vin, type: 'preview', status: 'cached', country, ip, email,
       make: cached.make, model: cached.model, year: cached.year,
       recordsFound: previewRecordTotal(c.recordsFound), testMode: c.testMode,
     });
@@ -78,14 +82,14 @@ export async function POST(request: Request) {
     // both cached and returned so the paywall teaser can show the record counts.
     await setCachedDecode(env, vin, preview);
     await logLookup(env, {
-      vin, type: 'preview', status: 'ok', country, ip, testMode: preview.testMode,
+      vin, type: 'preview', status: 'ok', country, ip, email, testMode: preview.testMode,
       make: preview.make, model: preview.model, year: preview.year,
       recordsFound: previewRecordTotal(preview.recordsFound),
     });
     return NextResponse.json({ success: true, vin, specs: preview });
   } catch (err) {
     if (err instanceof VinCheckNotFoundError) {
-      await logLookup(env, { vin, type: 'preview', status: 'not_found', country, ip });
+      await logLookup(env, { vin, type: 'preview', status: 'not_found', country, ip, email });
       return NextResponse.json({ error: "We couldn't find records for this VIN.", notFound: true }, { status: 404 });
     }
     if (err instanceof VinCheckAuthError) {

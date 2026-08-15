@@ -112,21 +112,53 @@ export default function ReportView({ id, sample }: { id: string; sample?: Sample
     : null;
 
   const [data, setData] = useState<Preview | null>(initialData);
-  const [loading, setLoading] = useState(!sample);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [photoFailed, setPhotoFailed] = useState(false);
   const [brandFailed, setBrandFailed] = useState(false);
 
+  // Email gate: capture an email before revealing the free preview. Samples and
+  // the post-payment view (paid=1) skip it. Returning visitors who already gave
+  // their email skip it too.
+  const [gatePassed, setGatePassed] = useState<boolean>(Boolean(sample) || paid);
+  const [leadEmail, setLeadEmail] = useState('');
+  const [emailErr, setEmailErr] = useState('');
+
   useEffect(() => {
-    if (sample) return; // sample data is already set — never call the live API
+    if (sample || paid) return;
+    try {
+      if (localStorage.getItem('cvl_lead_email')) setGatePassed(true);
+    } catch {
+      /* localStorage unavailable — gate stays up */
+    }
+  }, [sample, paid]);
+
+  const submitLead = (e: React.FormEvent) => {
+    e.preventDefault();
+    const v = leadEmail.trim();
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(v)) {
+      setEmailErr('Please enter a valid email address.');
+      return;
+    }
+    setEmailErr('');
+    try { localStorage.setItem('cvl_lead_email', v); } catch { /* ignore */ }
+    setGatePassed(true); // triggers the preview fetch below
+  };
+
+  useEffect(() => {
+    if (sample || !gatePassed) return; // wait for the email gate (non-sample)
+    setLoading(true);
     track('vin_search', { vin: id }); // funnel: a VIN was looked up
     const run = async () => {
+      let email: string | undefined;
+      try { email = localStorage.getItem('cvl_lead_email') || undefined; } catch { /* ignore */ }
       try {
-        // Free, pre-payment preview — GoodCar VIN Decoder via /api/preview.
+        // Free, pre-payment preview — VinCheck via /api/preview. Email is logged
+        // as a lead (admin VIN activity) alongside the VIN.
         const res = await fetch('/api/preview', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ vin: id }),
+          body: JSON.stringify({ vin: id, email }),
         });
         const result = (await res.json()) as {
           success?: boolean;
@@ -176,7 +208,7 @@ export default function ReportView({ id, sample }: { id: string; sample?: Sample
       }
     };
     if (id) run();
-  }, [id, sample]);
+  }, [id, sample, gatePassed]);
 
   // Funnel: one `purchase` event when the post-payment success page loads.
   const purchaseTracked = useRef(false);
@@ -188,7 +220,65 @@ export default function ReportView({ id, sample }: { id: string; sample?: Sample
     }
   }, [paid, sample, id]);
 
-  if (loading) {
+  // ── EMAIL GATE ── show the free preview only after an email is provided.
+  if (!sample && !paid && !gatePassed) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-50 px-4 py-16">
+        <div className="w-full max-w-md">
+          <div className="text-center mb-6">
+            <span className="inline-flex w-14 h-14 rounded-2xl bg-primary/10 text-primary items-center justify-center mb-4">
+              <ShieldCheck className="w-7 h-7" aria-hidden="true" />
+            </span>
+            <h1 className="font-display text-2xl font-bold text-slate-900">Your free report is ready</h1>
+            <p className="text-sm text-slate-500 mt-2 leading-relaxed">
+              Enter your email to see the vehicle history preview for
+              <span className="font-mono text-slate-700"> {id}</span>.
+            </p>
+          </div>
+
+          <form onSubmit={submitLead} className="bg-white rounded-3xl border border-slate-100 shadow-xl shadow-slate-900/5 p-6 sm:p-7 space-y-4">
+            <div>
+              <label htmlFor="lead-email" className="block text-xs font-semibold text-slate-600 mb-1.5">Email address</label>
+              <div className="relative">
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" aria-hidden="true" />
+                <input
+                  id="lead-email"
+                  type="email"
+                  inputMode="email"
+                  autoComplete="email"
+                  required
+                  value={leadEmail}
+                  onChange={(e) => setLeadEmail(e.target.value)}
+                  placeholder="you@example.com"
+                  className="w-full pl-10 pr-3 py-2.5 rounded-xl border border-slate-200 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary"
+                />
+              </div>
+              {emailErr && <p className="text-xs text-red-600 mt-1.5">{emailErr}</p>}
+            </div>
+
+            <button
+              type="submit"
+              className="w-full inline-flex items-center justify-center gap-2 bg-primary text-white font-bold py-3 rounded-xl hover:brightness-110 active:scale-[0.99] transition"
+            >
+              See my report
+            </button>
+
+            <p className="text-[11px] text-slate-400 text-center leading-relaxed">
+              We&apos;ll email your report link. No spam — unsubscribe anytime. See our{' '}
+              <Link href="/privacy" className="underline hover:text-slate-600">privacy policy</Link>.
+            </p>
+          </form>
+
+          <ul className="mt-6 flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-xs text-slate-500">
+            <li className="flex items-center gap-1.5"><CheckCircle2 className="w-4 h-4 text-emerald-500" aria-hidden="true" /> NMVTIS · NICB · DMV data</li>
+            <li className="flex items-center gap-1.5"><CheckCircle2 className="w-4 h-4 text-emerald-500" aria-hidden="true" /> Instant preview</li>
+          </ul>
+        </div>
+      </div>
+    );
+  }
+
+  if (loading || (!data && !error)) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-slate-50 gap-3">
         <Loader2 className="w-8 h-8 animate-spin text-primary" />
