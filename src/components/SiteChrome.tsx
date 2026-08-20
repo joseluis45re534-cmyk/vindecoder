@@ -6,6 +6,24 @@ import MobileMenu from "@/components/MobileMenu";
 import AccountNav from "@/components/account/AccountNav";
 import { BRANDS } from "@/lib/brands";
 
+// Site-wide mission strip — sits above the header on every page so the
+// charitable purpose is visible everywhere (also important for Google Ad Grants,
+// which reviews whether the site clearly communicates the nonprofit mission).
+export function MissionStrip() {
+  return (
+    <Link
+      href="/#impact"
+      className="group block bg-emerald-600 text-white text-center text-xs sm:text-sm font-medium px-4 py-2 hover:bg-emerald-700 transition-colors"
+    >
+      <span className="inline-flex items-center justify-center gap-1.5 flex-wrap">
+        <Heart className="w-3.5 h-3.5 shrink-0 fill-white/90" aria-hidden="true" />
+        Every report you buy helps feed a child in Africa — 100% of our profits fund children&apos;s nutrition.
+        <span className="underline underline-offset-2 decoration-white/40 group-hover:decoration-white">Learn more →</span>
+      </span>
+    </Link>
+  );
+}
+
 const FOOTER_BRANDS = [
   "ford", "chevrolet", "toyota", "honda", "nissan", "bmw", "jeep",
   "tesla", "hyundai", "kia", "gmc", "ram", "subaru", "lexus",
@@ -182,7 +200,7 @@ export function SiteFooter() {
           </nav>
           <p className="flex items-center justify-center gap-2 text-center text-emerald-300 font-medium mb-4">
             <Heart className="w-4 h-4 shrink-0 text-emerald-400" aria-hidden="true" />
-            100% of our profits are donated to nonprofit charities.
+            100% of our profits fund nutritious meals for children in Africa. Every report you buy helps feed a child.
           </p>
           <div className="flex flex-col sm:flex-row justify-between items-center gap-3 text-center">
             <p>© {new Date().getFullYear()} {SITE_NAME}. All rights reserved. Data from NMVTIS, NICB &amp; state DMVs.</p>

@@ -12,7 +12,7 @@ import { SAMPLE_REPORTS } from '@/lib/sample-reports';
 import { TRIAL_PLAN, formatPrice } from '@/lib/pricing';
 import { faqPageLd, vinCheckHowToLd } from '@/lib/structured-data';
 import {
-  ShieldCheck, FileText, Lock, Gauge, AlertTriangle, BadgeDollarSign, Star, Database, Zap, Car, DollarSign, Clock, MapPin,
+  ShieldCheck, FileText, Lock, Gauge, AlertTriangle, BadgeDollarSign, Star, Database, Zap, Car, DollarSign, Clock, MapPin, Heart, Utensils, Globe,
 } from 'lucide-react';
 
 export const runtime = 'edge';
@@ -282,6 +282,42 @@ export default function Home() {
                 </summary>
                 <p className="px-7 pb-6 text-slate-500 leading-relaxed">{a}</p>
               </details>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ===== Impact / mission — every purchase funds children's nutrition ===== */}
+      <section id="impact" className="scroll-mt-24 py-16 sm:py-24 bg-emerald-50 px-4 sm:px-6 lg:px-8" aria-labelledby="impact-heading">
+        <div className="max-w-5xl mx-auto scroll-reveal">
+          <div className="flex flex-col items-center text-center">
+            <span className="inline-flex items-center gap-2 rounded-full bg-emerald-100 text-emerald-700 text-sm font-semibold px-4 py-1.5 mb-5">
+              <Heart className="w-4 h-4 fill-emerald-600 text-emerald-600" aria-hidden="true" />
+              Our mission
+            </span>
+            <h2 id="impact-heading" className="font-display text-3xl sm:text-4xl font-bold text-slate-900 mb-4 tracking-tight">
+              Every report you buy helps feed a child
+            </h2>
+            <p className="text-slate-600 text-base sm:text-lg max-w-2xl leading-relaxed">
+              CarVinLookup is run for a cause. <strong className="text-emerald-700">100% of our profits</strong> go
+              directly to funding nutritious meals for children in Africa. When you check a vehicle&apos;s history,
+              you protect yourself from a bad car <em>and</em> put food on a child&apos;s plate — a purchase with purpose.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mt-12">
+            {[
+              { icon: BadgeDollarSign, t: '100% of profits donated', d: 'Not a slice — every dollar of profit funds children’s nutrition programs.' },
+              { icon: Utensils, t: 'Nutritious meals', d: 'Your report helps provide healthy meals to children who need them most.' },
+              { icon: Globe, t: 'Children across Africa', d: 'Support reaches communities where a meal makes the biggest difference.' },
+            ].map(({ icon: Icon, t, d }) => (
+              <div key={t} className="bg-white rounded-2xl border border-emerald-100 shadow-sm p-7 text-center">
+                <span className="inline-flex w-12 h-12 rounded-xl bg-emerald-100 text-emerald-700 items-center justify-center mb-5">
+                  <Icon className="w-6 h-6" aria-hidden="true" />
+                </span>
+                <h3 className="font-bold text-slate-900 mb-2">{t}</h3>
+                <p className="text-slate-500 text-sm leading-relaxed">{d}</p>
+              </div>
             ))}
           </div>
         </div>
