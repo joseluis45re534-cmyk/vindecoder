@@ -6,6 +6,7 @@ import ReportView from '@/components/report/ReportView';
 import { getSampleReport } from '@/lib/sample-reports';
 import { sampleReportLd } from '@/lib/structured-data';
 import { SITE_URL, SITE_NAME } from '@/lib/site';
+import { createClient } from '@/lib/supabase/server';
 
 export const runtime = 'edge';
 
@@ -65,13 +66,26 @@ export default async function ReportPage({
   const { id } = await params;
   const sample = getSampleReport(id);
 
+  // A signed-in visitor already gave us their email at sign-up — skip the
+  // pre-preview email gate and log the preview under their account email.
+  // Guarded so a missing Supabase config just falls through to the gate.
+  let initialEmail: string | undefined;
+  try {
+    if (process.env.NEXT_PUBLIC_SUPABASE_URL) {
+      const supabase = await createClient();
+      initialEmail = (await supabase.auth.getUser()).data.user?.email ?? undefined;
+    }
+  } catch {
+    /* not signed in / config missing — gate stays up */
+  }
+
   return (
     <>
       {sample && (
         <JsonLd data={sampleReportLd({ vin: sample.vin, title: sample.title, url: `${SITE_URL}/report/${sample.vin}` })} />
       )}
       <Suspense fallback={<div className="min-h-screen flex items-center justify-center bg-slate-50"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>}>
-        <ReportView id={id} sample={sample} />
+        <ReportView id={id} sample={sample} initialEmail={initialEmail} />
       </Suspense>
     </>
   );

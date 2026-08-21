@@ -86,7 +86,7 @@ function sampleSectionRows(sample: SampleReport): { label: string; value: string
   ];
 }
 
-export default function ReportView({ id, sample }: { id: string; sample?: SampleReport }) {
+export default function ReportView({ id, sample, initialEmail }: { id: string; sample?: SampleReport; initialEmail?: string }) {
   const search = useSearchParams();
   const paid = search.get('paid') === '1';
   const sessionId = search.get('session_id') || undefined;
@@ -117,21 +117,22 @@ export default function ReportView({ id, sample }: { id: string; sample?: Sample
   const [photoFailed, setPhotoFailed] = useState(false);
   const [brandFailed, setBrandFailed] = useState(false);
 
-  // Email gate: capture an email before revealing the free preview. Samples and
-  // the post-payment view (paid=1) skip it. Returning visitors who already gave
-  // their email skip it too.
-  const [gatePassed, setGatePassed] = useState<boolean>(Boolean(sample) || paid);
+  // Email gate: capture an email before revealing the free preview. Samples, the
+  // post-payment view (paid=1), and signed-in users (we already have their
+  // account email) skip it. Returning visitors who already gave their email
+  // skip it too.
+  const [gatePassed, setGatePassed] = useState<boolean>(Boolean(sample) || paid || Boolean(initialEmail));
   const [leadEmail, setLeadEmail] = useState('');
   const [emailErr, setEmailErr] = useState('');
 
   useEffect(() => {
-    if (sample || paid) return;
+    if (sample || paid || initialEmail) return;
     try {
       if (localStorage.getItem('cvl_lead_email')) setGatePassed(true);
     } catch {
       /* localStorage unavailable — gate stays up */
     }
-  }, [sample, paid]);
+  }, [sample, paid, initialEmail]);
 
   const submitLead = (e: React.FormEvent) => {
     e.preventDefault();
@@ -150,8 +151,11 @@ export default function ReportView({ id, sample }: { id: string; sample?: Sample
     setLoading(true);
     track('vin_search', { vin: id }); // funnel: a VIN was looked up
     const run = async () => {
-      let email: string | undefined;
-      try { email = localStorage.getItem('cvl_lead_email') || undefined; } catch { /* ignore */ }
+      // Prefer the signed-in account email; fall back to the gate-captured lead.
+      let email: string | undefined = initialEmail;
+      if (!email) {
+        try { email = localStorage.getItem('cvl_lead_email') || undefined; } catch { /* ignore */ }
+      }
       try {
         // Free, pre-payment preview — VinCheck via /api/preview. Email is logged
         // as a lead (admin VIN activity) alongside the VIN.
@@ -208,7 +212,7 @@ export default function ReportView({ id, sample }: { id: string; sample?: Sample
       }
     };
     if (id) run();
-  }, [id, sample, gatePassed]);
+  }, [id, sample, gatePassed, initialEmail]);
 
   // Funnel: one `purchase` event when the post-payment success page loads.
   const purchaseTracked = useRef(false);
