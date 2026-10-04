@@ -1,4 +1,4 @@
-import { MissionStrip, SiteHeader, SiteFooter } from "@/components/SiteChrome";
+import { SiteHeader, SiteFooter } from "@/components/SiteChrome";
 import ChatWidget from "@/components/ChatWidget";
 
 export default function SiteLayout({
@@ -6,7 +6,6 @@ export default function SiteLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <>
-      <MissionStrip />
       <SiteHeader />
       {children}
       <SiteFooter />
