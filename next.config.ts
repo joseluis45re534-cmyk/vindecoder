@@ -13,6 +13,16 @@ const nextConfig: NextConfig = {
       { source: "/blog/how-to-read-a-vin-number", destination: "/how-to/read-vin-report", permanent: true },
       { source: "/blog/salvage-title-vs-rebuilt-title", destination: "/salvage-check", permanent: true },
       { source: "/blog/check-car-for-flood-damage", destination: "/flood-damage-check", permanent: true },
+      { source: "/blog/what-is-a-vehicle-history-report", destination: "/how-to/read-vin-report", permanent: true },
+      { source: "/blog/how-to-check-accident-history", destination: "/accident-check", permanent: true },
+      { source: "/blog/car-information-by-license-plate", destination: "/license-plate-lookup", permanent: true },
+      { source: "/blog/how-to-spot-odometer-rollback", destination: "/odometer-check", permanent: true },
+      { source: "/blog/how-to-buy-a-salvage-car", destination: "/auctions", permanent: true },
+      { source: "/blog/travel-trailer-vin-decoder", destination: "/vin-decoder", permanent: true },
+      { source: "/blog/chassis-number-vs-vin", destination: "/vin-decoder", permanent: true },
+      { source: "/blog/vin-cloning-explained", destination: "/stolen-vehicle-check", permanent: true },
+      { source: "/blog/what-is-a-bid-car-salvage-auction", destination: "/auctions", permanent: true },
+      { source: "/blog/common-used-car-scams", destination: "/how-to/avoid-curbstoner", permanent: true },
       // Canonicalize www → apex. The site's canonical host is carvinlookup.us;
       // www currently serves the app (a duplicate host) and 404s stray paths.
       {

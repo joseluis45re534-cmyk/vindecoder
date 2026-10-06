@@ -71,6 +71,19 @@ export class AutoSeoError extends Error {
   }
 }
 
+// Off-topic guard. AutoSEO published driving-test / international-driving-permit
+// articles to this blog — a different subject that has nothing to do with U.S.
+// vehicle history reports. They dilute topical relevance (Google declines to
+// index the blog) and link to pages that don't exist here, so they are never
+// listed, linked, sitemapped, or served (404). The real fix is removing them —
+// and the driving-test / IDP competitors behind them — in the AutoSEO project;
+// this guard keeps carvinlookup.us clean regardless.
+const OFF_TOPIC = /(^|-)(driving-tests?|international-dl|international-driving|idp|idpglobe)(-|$)/;
+
+export function isOffTopic(slug: string): boolean {
+  return OFF_TOPIC.test(slug);
+}
+
 async function apiKey(): Promise<string | undefined> {
   const env = await getEnv();
   return env.AUTOSEO_BLOG_API_KEY;
@@ -106,20 +119,35 @@ export async function listArticles(opts: { page?: number; pageSize?: number; tag
   try {
     const data = await af<ArticleList>(`/articles?${q.toString()}`);
     if (!data) throw new AutoSeoError('empty');
-    return { ...data, ok: true };
+    return { ...data, articles: data.articles.filter((a) => !isOffTopic(a.slug)), ok: true };
   } catch (err) {
     console.error('[autoseo] listArticles failed:', (err as Error).message);
     return { articles: [], page, pageSize, total: 0, totalPages: 0, ok: false };
   }
 }
 
+/** Every published article (no bodies), newest first — for llms.txt. Pages
+ *  through the list API; never throws (returns what it has so far). */
+export async function listAllArticles(maxPages = 10): Promise<ArticleListItem[]> {
+  const all: ArticleListItem[] = [];
+  for (let page = 1; page <= maxPages; page++) {
+    const res = await listArticles({ page, pageSize: 50 });
+    all.push(...res.articles);
+    if (!res.ok || page >= res.totalPages) break;
+  }
+  return all;
+}
+
 /** One article WITH body. Returns null on 404 (→ notFound). Throws on transient
  *  errors so a real page isn't turned into a 404 by an API blip. baseUrl is
  *  ALWAYS sent so canonical / breadcrumb / Article.url are built from our domain. */
 export async function getArticle(slug: string): Promise<ArticleFull | null> {
+  if (isOffTopic(slug)) return null;
   const q = new URLSearchParams({ baseUrl: BLOG_INDEX_URL });
   const data = await af<{ article: ArticleFull }>(`/articles/${encodeURIComponent(slug)}?${q.toString()}`, { notFoundOk: true });
-  return data?.article ?? null;
+  const article = data?.article ?? null;
+  if (article?.related) article.related = article.related.filter((r) => !isOffTopic(r.slug));
+  return article;
 }
 
 export async function getTags(): Promise<{ tag: string; slug: string; count: number }[]> {
@@ -131,11 +159,17 @@ export async function getTags(): Promise<{ tag: string; slug: string; count: num
   }
 }
 
-/** Slugs + updatedAt for the sitemap. Never throws (sitemap must still render). */
+/** Slugs + updatedAt for the sitemap — off-topic posts dropped, and de-duplicated
+ *  (the API has returned the same slug twice). Never throws (sitemap must still render). */
 export async function getBlogSitemap(): Promise<{ slug: string; updatedAt: string }[]> {
   try {
     const data = await af<{ entries: { slug: string; updatedAt: string }[]; count: number }>(`/sitemap`);
-    return data?.entries ?? [];
+    const seen = new Set<string>();
+    return (data?.entries ?? []).filter((e) => {
+      if (isOffTopic(e.slug) || seen.has(e.slug)) return false;
+      seen.add(e.slug);
+      return true;
+    });
   } catch (err) {
     console.error('[autoseo] getBlogSitemap failed:', (err as Error).message);
     return [];

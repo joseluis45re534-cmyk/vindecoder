@@ -1,6 +1,6 @@
 import { SITE_URL } from '@/lib/site';
 import { TRIAL_PLAN, formatPrice } from '@/lib/pricing';
-import { allPosts } from '@/lib/blog';
+import { listAllArticles } from '@/lib/autoseo';
 import { allGuides } from '@/lib/how-to';
 import { allCheckPages } from '@/lib/checks';
 import { COMPETITORS } from '@/lib/comparisons';
@@ -16,7 +16,7 @@ export async function GET() {
   const fee = formatPrice(TRIAL_PLAN.trialFeeCents ?? 100);
   const monthly = formatPrice(TRIAL_PLAN.recurringCents ?? 2900);
   const days = TRIAL_PLAN.trialDays ?? 3;
-  const posts = allPosts();
+  const posts = await listAllArticles(); // live blog (AutoSEO) — same source as /blog
   const guides = allGuides();
   const checks = allCheckPages();
 

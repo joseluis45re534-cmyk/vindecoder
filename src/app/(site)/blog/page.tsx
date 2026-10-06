@@ -1,16 +1,26 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import { notFound } from 'next/navigation';
 import { listArticles } from '@/lib/autoseo';
 
 export const runtime = 'edge';
 export const dynamic = 'force-dynamic'; // always-fresh; AutoSEO fetched per request
 
-export const metadata: Metadata = {
-  title: 'VIN & Used-Car Buying Guides',
-  description:
-    'Practical guides on VIN checks, salvage and flood titles, odometer fraud, and buying a used car safely in the United States.',
-  alternates: { canonical: '/blog' },
-};
+function pageNumber(raw?: string): number {
+  return Math.max(1, Math.floor(Number(raw)) || 1);
+}
+
+// Each paginated page is its own canonical (page 2 lists different posts than
+// page 1 — canonicalizing it to /blog tells Google to ignore those posts' links).
+export async function generateMetadata({ searchParams }: { searchParams: Promise<{ page?: string }> }): Promise<Metadata> {
+  const page = pageNumber((await searchParams).page);
+  return {
+    title: page > 1 ? `VIN & Used-Car Buying Guides – Page ${page}` : 'VIN & Used-Car Buying Guides',
+    description:
+      'Practical guides on VIN checks, salvage and flood titles, odometer fraud, and buying a used car safely in the United States.',
+    alternates: { canonical: page > 1 ? `/blog?page=${page}` : '/blog' },
+  };
+}
 
 function fmtDate(iso: string) {
   const d = new Date(iso);
@@ -18,9 +28,10 @@ function fmtDate(iso: string) {
 }
 
 export default async function BlogIndex({ searchParams }: { searchParams: Promise<{ page?: string }> }) {
-  const sp = await searchParams;
-  const page = Math.max(1, Number(sp.page) || 1);
+  const page = pageNumber((await searchParams).page);
   const { articles, totalPages, ok } = await listArticles({ page, pageSize: 12 });
+  // A page past the end is a real 404, not an empty 200 (a soft-404 to Google).
+  if (ok && page > 1 && page > totalPages) notFound();
 
   return (
     <main className="min-h-screen bg-slate-50">

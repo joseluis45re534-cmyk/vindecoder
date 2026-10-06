@@ -7,7 +7,7 @@ Project conventions for carvinlookup.us (Next.js App Router + TypeScript + Tailw
 - **Every public route exports `metadata` or `generateMetadata`** — unique title (~50–60 chars), description (~140–160 chars), `alternates.canonical`, OpenGraph, Twitter card. `metadataBase` is set once in the root layout.
 - **Structured data lives in `src/lib/structured-data.ts`.** Pure functions returning plain JSON-LD objects; render with `<JsonLd data={...} />` (`src/components/JsonLd.tsx`), which server-renders `<script type="application/ld+json">` tags. Don't create a parallel `lib/schema/` directory — extend this file.
 - **All indexable content must be server-rendered.** Most LLM/AI crawlers don't execute JavaScript reliably. If a page needs metadata or crawlable text, it must be a Server Component (or have its client-only parts fed initial data from a Server Component wrapper) — see the `/report/[id]` pattern below.
-- **`src/app/sitemap.ts` and `src/app/llms.txt` / `llms-full.txt` pull from the same source of truth as the pages** (`BRANDS`, `allPosts()`, `SAMPLE_REPORTS`, `TRIAL_PLAN`). Never hardcode a divergent list — add new indexable content to its source-of-truth file and these pick it up automatically.
+- **`src/app/sitemap.ts` and `src/app/llms.txt` / `llms-full.txt` pull from the same source of truth as the pages** (`BRANDS`, the AutoSEO blog via `src/lib/autoseo.ts`, `SAMPLE_REPORTS`, `TRIAL_PLAN`). Never hardcode a divergent list — add new indexable content to its source-of-truth file and these pick it up automatically.
 - **`src/app/robots.ts` explicitly allow-lists AI crawlers** (GPTBot, ClaudeBot, PerplexityBot, etc. — see the file for the full, commented list) alongside the default `*` rule. When adding a new disallow, add it to the `DISALLOW` array once — it applies to every rule automatically.
 - **Never fabricate stats, reviews, authors, or sources.** If a number or claim can't be verified against the product or a real source, don't schema-encode it — flag it in code with a `TODO` comment and leave it out of structured data. See `src/app/(site)/page.tsx` for the existing pattern (the homepage's "4.8" rating and testimonials are explicitly marked as placeholders pending real data).
 - **Cite only verified, live external URLs.** Before citing a government/authority source (NMVTIS, NICB, NHTSA, etc.), verify the URL is live via WebFetch/WebSearch — don't cite from memory.
@@ -18,7 +18,7 @@ Large SEO page-groups are **data-driven from a single source-of-truth file**; th
 
 | Cluster | Source of truth | Routes |
 |---|---|---|
-| Blog posts | `src/lib/blog.ts` (`DEMO_POSTS`) | `/blog`, `/blog/[slug]` |
+| Blog posts | AutoSEO Content API via `src/lib/autoseo.ts` (off-topic posts blocked by `isOffTopic()`; retired `blog.ts` slugs 308-redirect in `next.config.ts`) | `/blog`, `/blog/[slug]` |
 | How-to guides | `src/lib/how-to.ts` (`HOW_TO_GUIDES`) | `/how-to`, `/how-to/[slug]` |
 | Comparisons / alternatives | `src/lib/comparisons.ts` (`COMPETITORS`) | `/compare`, `/compare/[slug]`, `/[x]-alternative` |
 | Specialty checks | `src/lib/checks.ts` (`CHECK_PAGES`) | `/salvage-check`, `/lien-check`, `/vin-decoder`, `/license-plate-lookup`, … |
