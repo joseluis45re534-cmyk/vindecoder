@@ -4,6 +4,7 @@ import { SITE_NAME, SUPPORT_EMAIL, SUPPORT_PHONE, SITE_ADDRESS } from "@/lib/sit
 import Logo from "@/components/Logo";
 import MobileMenu from "@/components/MobileMenu";
 import AccountNav from "@/components/account/AccountNav";
+import PreferredSourceButton from "@/components/PreferredSourceButton";
 import { BRANDS } from "@/lib/brands";
 
 const FOOTER_BRANDS = [
@@ -167,6 +168,9 @@ export function SiteFooter() {
         </div>
 
         <div className="border-t border-slate-800 mt-12 pt-8 flex flex-col gap-4 text-xs">
+          <div className="flex justify-center">
+            <PreferredSourceButton theme="dark" />
+          </div>
           <nav aria-label="Legal" className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2">
             <Link href="/privacy" className="hover:text-white transition-colors">Privacy Policy</Link>
             <span className="text-slate-700" aria-hidden="true">·</span>
