@@ -17,7 +17,7 @@ export function altMetadata(slug: string): Metadata {
   if (!c) return { title: 'Alternative not found' };
   return pageMetadata({
     title: `${c.name} Alternative for VIN History Reports`,
-    description: `Looking for a ${c.name} alternative? CarVinLookup runs U.S. vehicle history reports built on NMVTIS title data. Free preview, then a ${reportPriceLine('short')}.`,
+    description: `${c.name} alternative: U.S. vehicle history reports built on NMVTIS title data. Free vehicle preview, then a ${reportPriceLine('short')}.`,
     path: `/${c.slug}-alternative`,
     ogAlt: `${c.name} alternative`,
   });
