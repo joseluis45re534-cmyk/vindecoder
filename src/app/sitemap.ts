@@ -1,12 +1,10 @@
 import type { MetadataRoute } from "next";
-import { SITE_URL } from "@/lib/site";
+import { SITE_URL, CONTENT_REVISED as CONTENT_REVISED_ISO } from "@/lib/site";
 import { getBlogSitemap } from "@/lib/autoseo";
 import { allGuides } from "@/lib/how-to";
 import { COMPETITORS, comparisonSlug } from "@/lib/comparisons";
 import { allCheckPages } from "@/lib/checks";
 import { US_STATES } from "@/lib/us-states";
-import { STICKER_MAKES } from "@/lib/window-stickers";
-import { DAMAGE_TYPES, VEHICLE_TYPES } from "@/lib/auctions";
 import { BRANDS } from "@/lib/brands";
 import { SAMPLE_REPORTS } from "@/lib/sample-reports";
 
@@ -16,8 +14,9 @@ export const runtime = "edge";
 // <lastmod> as "today" on every sitemap fetch — telling Google all ~690 pages
 // change daily, which erodes trust in lastmod and wastes crawl budget on a young
 // domain. Bump this only when the programmatic content actually changes. Blog
-// posts keep their own real dates below.
-const CONTENT_REVISED = new Date('2026-08-09');
+// posts keep their own real dates below. Single source: CONTENT_REVISED in
+// lib/site.ts (also drives the visible "Last reviewed" dates).
+const CONTENT_REVISED = new Date(`${CONTENT_REVISED_ISO}T00:00:00Z`);
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const now = CONTENT_REVISED;
@@ -80,18 +79,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.8,
   }));
 
-  const stickerMakes: MetadataRoute.Sitemap = STICKER_MAKES.map((m) => ({
-    url: `${SITE_URL}/window-sticker/${m.slug}`,
-    lastModified: now,
-    changeFrequency: "monthly",
-    priority: 0.6,
-  }));
-
-  // NOTE: the deep model tiers — /window-sticker/[make]/[model] and
-  // /vin-check/[brand]/[model] — are intentionally OMITTED from the sitemap and
-  // carry robots noindex (see their pages). On a young domain they'd only dilute
-  // crawl budget; concentrate it on the make/brand hubs + core content. Re-add
-  // both here (and drop the noindex) once the domain has indexing authority.
+  // NOTE: thin/templated tiers are intentionally OMITTED from the sitemap and
+  // carry robots noindex,follow (see their pages):
+  //   - /window-sticker/[make]/[model] and /vin-check/[brand]/[model] (deep model tiers)
+  //   - /window-sticker/[make]   (~100 words/page; sticker data not live until ClearVin)
+  //   - /auctions/damage/[type] and /auctions/type/[type]   (~200 words/page)
+  // On a young domain they'd only dilute crawl budget; concentrate it on the
+  // brand hubs, checks, guides, and blog. Re-add them here (and drop the
+  // noindex) once each tier is enriched and the domain has indexing authority.
 
   const statePlates: MetadataRoute.Sitemap = US_STATES.map((s) => ({
     url: `${SITE_URL}/license-plate-lookup/${s.slug}`,
@@ -99,21 +94,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     changeFrequency: "monthly",
     priority: 0.5,
   }));
-
-  const auctions: MetadataRoute.Sitemap = [
-    ...DAMAGE_TYPES.map((d) => ({
-      url: `${SITE_URL}/auctions/damage/${d.slug}`,
-      lastModified: now,
-      changeFrequency: "monthly" as const,
-      priority: 0.5,
-    })),
-    ...VEHICLE_TYPES.map((v) => ({
-      url: `${SITE_URL}/auctions/type/${v.slug}`,
-      lastModified: now,
-      changeFrequency: "monthly" as const,
-      priority: 0.5,
-    })),
-  ];
 
   const compare: MetadataRoute.Sitemap = COMPETITORS.flatMap((c) => [
     {
@@ -145,9 +125,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...posts,
     ...guides,
     ...checks,
-    ...stickerMakes,
     ...statePlates,
-    ...auctions,
     ...compare,
     ...sampleReports,
   ];

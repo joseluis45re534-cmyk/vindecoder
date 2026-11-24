@@ -1,15 +1,18 @@
 import type { Metadata } from 'next';
+import { pageMetadata } from '@/lib/seo';
+import Link from 'next/link';
 import { Mail, Clock, ShieldCheck, MapPin, Phone } from 'lucide-react';
 import ContactForm from '@/components/ContactForm';
 import { SUPPORT_EMAIL, SUPPORT_PHONE, SITE_ADDRESS } from '@/lib/site';
 
 export const runtime = 'edge';
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: 'Contact Us',
-  description: 'Get in touch with the CarVinLookup support team about VIN reports, billing, or partnership and dealer enquiries.',
-  alternates: { canonical: '/contact' },
-};
+  description:
+    'Contact CarVinLookup support about a vehicle history report, billing, a refund, or a dealer or partnership enquiry. Email support@carvinlookup.us.',
+  path: '/contact',
+});
 
 export default function ContactPage() {
   return (
@@ -23,7 +26,7 @@ export default function ContactPage() {
           {[
             { icon: Mail, t: 'Email', d: SUPPORT_EMAIL },
             ...(SUPPORT_PHONE ? [{ icon: Phone, t: 'Phone', d: SUPPORT_PHONE }] : []),
-            { icon: Clock, t: 'Hours', d: '24/7 — always available' },
+            { icon: Clock, t: 'VIN checks', d: 'Run a report online anytime, 24/7' },
             { icon: ShieldCheck, t: 'Dealers', d: 'dealers@carvinlookup.us' },
             {
               icon: MapPin,
@@ -39,6 +42,29 @@ export default function ContactPage() {
               <p className="text-slate-500 text-sm break-words">{d}</p>
             </div>
           ))}
+        </div>
+
+        <div className="bg-white rounded-2xl border border-slate-100 p-6 mb-10">
+          <h2 className="font-bold text-slate-900 mb-3">Before you write — quick answers</h2>
+          <ul className="space-y-2 text-sm text-slate-600 list-disc pl-5">
+            <li>
+              <strong>Cancel or manage your plan:</strong> sign in to your{' '}
+              <Link href="/account" className="text-blue-600 font-semibold hover:underline">account</Link>. Billing terms are in our{' '}
+              <Link href="/refund" className="text-blue-600 font-semibold hover:underline">refund &amp; cancellation policy</Link>.
+            </li>
+            <li>
+              <strong>Understanding a report:</strong> see{' '}
+              <Link href="/how-to/read-vin-report" className="text-blue-600 font-semibold hover:underline">how to read a VIN report</Link> and the{' '}
+              <Link href="/glossary" className="text-blue-600 font-semibold hover:underline">VIN &amp; title glossary</Link>.
+            </li>
+            <li>
+              <strong>Where the data comes from:</strong>{' '}
+              <Link href="/data-sources" className="text-blue-600 font-semibold hover:underline">data sources &amp; methodology</Link>.
+            </li>
+            <li>
+              <strong>Report question?</strong> Include the VIN and the email you used at checkout so we can find it fast.
+            </li>
+          </ul>
         </div>
 
         <ContactForm />

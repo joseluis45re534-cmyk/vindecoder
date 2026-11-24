@@ -69,7 +69,7 @@ export function SiteFooter() {
               <span className="text-white font-bold">{SITE_NAME}</span>
             </div>
             <p className="text-sm leading-relaxed max-w-xs">
-              Instant U.S. vehicle history reports from NMVTIS, NICB, and state DMV records. Know before you buy.
+              Instant U.S. vehicle history reports built on NMVTIS title data. Know before you buy.
             </p>
             <address className="not-italic mt-5 space-y-2.5 text-sm">
               <a href={`mailto:${SUPPORT_EMAIL}`} className="flex items-center gap-2 hover:text-white transition-colors">
@@ -183,9 +183,11 @@ export function SiteFooter() {
             <Link href="/contact" className="hover:text-white transition-colors">Contact</Link>
             <span className="text-slate-700" aria-hidden="true">·</span>
             <Link href="/about" className="hover:text-white transition-colors">About</Link>
+            <span className="text-slate-700" aria-hidden="true">·</span>
+            <Link href="/data-sources#nmvtis-disclaimer" className="hover:text-white transition-colors">NMVTIS disclaimer</Link>
           </nav>
           <div className="flex flex-col sm:flex-row justify-between items-center gap-3 text-center">
-            <p>© {new Date().getFullYear()} {SITE_NAME}. All rights reserved. Data from NMVTIS, NICB &amp; state DMVs.</p>
+            <p>© {new Date().getFullYear()} {SITE_NAME}. All rights reserved. NMVTIS title data via an approved NMVTIS data provider.</p>
             <p className="flex items-center gap-1.5">
               <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" aria-hidden="true" />
               Secure checkout · Reports delivered instantly

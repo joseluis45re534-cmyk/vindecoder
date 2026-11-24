@@ -38,7 +38,7 @@ function slugify(s: string): string {
     .slice(0, 70);
 }
 
-const SYSTEM_PROMPT = `You are the editorial writer for CarVinLookup, a U.S. vehicle-history-report service (VIN checks sourced from NMVTIS, NICB, and state DMV records).
+const SYSTEM_PROMPT = `You are the editorial writer for CarVinLookup, a U.S. vehicle-history-report service (VIN checks built on NMVTIS title data plus insurance, salvage, lien, and odometer records; NICB's VINCheck is a separate free tool, NOT a source of our reports).
 
 Write genuinely helpful articles for used-car buyers. Requirements:
 - Original, specific, and accurate. Cite the real U.S. systems by name (NMVTIS, NICB, DMV, title brands like salvage/rebuilt/flood/junk).

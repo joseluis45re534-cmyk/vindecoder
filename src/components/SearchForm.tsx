@@ -1,54 +1,55 @@
-
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { Search, Loader2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { cn } from '@/lib/utils';
+
+// VINs go straight to /report/[vin]: that page fetches the free preview from the
+// report provider itself, so there is no extra pre-check that could reject a
+// valid VIN (the old /api/check-vin round-trip depended on a separate decoder
+// and blocked real VINs whenever it failed).
+//
+// License-plate search is NOT live yet — it ships with the ClearVin integration.
+// Until then a plate gets an honest "coming soon" message instead of a fake
+// result, so nobody hands over an email for a lookup we can't run.
+const PLATE_SEARCH_LIVE = false;
+
+const VIN_RE = /^[A-HJ-NPR-Z0-9]{17}$/;
+
+type Notice = { kind: 'error' | 'plate'; text: string } | null;
 
 export default function SearchForm() {
     const [input, setInput] = useState('');
     const [loading, setLoading] = useState(false);
-    const [error, setError] = useState('');
+    const [notice, setNotice] = useState<Notice>(null);
     const router = useRouter();
 
-    const validateInput = (value: string) => {
-        const clean = value.replace(/[^A-Z0-9]/gi, '').toUpperCase();
-        if (clean.length === 17 && !/[IOQ]/.test(clean)) return { type: 'VIN', value: clean };
-        if (clean.length > 0 && clean.length <= 8) return { type: 'PLATE', value: clean };
-        return null;
-    };
-
-    const handleSearch = async (e: React.FormEvent) => {
+    const handleSearch = (e: React.FormEvent) => {
         e.preventDefault();
-        setError('');
+        setNotice(null);
 
-        const valid = validateInput(input);
-        if (!valid) {
-            setError('Please enter a valid 17-character VIN or U.S. license plate.');
+        const clean = input.replace(/[^A-Z0-9]/gi, '').toUpperCase();
+
+        if (clean.length === 17) {
+            if (!VIN_RE.test(clean)) {
+                setNotice({ kind: 'error', text: 'VINs never contain the letters I, O, or Q — double-check those characters (they are usually 1 or 0).' });
+                return;
+            }
+            setLoading(true);
+            router.push(`/report/${clean}`);
             return;
         }
 
-        setLoading(true);
-
-        try {
-            const response = await fetch('/api/check-vin', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ [valid.type.toLowerCase()]: valid.value }),
+        if (clean.length > 0 && clean.length <= 8 && !PLATE_SEARCH_LIVE) {
+            setNotice({
+                kind: 'plate',
+                text: 'License-plate search is launching soon. For now, enter the 17-character VIN — it is on the lower-left corner of the windshield, the driver-side door jamb, and the title or registration.',
             });
-            const data = await response.json() as any;
-
-            if (data.success && data.reportId) {
-                router.push(`/report/${data.reportId}`);
-            } else {
-                setError(data.error || 'Failed to generate report.');
-            }
-        } catch (err) {
-            setError('An unexpected error occurred.');
-        } finally {
-            setLoading(false);
+            return;
         }
+
+        setNotice({ kind: 'error', text: 'Please enter a valid 17-character VIN.' });
     };
 
     return (
@@ -62,12 +63,13 @@ export default function SearchForm() {
                     type="text"
                     value={input}
                     onChange={(e) => setInput(e.target.value.toUpperCase())}
-                    placeholder="Enter VIN or plate"
-                    aria-label="VIN or U.S. license plate"
+                    placeholder="Enter a 17-character VIN"
+                    aria-label="17-character VIN"
                     className="flex-1 min-w-0 bg-transparent pl-11 sm:pl-12 pr-2 py-3 sm:py-3.5 text-base sm:text-lg text-slate-900 placeholder:text-slate-400 focus:outline-none font-medium tracking-wide"
                     disabled={loading}
                     autoComplete="off"
                     spellCheck={false}
+                    maxLength={24}
                 />
                 <button
                     type="submit"
@@ -84,9 +86,21 @@ export default function SearchForm() {
                     )}
                 </button>
             </form>
-            {error && (
-                <p className="mt-4 text-red-200 bg-red-500/20 border border-red-400/30 px-4 py-2 rounded-xl text-sm inline-block backdrop-blur">
-                    {error}
+            {notice && (
+                <p
+                    role="status"
+                    className={
+                        notice.kind === 'plate'
+                            ? 'mt-4 text-sky-100 bg-sky-500/20 border border-sky-300/30 px-4 py-2.5 rounded-xl text-sm inline-block backdrop-blur text-left'
+                            : 'mt-4 text-red-200 bg-red-500/20 border border-red-400/30 px-4 py-2 rounded-xl text-sm inline-block backdrop-blur'
+                    }
+                >
+                    {notice.text}{' '}
+                    {notice.kind === 'plate' && (
+                        <Link href="/how-to/check-vin-number" className="underline font-semibold hover:text-white">
+                            Where to find your VIN
+                        </Link>
+                    )}
                 </p>
             )}
         </div>

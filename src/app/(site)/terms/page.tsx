@@ -1,12 +1,14 @@
 import type { Metadata } from 'next';
+import { pageMetadata } from '@/lib/seo';
 
 export const runtime = 'edge';
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: 'Terms of Service',
-  description: 'The terms governing your use of CarVinLookup vehicle history reports and website.',
-  alternates: { canonical: '/terms' },
-};
+  description:
+    'The terms governing your use of CarVinLookup vehicle history reports and website.',
+  path: '/terms',
+});
 
 export default function TermsPage() {
   return (
@@ -22,7 +24,7 @@ export default function TermsPage() {
         </p>
         <h2>Accuracy &amp; data sources</h2>
         <p>
-          Reports are compiled from NMVTIS, NICB, and state DMV records. While we strive for accuracy, records depend on
+          Reports are compiled from NMVTIS title data and the other record sources listed on our Data Sources page. While we strive for accuracy, records depend on
           third-party reporting and may be incomplete. Reports are provided &ldquo;as is&rdquo; without warranty, and are not
           a substitute for a professional pre-purchase inspection.
         </p>

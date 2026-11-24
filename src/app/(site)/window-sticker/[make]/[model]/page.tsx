@@ -19,8 +19,8 @@ export async function generateMetadata({
   const found = getStickerModel(make, model);
   if (!found) return { title: 'Window sticker not found' };
   const label = `${found.make.name} ${found.model.name}`;
-  const title = `${label} Window Sticker by VIN — CarVinLookup`;
-  const description = `Get the original ${label} window sticker (Monroney label) by VIN — MSRP, factory options, fuel economy, and standard equipment as the car was built. Free preview.`;
+  const title = `${label} Window Sticker by VIN`;
+  const description = `What's on a ${label} window sticker (Monroney label) — MSRP, options, fuel economy — and how to get one by VIN. Sticker lookup is launching soon.`;
   const url = `${SITE_URL}/window-sticker/${make}/${model}`;
   return {
     title,
@@ -58,9 +58,9 @@ export default async function StickerModelPage({
   const siblings = found.make.models.filter((m) => m.slug !== found.model.slug).slice(0, 8);
 
   const faq = [
-    { q: `How do I get a ${label} window sticker?`, a: `Enter the ${label}'s 17-character VIN in the search box. CarVinLookup pulls the original window sticker data recorded for that specific VIN, so the MSRP, options, and equipment match the exact car as it was built.` },
+    { q: `How do I get a ${label} window sticker?`, a: `Ask the seller first — some owners keep the original. A ${found.make.name} dealer can sometimes print the build sheet from the VIN. CarVinLookup's VIN-based window sticker lookup is launching soon; today you can enter the VIN for a free vehicle preview.` },
     { q: `What is on a ${label} window sticker?`, a: `A Monroney window sticker lists the as-built MSRP, standard and optional equipment, EPA fuel-economy estimates, warranty information, and the vehicle's build and destination details.` },
-    { q: `Is the window sticker lookup free?`, a: `You see a free identity preview confirming the ${label} first. The full window sticker and history report is a paid unlock.` },
+    { q: `Is the window sticker lookup free?`, a: `The vehicle preview is free. Window sticker lookup is launching soon; the full ${label} history report (title, theft, lien, and odometer) is available now as a paid unlock.` },
   ];
 
   const schema = [
@@ -70,7 +70,7 @@ export default async function StickerModelPage({
       '@id': url,
       name: `${label} Window Sticker`,
       url,
-      description: `Look up the original ${label} window sticker by VIN.`,
+      description: `What a ${label} window sticker shows and how to get one by VIN.`,
       isPartOf: { '@id': `${SITE_URL}/#website` },
       about: { '@type': 'Product', name: label, brand: { '@type': 'Brand', name: found.make.name } },
     },
@@ -106,7 +106,7 @@ export default async function StickerModelPage({
             {label} <span className="bg-gradient-to-r from-blue-400 to-sky-300 bg-clip-text text-transparent">window sticker</span>
           </h1>
           <p className="text-base sm:text-lg text-slate-300 mb-8 max-w-2xl mx-auto">
-            Look up the original {label} window sticker (Monroney label) by VIN — the factory MSRP, options, and equipment for that exact car.
+            What a {label} window sticker (Monroney label) shows, and how to get one. Our VIN-based sticker lookup is launching soon — enter the VIN now for a free vehicle preview.
           </p>
           <SearchForm />
           <p className="mt-5 text-sm text-slate-400">Free preview · By VIN · All model years</p>
@@ -149,7 +149,7 @@ export default async function StickerModelPage({
           {[
             { n: 'Find the VIN', t: `Locate the ${label}'s 17-character VIN on the windshield, driver door jamb, title, or registration.` },
             { n: 'Enter it above', t: 'Type the VIN into the search box to confirm the exact vehicle in a free preview.' },
-            { n: 'Unlock the sticker & history', t: 'Get the original window sticker for that VIN alongside title, theft, lien, and odometer history.' },
+            { n: 'Unlock the history', t: 'Get the title, theft, lien, and odometer history now — window stickers are launching soon.' },
           ].map((s, i) => (
             <li key={s.n} className="flex gap-4">
               <span className="shrink-0 w-9 h-9 rounded-full bg-blue-600 text-white font-bold flex items-center justify-center">{i + 1}</span>
@@ -202,8 +202,8 @@ export default async function StickerModelPage({
       {/* CTA */}
       <section className="bg-gradient-to-br from-blue-700 to-blue-900 py-14 px-4 text-center">
         <ShieldCheck className="w-8 h-8 text-blue-200 mx-auto mb-3" aria-hidden="true" />
-        <h2 className="text-2xl sm:text-3xl font-extrabold text-white mb-3">Get the {label} window sticker</h2>
-        <p className="text-blue-100 mb-6">Free preview · original sticker + full history by VIN.</p>
+        <h2 className="text-2xl sm:text-3xl font-extrabold text-white mb-3">Check the {label} VIN</h2>
+        <p className="text-blue-100 mb-6">Free preview · full history by VIN · window stickers launching soon.</p>
         <Link href="/#vin-search" className="inline-flex items-center gap-2 bg-white text-blue-700 font-bold px-7 py-3.5 rounded-full hover:scale-105 active:scale-100 transition-transform">
           <Search className="w-4 h-4" aria-hidden="true" /> Look up a VIN
         </Link>

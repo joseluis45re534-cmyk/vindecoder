@@ -1,4 +1,6 @@
 import type { Metadata } from 'next';
+import { pageMetadata } from '@/lib/seo';
+import Link from 'next/link';
 import { Check } from 'lucide-react';
 import { formatPrice } from '@/lib/pricing';
 import { getPricing } from '@/lib/settings';
@@ -7,12 +9,12 @@ import CheckoutButtons from '@/components/CheckoutButtons';
 
 export const runtime = 'edge';
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: 'Pricing — VIN Reports & Dealer Plans',
   description:
-    'Simple pricing for U.S. vehicle history reports. Buy a single report, a 5-report bundle, or an unlimited dealer plan. NMVTIS title data, theft records, liens, and odometer history.',
-  alternates: { canonical: '/pricing' },
-};
+    'Simple pricing for U.S. vehicle history reports: a single report, a 5-report bundle, or a dealer plan. NMVTIS title data, theft, lien, and odometer records.',
+  path: '/pricing',
+});
 
 export default async function PricingPage() {
   const plans = await getPricing();
@@ -21,7 +23,7 @@ export default async function PricingPage() {
     '@context': 'https://schema.org',
     '@type': 'Product',
     name: 'CarVinLookup Vehicle History Report',
-    description: 'U.S. vehicle history report by VIN or license plate.',
+    description: 'U.S. vehicle history report by VIN.',
     brand: { '@type': 'Brand', name: 'CarVinLookup' },
     offers: plans.map((p) => ({
       '@type': 'Offer',
@@ -42,7 +44,7 @@ export default async function PricingPage() {
           Simple, honest pricing
         </h1>
         <p className="text-lg text-slate-300 max-w-2xl mx-auto">
-          Every report pulls the same NMVTIS, NICB, and DMV data. Pay once, or save with a bundle.
+          Every report includes the same NMVTIS title data plus theft, lien, and odometer records. Pay once, or save with a bundle.
         </p>
       </section>
 
@@ -82,6 +84,31 @@ export default async function PricingPage() {
         <p className="text-center text-sm text-slate-400 mt-10">
           Secure checkout via Stripe &amp; PayPal. Reports are delivered instantly and never expire.
         </p>
+      </section>
+
+      {/* What you get — crawlable detail behind the plan cards */}
+      <section className="bg-white border-t border-slate-100 py-16 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-3xl mx-auto prose-content">
+          <h2>What every report includes</h2>
+          <ul>
+            <li><strong>Title brands</strong> — salvage, rebuilt, junk, and flood brands from NMVTIS, across every state</li>
+            <li><strong>Total-loss and salvage records</strong> reported by insurers and salvage yards</li>
+            <li><strong>Salvage-auction records</strong> with damage type and photos, where available</li>
+            <li><strong>Theft check, open liens, and odometer readings</strong> over time</li>
+            <li><strong>Open safety recalls</strong> and the decoded factory specs</li>
+          </ul>
+          <h2>Free first, then pay only if it&apos;s the right car</h2>
+          <p>
+            Every search starts with a free vehicle preview, so you can confirm the year, make, and model before you
+            spend anything. A report shows what was reported to these sources — see our{' '}
+            <Link href="/data-sources">data sources</Link> for the honest limits, and get an independent inspection
+            before you buy.
+          </p>
+          <p>
+            Questions about billing? Read the <Link href="/refund">refund &amp; cancellation policy</Link>, see how we{' '}
+            <Link href="/compare">compare with other providers</Link>, or <Link href="/contact">contact support</Link>.
+          </p>
+        </div>
       </section>
     </main>
   );

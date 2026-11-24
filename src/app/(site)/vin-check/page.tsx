@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { pageMetadata } from '@/lib/seo';
 import Link from 'next/link';
 import { Car } from 'lucide-react';
 import { BRANDS } from '@/lib/brands';
@@ -6,12 +7,12 @@ import { SITE_URL } from '@/lib/site';
 
 export const runtime = 'edge';
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: 'VIN Check by Car Brand — All Makes',
   description:
-    'Run a free VIN check by car brand. Decode and check the history of any Ford, Toyota, Honda, Chevrolet, BMW, and 30+ more makes for title brands, salvage, theft, liens, and odometer records.',
-  alternates: { canonical: '/vin-check' },
-};
+    'Run a VIN check by car brand. Decode any Ford, Toyota, Honda, Chevrolet, BMW, or 30+ other makes and check title brands, salvage, theft, liens, and odometer.',
+  path: '/vin-check',
+});
 
 export default function VinCheckHub() {
   const jsonLd = {
@@ -39,7 +40,7 @@ export default function VinCheckHub() {
           </h1>
           <p className="text-lg text-slate-500 max-w-2xl mx-auto">
             Pick a make for a brand-specific VIN check — title brands, salvage &amp; flood history, theft records, liens, and
-            odometer readings from NMVTIS, NICB, and DMV data.
+            odometer readings, built on NMVTIS title data.
           </p>
         </div>
       </section>
@@ -61,6 +62,36 @@ export default function VinCheckHub() {
               </span>
             </Link>
           ))}
+        </div>
+      </section>
+
+      {/* Answer-first explainer — gives the hub real, crawlable substance */}
+      <section className="bg-white border-t border-slate-100 py-14 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-3xl mx-auto prose-content">
+          <h2>What is a VIN check?</h2>
+          <p>
+            A VIN check looks up a car&apos;s 17-character Vehicle Identification Number in title, insurance, and salvage
+            records to show its recorded history: title brands such as salvage or flood, total-loss and auction records,
+            open liens, odometer readings, theft-related records, and open safety recalls. The VIN itself also decodes to
+            the car&apos;s factory details, so you can confirm the year, make, model, and engine match the listing.
+          </p>
+          <h2>Why check by brand?</h2>
+          <p>
+            Every make uses the same 17-character VIN format, so the history check works the same way for a Ford or a
+            Toyota. Our brand pages add what&apos;s specific to each make: the manufacturer codes its VINs usually start with,
+            what to watch for on a used one, and its most popular models.
+          </p>
+          <h2>How to run a VIN check</h2>
+          <ol>
+            <li>Find the VIN on the lower-left of the windshield, the driver-side door jamb, or the title or registration.</li>
+            <li>Enter it in the search box — the vehicle preview is free.</li>
+            <li>Unlock the full report and compare it with what the seller told you.</li>
+          </ol>
+          <p>
+            Looking for one specific problem? Try a <Link href="/salvage-check">salvage title check</Link>,{' '}
+            <Link href="/flood-damage-check">flood damage check</Link>, <Link href="/odometer-check">odometer check</Link>,{' '}
+            <Link href="/lien-check">lien check</Link>, or our <Link href="/vin-decoder">free VIN decoder</Link>.
+          </p>
         </div>
       </section>
     </main>

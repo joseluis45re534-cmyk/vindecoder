@@ -1,9 +1,10 @@
 import type { Metadata } from 'next';
+import { pageMetadata } from '@/lib/seo';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { Check, X, ShieldCheck, Search } from 'lucide-react';
 import { getCompetitor, comparisonSlug, OUR_ADVANTAGES, COMPETITORS } from '@/lib/comparisons';
-import { SITE_URL, SITE_NAME } from '@/lib/site';
+import { SITE_URL } from '@/lib/site';
 import { TRIAL_PLAN, formatPrice } from '@/lib/pricing';
 import JsonLd from '@/components/JsonLd';
 import { breadcrumbLd, faqPageLd } from '@/lib/structured-data';
@@ -15,33 +16,21 @@ const fee = () => formatPrice(TRIAL_PLAN.trialFeeCents ?? 100);
 export function altMetadata(slug: string): Metadata {
   const c = getCompetitor(slug);
   if (!c) return { title: 'Alternative not found' };
-  const title = `The Best ${c.name} Alternative — CarVinLookup`;
-  const description = `Looking for a ${c.name} alternative? CarVinLookup runs U.S. vehicle history reports from NMVTIS, NICB & DMV data — free preview, then full access from a ${fee()} trial.`;
-  const url = `${SITE_URL}/${c.slug}-alternative`;
-  return {
-    title,
-    description,
-    alternates: { canonical: `/${c.slug}-alternative` },
-    openGraph: {
-      type: 'website',
-      siteName: SITE_NAME,
-      title,
-      description,
-      url,
-      locale: 'en_US',
-      images: [{ url: '/opengraph-image.png', width: 1200, height: 630, alt: `${c.name} alternative` }],
-    },
-    twitter: { card: 'summary_large_image', title, description, images: ['/opengraph-image.png'] },
-  };
+  return pageMetadata({
+    title: `${c.name} Alternative for VIN History Reports`,
+    description: `Looking for a ${c.name} alternative? CarVinLookup runs U.S. vehicle history reports built on NMVTIS title data, with a free preview and a ${fee()} trial.`,
+    path: `/${c.slug}-alternative`,
+    ogAlt: `${c.name} alternative`,
+  });
 }
 
 const COMPARE_ROWS = [
   { feature: 'Free preview before paying', us: true, them: 'varies' as const },
   { feature: 'Title brands (NMVTIS)', us: true, them: true },
-  { feature: 'Theft records (NICB)', us: true, them: 'varies' as const },
+  { feature: 'Theft check', us: true, them: 'varies' as const },
   { feature: 'Lien check', us: true, them: 'varies' as const },
   { feature: 'Odometer history', us: true, them: true },
-  { feature: 'VIN or U.S. license plate', us: true, them: 'varies' as const },
+  { feature: 'Instant VIN decode', us: true, them: 'varies' as const },
   { feature: 'Low-cost trial start', us: true, them: 'varies' as const },
   { feature: 'Cancel anytime', us: true, them: 'varies' as const },
 ];
@@ -61,9 +50,9 @@ export function AlternativePage({ slug }: { slug: string }) {
   const f = fee();
 
   const faq = [
-    { q: `Is CarVinLookup a good ${c.name} alternative?`, a: `Yes. CarVinLookup covers the core records that matter on a used car — title brands, theft, liens, and odometer history — sourced from NMVTIS, NICB, and state DMVs, with a free identity preview before you pay and full access from a ${f} trial.` },
+    { q: `Is CarVinLookup a good ${c.name} alternative?`, a: `Yes. CarVinLookup covers the core records that matter on a used car — title brands, theft, liens, and odometer history — built on NMVTIS title data, with a free vehicle preview before you pay and full access from a ${f} trial.` },
     { q: `How much does CarVinLookup cost compared to ${c.name}?`, a: `Full report access starts from a ${f} trial and then continues monthly unless you cancel. You always see a free preview first, so you confirm the vehicle before spending anything.` },
-    { q: `Can I check a car by license plate?`, a: `Yes. Enter a U.S. license plate and state and CarVinLookup resolves it to the VIN, then runs the full report — in all 50 states.` },
+    { q: `Can I check a car by license plate?`, a: `Not yet — license-plate search is launching soon. For now, enter the 17-character VIN; it's on the windshield, the driver-side door jamb, and the title or registration.` },
   ];
 
   const schema = [

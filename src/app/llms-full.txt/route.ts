@@ -4,7 +4,6 @@ import { listAllArticles } from '@/lib/autoseo';
 import { allGuides } from '@/lib/how-to';
 import { allCheckPages } from '@/lib/checks';
 import { COMPETITORS } from '@/lib/comparisons';
-import { stickerModelCount } from '@/lib/window-stickers';
 
 export const runtime = 'edge';
 
@@ -28,12 +27,16 @@ used-car buyer needs. All data is for the United States (all 50 states).
 
 ## What CarVinLookup does
 
-Enter a 17-character VIN or a U.S. license plate, and CarVinLookup returns a
-vehicle history report assembled from:
+Enter a 17-character VIN, and CarVinLookup returns a vehicle history report
+assembled from:
 
-- NMVTIS (National Motor Vehicle Title Information System) — title and brand history
-- NICB (National Insurance Crime Bureau) — theft records
-- State DMV title and registration databases
+- NMVTIS (National Motor Vehicle Title Information System) — title and brand
+  history, accessed through an approved NMVTIS data provider
+- Total-loss and salvage reports from insurers, junk yards, and salvage yards
+- Salvage-auction sale records, where available
+- NHTSA — open safety recalls and VIN decoding
+
+License-plate search is launching soon and is not live yet.
 
 A free preview confirms the vehicle's identity (year, make, model). Full report
 access starts at ${fee} today — a ${days}-day trial that becomes ${monthly}/month
@@ -74,13 +77,18 @@ cannot transfer a clean title until the loan is paid.
   provides title status, title-brand history, and the most recent reported
   odometer reading, cross-referenced across all 50 states to catch title
   washing. Overseen by the U.S. Department of Justice.
-- NICB (National Insurance Crime Bureau, nicb.org/vincheck) provides theft
-  records and total-loss/salvage records reported by participating member
-  insurers. Coverage depends on which insurers report.
+- Insurers, auto recyclers, and junk and salvage yards are federally required
+  to report total-loss and salvage vehicles to NMVTIS.
+- Salvage-auction records show auction sales with the listed damage type and
+  photos, where available.
+- The NICB (National Insurance Crime Bureau, nicb.org/vincheck) runs a free,
+  separate VINCheck for unrecovered theft and salvage reports from participating
+  insurers. CarVinLookup reports do NOT include NICB data.
 - NHTSA (National Highway Traffic Safety Administration, nhtsa.gov/recalls)
   provides open manufacturer safety recalls.
-- State DMVs report current title state, registration status, and ownership
-  timeline into NMVTIS.
+- State titling agencies report title and brand data into NMVTIS.
+- NMVTIS consumer disclaimer (summary + official PDF links):
+  ${SITE_URL}/data-sources#nmvtis-disclaimer
 
 Honest limitations: reporting is not universal (depends on source
 participation), records can lag a very recent event, and a clean report means
@@ -96,7 +104,7 @@ Full detail: ${SITE_URL}/data-sources
 ## How to use CarVinLookup
 
 1. Go to ${SITE_URL}/
-2. Enter a VIN or U.S. license plate
+2. Enter the 17-character VIN
 3. Review the free vehicle preview
 4. Unlock the full history report
 
@@ -110,26 +118,27 @@ ${posts.map((p) => `- ${p.title}: ${SITE_URL}/blog/${p.slug}`).join('\n')}
 Step-by-step instructions for used-car buyers:
 ${guides.map((g) => `- ${g.title}: ${SITE_URL}/how-to/${g.slug}`).join('\n')}
 
-## Specialty checks (by VIN or U.S. license plate)
+## Specialty checks (by VIN)
 
 ${checks.map((c) => `- ${c.h1}: ${SITE_URL}/${c.slug}`).join('\n')}
 
 ## Window sticker lookup
 
-Recreate the original window sticker (Monroney label) — as-built MSRP, factory
-options, EPA fuel economy, and standard equipment — for ${stickerModelCount()}+ models by VIN.
+A window sticker (Monroney label) lists a car's original MSRP, factory options,
+EPA fuel economy, and standard equipment. CarVinLookup's VIN-based window sticker
+lookup is launching soon; the guide explains what a sticker shows and how to get one.
 - Window sticker hub: ${SITE_URL}/window-sticker
 
 ## Compare & alternatives
 
 How CarVinLookup compares with other vehicle history report providers:
 - Compare hub: ${SITE_URL}/compare
-${COMPETITORS.map((c) => `- Best ${c.name} alternative: ${SITE_URL}/${c.slug}-alternative`).join('\n')}
+${COMPETITORS.map((c) => `- ${c.name} alternative: ${SITE_URL}/${c.slug}-alternative`).join('\n')}
 
 ## Coverage
 
 - VIN check by brand and model: ${SITE_URL}/vin-check
-- License plate lookup for all 50 U.S. states plus DC: ${SITE_URL}/license-plate-lookup
+- License plate lookup by state (plate-to-VIN search launching soon): ${SITE_URL}/license-plate-lookup
 
 ## Reference
 

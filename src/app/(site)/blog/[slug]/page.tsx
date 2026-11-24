@@ -1,16 +1,48 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { notFound } from 'next/navigation';
-import { ArrowLeft, ShieldCheck } from 'lucide-react';
+import { notFound, permanentRedirect } from 'next/navigation';
+import { ArrowLeft, ShieldCheck, Search, Calculator } from 'lucide-react';
 import JsonLd from '@/components/JsonLd';
-import { getArticle } from '@/lib/autoseo';
+import { getArticle, consolidatedDestination } from '@/lib/autoseo';
+import { CHECK_PAGES } from '@/lib/checks';
 import { SITE_URL } from '@/lib/site';
 
 export const runtime = 'edge';
 export const dynamic = 'force-dynamic'; // always-fresh; AutoSEO fetched per request
 
+// Topic -> check page, for the "Check a VIN for..." block under every post
+// (internal links from the blog into the money pages).
+const CHECK_TOPICS: [RegExp, string][] = [
+  [/salvage|total|rebuilt|junk|auction/i, 'salvage-check'],
+  [/flood|water/i, 'flood-damage-check'],
+  [/odometer|mileage/i, 'odometer-check'],
+  [/lien|loan|financ/i, 'lien-check'],
+  [/stolen|theft/i, 'stolen-vehicle-check'],
+  [/recall/i, 'recalls'],
+  [/accident|crash|damage/i, 'accident-check'],
+  [/decod|wmi|vin-number/i, 'vin-decoder'],
+];
+
+function checksFor(text: string) {
+  const picked = CHECK_TOPICS.filter(([re]) => re.test(text)).map(([, slug]) => slug);
+  // Always offer the core checks so every post links into the cluster.
+  for (const core of ['salvage-check', 'odometer-check', 'stolen-vehicle-check', 'vin-decoder']) {
+    if (picked.length >= 4) break;
+    if (!picked.includes(core)) picked.push(core);
+  }
+  return picked.slice(0, 4).map((slug) => CHECK_PAGES.find((c) => c.slug === slug)).filter((c): c is NonNullable<typeof c> => Boolean(c));
+}
+
+const TOOLS = [
+  { href: '/auto-loan-calculator', label: 'Auto loan calculator' },
+  { href: '/depreciation-calculator', label: 'Depreciation calculator' },
+  { href: '/lease-calculator', label: 'Lease calculator' },
+];
+
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
+  const moved = consolidatedDestination(slug);
+  if (moved) permanentRedirect(moved);
   let a: Awaited<ReturnType<typeof getArticle>>;
   try {
     a = await getArticle(slug);
@@ -56,6 +88,9 @@ function fmtDate(iso: string) {
 
 export default async function BlogArticlePage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
+  // Duplicate / retired topics -> their canonical page (see CONSOLIDATED_POSTS).
+  const moved = consolidatedDestination(slug);
+  if (moved) permanentRedirect(moved);
   let a: Awaited<ReturnType<typeof getArticle>>;
   try {
     a = await getArticle(slug);
@@ -148,11 +183,34 @@ export default async function BlogArticlePage({ params }: { params: Promise<{ sl
         <div className="mt-12 bg-gradient-to-br from-blue-700 to-blue-900 rounded-2xl p-8 text-center">
           <ShieldCheck className="w-8 h-8 text-blue-200 mx-auto mb-3" aria-hidden="true" />
           <h2 className="text-2xl font-extrabold text-white mb-2">Run the VIN before you buy</h2>
-          <p className="text-blue-100 mb-6">Title brands, theft records, liens, and odometer history in under a minute.</p>
+          <p className="text-blue-100 mb-6">Title brands, theft, liens, and odometer history — with a free vehicle preview first.</p>
           <Link href="/#vin-search" className="inline-flex bg-white text-blue-700 font-bold px-7 py-3 rounded-full hover:scale-105 transition-transform">
             Check a VIN now
           </Link>
         </div>
+
+        {/* Related VIN checks + buying tools — internal links into the money pages. */}
+        <section className="mt-12" aria-label="Related VIN checks">
+          <h2 className="text-xl font-extrabold text-slate-900 mb-4">Check a VIN for…</h2>
+          <div className="flex flex-wrap gap-2.5">
+            {checksFor(`${a.slug} ${a.title}`).map((c) => (
+              <Link key={c.slug} href={`/${c.slug}`} className="inline-flex items-center gap-1.5 text-sm font-medium bg-slate-50 border border-slate-200 hover:border-blue-300 hover:text-blue-600 text-slate-700 px-4 py-2 rounded-full transition-colors">
+                <Search className="w-3.5 h-3.5" aria-hidden="true" /> {c.name}
+              </Link>
+            ))}
+          </div>
+          <h2 className="text-xl font-extrabold text-slate-900 mt-8 mb-4">Car-buying tools</h2>
+          <div className="flex flex-wrap gap-2.5">
+            {TOOLS.map((t) => (
+              <Link key={t.href} href={t.href} className="inline-flex items-center gap-1.5 text-sm font-medium bg-slate-50 border border-slate-200 hover:border-blue-300 hover:text-blue-600 text-slate-700 px-4 py-2 rounded-full transition-colors">
+                <Calculator className="w-3.5 h-3.5" aria-hidden="true" /> {t.label}
+              </Link>
+            ))}
+            <Link href="/how-to" className="inline-flex items-center gap-1.5 text-sm font-medium bg-slate-50 border border-slate-200 hover:border-blue-300 hover:text-blue-600 text-slate-700 px-4 py-2 rounded-full transition-colors">
+              Step-by-step how-to guides
+            </Link>
+          </div>
+        </section>
 
         {/* Read next — real internal links between our own articles. */}
         {a.related?.length > 0 && (

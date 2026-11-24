@@ -1,13 +1,15 @@
 import type { Metadata } from 'next';
+import { pageMetadata } from '@/lib/seo';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import {
   AlertTriangle, Droplets, FileText, Car, ShieldAlert, Gauge, Bell, ScanLine, CreditCard,
-  Check, ShieldCheck, Search, type LucideIcon,
+  Check, ShieldCheck, Search, ExternalLink, BookOpen, type LucideIcon,
 } from 'lucide-react';
 import { getCheckPage, CHECK_PAGES, type CheckIconKey } from '@/lib/checks';
+import { getGuide } from '@/lib/how-to';
 import { US_STATES } from '@/lib/us-states';
-import { SITE_URL, SITE_NAME } from '@/lib/site';
+import { SITE_URL, CONTENT_REVISED, formatRevised } from '@/lib/site';
 import { TRIAL_PLAN, formatPrice } from '@/lib/pricing';
 import JsonLd from '@/components/JsonLd';
 import { breadcrumbLd, faqPageLd } from '@/lib/structured-data';
@@ -27,25 +29,14 @@ const ICONS: Record<CheckIconKey, LucideIcon> = {
 
 const fee = () => formatPrice(TRIAL_PLAN.trialFeeCents ?? 100);
 
+// "VIN decoder" keeps its acronym; "Accident check" -> "an accident check".
+const lowerFirst = (s: string) => (/^[A-Z]{2}/.test(s) ? s : s.charAt(0).toLowerCase() + s.slice(1));
+const withArticle = (s: string) => `${/^[aeiou]/i.test(s) ? 'an' : 'a'} ${lowerFirst(s)}`;
+
 export function checkMetadata(slug: string): Metadata {
   const c = getCheckPage(slug);
   if (!c) return { title: 'Check not found' };
-  const url = `${SITE_URL}/${c.slug}`;
-  return {
-    title: c.metaTitle,
-    description: c.metaDescription,
-    alternates: { canonical: `/${c.slug}` },
-    openGraph: {
-      type: 'website',
-      siteName: SITE_NAME,
-      title: c.metaTitle,
-      description: c.metaDescription,
-      url,
-      locale: 'en_US',
-      images: [{ url: '/opengraph-image.png', width: 1200, height: 630, alt: c.h1 }],
-    },
-    twitter: { card: 'summary_large_image', title: c.metaTitle, description: c.metaDescription, images: ['/opengraph-image.png'] },
-  };
+  return pageMetadata({ title: c.metaTitle, description: c.metaDescription, path: `/${c.slug}`, ogAlt: c.h1 });
 }
 
 export function CheckLandingPage({ slug }: { slug: string }) {
@@ -55,9 +46,14 @@ export function CheckLandingPage({ slug }: { slug: string }) {
   const Icon = ICONS[c.icon];
   const url = `${SITE_URL}/${c.slug}`;
   const f = fee();
-  const related = c.related
-    .map((s) => CHECK_PAGES.find((x) => x.slug === s))
-    .filter((x): x is NonNullable<typeof x> => Boolean(x));
+  // Link every other check (not just 3) so each check page is reachable from
+  // all the others — the cluster's strongest internal-linking signal.
+  const related = [
+    ...c.related.map((s) => CHECK_PAGES.find((x) => x.slug === s)),
+    ...CHECK_PAGES.filter((x) => x.slug !== c.slug && !c.related.includes(x.slug)),
+  ].filter((x): x is NonNullable<typeof x> => Boolean(x));
+  const guides = c.guides.map((g) => getGuide(g)).filter((g): g is NonNullable<typeof g> => Boolean(g));
+  const verb = c.icon === 'decoder' || c.icon === 'plate' ? 'use' : 'run';
 
   const schema = [
     {
@@ -67,8 +63,12 @@ export function CheckLandingPage({ slug }: { slug: string }) {
       name: c.h1,
       url,
       description: c.metaDescription,
+      dateModified: CONTENT_REVISED,
+      lastReviewed: CONTENT_REVISED,
       isPartOf: { '@id': `${SITE_URL}/#website` },
       about: { '@id': `${SITE_URL}/#service` },
+      publisher: { '@id': `${SITE_URL}/#organization` },
+      ...(c.sources.length ? { citation: c.sources.map((s) => s.href) } : {}),
     },
     {
       '@context': 'https://schema.org',
@@ -111,10 +111,27 @@ export function CheckLandingPage({ slug }: { slug: string }) {
         </div>
       </section>
 
-      {/* What it is */}
+      {/* Quick answer + explainer — server-rendered so answer engines can quote it */}
       <article className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-14 prose-content">
-        <h2>What is a {c.name.toLowerCase()}?</h2>
+        <div className="not-prose bg-white border border-blue-100 rounded-2xl p-6 shadow-sm mb-10">
+          <p className="text-xs font-bold uppercase tracking-widest text-blue-600 mb-2">Quick answer</p>
+          <p className="text-slate-700 leading-relaxed">{c.answer}</p>
+          <p className="text-xs text-slate-400 mt-4">
+            Last reviewed <time dateTime={CONTENT_REVISED}>{formatRevised()}</time> by the CarVinLookup team
+          </p>
+        </div>
+
+        <h2>{`What is ${withArticle(c.name)}?`}</h2>
         <p>{c.whatItIs}</p>
+
+        {c.sections.map((sec) => (
+          <section key={sec.h2}>
+            <h2>{sec.h2}</h2>
+            {sec.body.map((para) => (
+              <p key={para.slice(0, 40)}>{para}</p>
+            ))}
+          </section>
+        ))}
       </article>
 
       {/* What the report shows */}
@@ -129,12 +146,16 @@ export function CheckLandingPage({ slug }: { slug: string }) {
               </li>
             ))}
           </ul>
+          <p className="text-sm text-slate-500 mt-6">
+            See <Link href="/data-sources" className="text-blue-600 font-semibold hover:underline">where the data comes from</Link> and{' '}
+            <Link href="/pricing" className="text-blue-600 font-semibold hover:underline">report pricing</Link>.
+          </p>
         </div>
       </section>
 
       {/* Steps */}
       <section className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-14">
-        <h2 className="text-2xl font-extrabold text-slate-900 mb-6">How to run a {c.name.toLowerCase()}</h2>
+        <h2 className="text-2xl font-extrabold text-slate-900 mb-6">{`How to ${verb} ${withArticle(c.name)}`}</h2>
         <ol className="space-y-6">
           {c.steps.map((s, i) => (
             <li key={s.name} className="flex gap-4">
@@ -186,10 +207,52 @@ export function CheckLandingPage({ slug }: { slug: string }) {
         </div>
       </section>
 
-      {/* Related checks */}
+      {/* Sources — verified, live authority links */}
+      {c.sources.length > 0 && (
+        <section className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 pt-14">
+          <h2 className="text-2xl font-extrabold text-slate-900 mb-4">Sources &amp; further reading</h2>
+          <ul className="space-y-2.5">
+            {c.sources.map((s) => (
+              <li key={s.href}>
+                <a href={s.href} target="_blank" rel="noopener noreferrer" className="inline-flex items-start gap-2 text-blue-600 hover:underline">
+                  <ExternalLink className="w-4 h-4 mt-0.5 shrink-0" aria-hidden="true" />
+                  {s.label}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
+      {/* Guides & resources */}
+      {(guides.length > 0 || c.resources.length > 0) && (
+        <section className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 pt-14">
+          <h2 className="text-2xl font-extrabold text-slate-900 mb-4">Guides &amp; resources</h2>
+          <ul className="grid sm:grid-cols-2 gap-3">
+            {guides.map((g) => (
+              <li key={g.slug}>
+                <Link href={`/how-to/${g.slug}`} className="flex items-start gap-2.5 bg-white border border-slate-100 rounded-xl px-4 py-3 hover:border-blue-200 hover:shadow-sm transition-all text-slate-700">
+                  <BookOpen className="w-4 h-4 text-blue-600 mt-0.5 shrink-0" aria-hidden="true" />
+                  <span className="text-sm font-semibold">{g.title}</span>
+                </Link>
+              </li>
+            ))}
+            {c.resources.map((r) => (
+              <li key={r.href + r.label}>
+                <Link href={r.href} className="flex items-start gap-2.5 bg-white border border-slate-100 rounded-xl px-4 py-3 hover:border-blue-200 hover:shadow-sm transition-all text-slate-700">
+                  <BookOpen className="w-4 h-4 text-blue-600 mt-0.5 shrink-0" aria-hidden="true" />
+                  <span className="text-sm font-semibold">{r.label}</span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
+      {/* All other checks */}
       {related.length > 0 && (
         <section className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-14">
-          <h2 className="text-2xl font-extrabold text-slate-900 mb-6">Related checks</h2>
+          <h2 className="text-2xl font-extrabold text-slate-900 mb-6">More VIN checks</h2>
           <div className="flex flex-wrap gap-2.5">
             {related.map((x) => (
               <Link
@@ -208,7 +271,7 @@ export function CheckLandingPage({ slug }: { slug: string }) {
       <section className="bg-gradient-to-br from-blue-700 to-blue-900 py-14 px-4 text-center">
         <ShieldCheck className="w-8 h-8 text-blue-200 mx-auto mb-3" aria-hidden="true" />
         <h2 className="text-2xl sm:text-3xl font-extrabold text-white mb-3">{c.h1} now</h2>
-        <p className="text-blue-100 mb-6">Free preview · full report in under a minute.</p>
+        <p className="text-blue-100 mb-6">Free vehicle preview · full report online in moments.</p>
         <Link href="/#vin-search" className="inline-flex items-center gap-2 bg-white text-blue-700 font-bold px-7 py-3.5 rounded-full hover:scale-105 active:scale-100 transition-transform">
           <Search className="w-4 h-4" aria-hidden="true" /> Check a VIN
         </Link>

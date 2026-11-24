@@ -1,28 +1,20 @@
 import type { Metadata } from 'next';
+import { pageMetadata } from '@/lib/seo';
 import Link from 'next/link';
 import { Search } from 'lucide-react';
 import LeaseCalculator from '@/components/calculators/LeaseCalculator';
-import { SITE_URL, SITE_NAME } from '@/lib/site';
+import { SITE_URL } from '@/lib/site';
 import JsonLd from '@/components/JsonLd';
 import { breadcrumbLd, faqPageLd } from '@/lib/structured-data';
 
 export const runtime = 'edge';
 
-export const metadata: Metadata = {
-  title: 'Car Lease Calculator: Estimate Your Monthly Lease Payment',
+export const metadata: Metadata = pageMetadata({
+  title: 'Car Lease Calculator: Monthly Lease Payment',
   description:
     'Free car lease calculator. Enter MSRP, negotiated price, residual, money factor, and term to estimate your monthly lease payment and total cost.',
-  alternates: { canonical: '/lease-calculator' },
-  openGraph: {
-    type: 'website',
-    siteName: SITE_NAME,
-    title: 'Car Lease Calculator — CarVinLookup',
-    description: 'Estimate your monthly lease payment and total lease cost.',
-    url: `${SITE_URL}/lease-calculator`,
-    locale: 'en_US',
-    images: [{ url: '/opengraph-image.png', width: 1200, height: 630, alt: 'Car lease calculator' }],
-  },
-};
+  path: '/lease-calculator',
+});
 
 const faq = [
   { q: 'How is a lease payment calculated?', a: 'A lease payment has two parts: the depreciation fee (the negotiated price minus the residual value, divided by the term) and the finance or rent charge (the price plus residual, times the money factor). Sales tax is then applied.' },

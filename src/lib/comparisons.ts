@@ -33,7 +33,7 @@ export const COMPETITORS: Competitor[] = [
     known: 'A vehicle history report brand from Experian, often associated with auction buyers and its comparative scoring approach.',
     bestFor: 'Buyers who want a single numeric score to compare auction cars at a glance.',
     switchAngle:
-      'Instead of paying for a score, you get the underlying records that actually matter — NMVTIS title brands, NICB theft data, liens, and odometer readings — with a free preview first.',
+      'Instead of paying for a score, you get the underlying records that actually matter — NMVTIS title brands, a theft check, liens, and odometer readings — with a free preview first.',
   },
   {
     slug: 'bumper',
@@ -49,15 +49,7 @@ export const COMPETITORS: Competitor[] = [
     known: 'An online VIN check and vehicle history provider aimed at used-car buyers.',
     bestFor: 'Buyers who found a report bundled with a specific listing.',
     switchAngle:
-      'CarVinLookup pulls from NMVTIS, NICB, and state DMV records, works from a VIN or a U.S. license plate in all 50 states, and shows you what the car is before you pay.',
-  },
-  {
-    slug: 'clearvin',
-    name: 'ClearVin',
-    known: 'A VIN decoder and history report service popular with auction and export buyers.',
-    bestFor: 'Auction and export use cases that need specialized data.',
-    switchAngle:
-      'For a normal U.S. used-car purchase, CarVinLookup gives you the title, theft, lien, and odometer history you need — with a free preview and a low-cost start.',
+      'CarVinLookup is built on NMVTIS title data, works from a VIN for cars titled in any of the 50 states, and shows you what the car is before you pay.',
   },
   {
     slug: 'faxvin',
@@ -65,7 +57,7 @@ export const COMPETITORS: Competitor[] = [
     known: 'An online VIN lookup and vehicle history report service.',
     bestFor: 'Shoppers comparing several low-cost report options.',
     switchAngle:
-      'CarVinLookup shows a free identity preview first, so you confirm the car before you decide to unlock the full NMVTIS, NICB, and DMV history.',
+      'CarVinLookup shows a free identity preview first, so you confirm the car before you decide to unlock the full NMVTIS-based title, theft, lien, and odometer history.',
   },
   {
     slug: 'vinaudit',
@@ -73,7 +65,7 @@ export const COMPETITORS: Competitor[] = [
     known: 'A vehicle history data provider that draws on NMVTIS title records.',
     bestFor: 'Developers and buyers comfortable with a data-first, no-frills report.',
     switchAngle:
-      'CarVinLookup packages the same class of official records into a clear, readable report, adds NICB theft and lien checks, and lets you preview the vehicle for free first.',
+      'CarVinLookup packages the same class of official records into a clear, readable report, adds theft and lien checks, and lets you preview the vehicle for free first.',
   },
   {
     slug: 'carvertical',
@@ -81,7 +73,7 @@ export const COMPETITORS: Competitor[] = [
     known: 'A vehicle history provider known for international coverage and a data-driven brand.',
     bestFor: 'Buyers checking imported or overseas-market vehicles.',
     switchAngle:
-      'For U.S. cars, CarVinLookup is built around U.S. sources — NMVTIS, NICB, and state DMVs — covering all 50 states from a VIN or license plate, with a free preview before you pay.',
+      'For U.S. cars, CarVinLookup is built around U.S. records — NMVTIS title data plus insurance, salvage, lien, and odometer records — covering all 50 states from a VIN, with a free preview before you pay.',
   },
 ];
 
@@ -108,8 +100,8 @@ export function getComparisonBySlug(slug: string): Competitor | undefined {
 export const OUR_ADVANTAGES: { label: string; detail: string }[] = [
   { label: 'Free preview before you pay', detail: 'Confirm the year, make, model, and VIN at no cost before unlocking anything.' },
   { label: 'Low-cost start', detail: 'Full report access starts from a {fee} trial — not a premium one-off fee.' },
-  { label: 'Official U.S. data sources', detail: 'Title brands from NMVTIS, theft from NICB, plus state DMV records.' },
-  { label: 'VIN or license plate', detail: 'Search by 17-character VIN or a U.S. license plate across all 50 states.' },
-  { label: 'Instant online report', detail: 'The full history is generated in under a minute — no waiting.' },
+  { label: 'U.S. title data', detail: 'Title brands from NMVTIS via an approved data provider, plus theft, lien, and odometer records.' },
+  { label: 'Any U.S. VIN', detail: 'Search any 17-character VIN for cars titled in all 50 states. License-plate search is launching soon.' },
+  { label: 'Instant online report', detail: 'The full history is generated online as soon as you unlock it — no waiting for an email.' },
   { label: 'Cancel anytime', detail: 'Manage or cancel your plan whenever you want.' },
 ];

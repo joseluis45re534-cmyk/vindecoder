@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { pageMetadata } from '@/lib/seo';
 import Link from 'next/link';
 import { ShieldAlert, Search } from 'lucide-react';
 import { SITE_URL, SITE_NAME } from '@/lib/site';
@@ -7,21 +8,13 @@ import { breadcrumbLd, faqPageLd } from '@/lib/structured-data';
 
 export const runtime = 'edge';
 
-export const metadata: Metadata = {
-  title: 'Most Stolen Cars in the U.S. (NICB Data) — CarVinLookup',
+export const metadata: Metadata = pageMetadata({
+  title: 'Most Stolen Cars in the U.S. (NICB Data)',
   description:
     'The vehicles that consistently top the NICB Hot Wheels most-stolen list, why they are targeted, and how to check if a used car was ever reported stolen.',
-  alternates: { canonical: '/most-stolen-cars' },
-  openGraph: {
-    type: 'article',
-    siteName: SITE_NAME,
-    title: 'Most Stolen Cars in the U.S.',
-    description: 'The most-stolen vehicles per NICB, why they are targeted, and how to check a VIN for theft.',
-    url: `${SITE_URL}/most-stolen-cars`,
-    locale: 'en_US',
-    images: [{ url: '/opengraph-image.png', width: 1200, height: 630, alt: 'Most stolen cars' }],
-  },
-};
+  path: '/most-stolen-cars',
+  type: 'article',
+});
 
 // Models that have consistently appeared in recent NICB "Hot Wheels" top-ten
 // most-stolen reporting. Presented as a list (not with per-model theft counts,
@@ -42,7 +35,7 @@ const MOST_STOLEN = [
 const faq = [
   { q: 'What is the most stolen car in the U.S.?', a: 'In recent NICB Hot Wheels reporting, the Hyundai Elantra has ranked at or near the top, alongside other Hyundai and Kia models and full-size pickups. Exact rankings change each year — check the current NICB report for the latest.' },
   { q: 'Why are Hyundai and Kia models targeted?', a: 'A widely reported security vulnerability made certain Hyundai and Kia models easier to steal. The manufacturers have since issued software updates, and NICB has reported thefts of these models declining as a result.' },
-  { q: 'How do I check if a used car was stolen?', a: 'Run the VIN. A history report flags theft records from the NICB, and you should also confirm the VIN plates match the title. See our stolen-vehicle check.' },
+  { q: 'How do I check if a used car was stolen?', a: 'Run the VIN through a history report and the free NICB VINCheck, which screens for unrecovered theft reports from participating insurers. Also confirm the VIN plates on the dashboard and door jamb match the title. See our stolen-vehicle check.' },
 ];
 
 export default function MostStolenCarsPage() {

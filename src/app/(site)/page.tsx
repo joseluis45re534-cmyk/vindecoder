@@ -11,11 +11,20 @@ import { BRANDS } from '@/lib/brands';
 import { SAMPLE_REPORTS } from '@/lib/sample-reports';
 import { TRIAL_PLAN, formatPrice } from '@/lib/pricing';
 import { faqPageLd, vinCheckHowToLd } from '@/lib/structured-data';
+import { pageMetadata } from '@/lib/seo';
+import { SITE_NAME, SITE_TAGLINE, SITE_DESCRIPTION } from '@/lib/site';
 import {
-  ShieldCheck, FileText, Lock, Gauge, AlertTriangle, BadgeDollarSign, Star, Database, Zap, Car, DollarSign, Clock, MapPin,
+  ShieldCheck, FileText, Lock, Gauge, AlertTriangle, BadgeDollarSign, Database, Zap, Car, DollarSign, Clock, MapPin,
 } from 'lucide-react';
 
 export const runtime = 'edge';
+
+export const metadata = pageMetadata({
+  title: `${SITE_NAME} — ${SITE_TAGLINE}`,
+  absoluteTitle: true,
+  description: SITE_DESCRIPTION,
+  path: '/',
+});
 
 // Report pricing line, sourced from pricing.ts so it never goes stale.
 const REPORT_PRICE_LINE = `${formatPrice(TRIAL_PLAN.trialFeeCents ?? 100)} today, then ${formatPrice(
@@ -31,11 +40,11 @@ const FAQ = [
   },
   {
     q: 'Where do you get your data?',
-    a: 'Reports combine records from the National Motor Vehicle Title Information System (NMVTIS), the National Insurance Crime Bureau (NICB), and state DMV title and registration databases.',
+    a: 'Reports are built on National Motor Vehicle Title Information System (NMVTIS) title and brand data, supplied through an approved NMVTIS data provider, plus insurance total-loss, junk and salvage, lien, odometer, salvage-auction, and NHTSA recall records. Our data sources page explains what each source covers and its limits.',
   },
   {
     q: 'Can I run a report with just a license plate?',
-    a: 'Yes. Enter a U.S. license plate and we will resolve it to the VIN, then pull the full vehicle history report.',
+    a: 'Not yet — license-plate search is launching soon. For now, enter the 17-character VIN. You will find it at the lower-left corner of the windshield, on the driver-side door jamb label, and on the title, registration, or insurance card.',
   },
   {
     q: 'How much does a full report cost?',
@@ -46,22 +55,11 @@ const FAQ = [
 const CHECKS = [
   { icon: AlertTriangle, color: 'text-amber-600 bg-amber-50', title: 'Title brands', desc: 'Salvage, rebuilt, junk, and flood-damage titles across all 50 states.' },
   { icon: Gauge, color: 'text-blue-600 bg-blue-50', title: 'Odometer history', desc: 'Reported mileage readings with rollback and tampering alerts.' },
-  { icon: ShieldCheck, color: 'text-emerald-600 bg-emerald-50', title: 'Theft records', desc: 'Active theft records reported to the NICB and law enforcement.' },
+  { icon: ShieldCheck, color: 'text-emerald-600 bg-emerald-50', title: 'Theft check', desc: 'Flags theft-related records reported for the VIN before you hand over any money.' },
   { icon: BadgeDollarSign, color: 'text-violet-600 bg-violet-50', title: 'Open liens', desc: 'Outstanding loans or liens recorded against the vehicle.' },
-  { icon: Database, color: 'text-sky-600 bg-sky-50', title: 'Title & registration', desc: 'Current title state, registration status, and ownership timeline.' },
+  { icon: Database, color: 'text-sky-600 bg-sky-50', title: 'Title history', desc: 'Title records and the title timeline across the states the car has been titled in.' },
   { icon: FileText, color: 'text-rose-600 bg-rose-50', title: 'Vehicle identity', desc: 'Make, model, year, body type, engine, and factory specifications.' },
 ];
-
-// TODO: replace with REAL reviews + an aggregate rating before launch (fabricated
-// testimonials/ratings are an FTC risk, especially with a subscription offer).
-const RATING = '4.8';
-const TESTIMONIALS = [
-  { quote: 'The report flagged a salvage title the seller never mentioned. Saved me from a $14,000 mistake.', name: 'Marcus T.', role: 'Bought a used F-150 · Texas' },
-  { quote: 'Ran the VIN in the dealer parking lot, had the full history before the test drive was over.', name: 'Alyssa R.', role: 'First-time buyer · Ohio' },
-  { quote: 'I check every trade-in with it now. Faster and cheaper than what we used before.', name: 'Dan K.', role: 'Independent dealer · Florida' },
-];
-
-const initials = (name: string) => name.split(' ').map((w) => w[0]).join('').slice(0, 2).toUpperCase();
 
 export default function Home() {
   return (
@@ -79,9 +77,9 @@ export default function Home() {
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 relative">
             {[
-              { step: '1', title: 'Enter the VIN or plate', desc: 'Type the 17-character VIN or a U.S. license plate and state — from the windshield, door jamb, or the listing.', icon: FileText },
-              { step: '2', title: 'We pull the records', desc: 'We query NMVTIS title data, NICB theft records, and state DMV databases in real time.', icon: Database },
-              { step: '3', title: 'Read your report', desc: 'Get a clear, complete history report in under a minute — and negotiate with confidence.', icon: Zap },
+              { step: '1', title: 'Enter the VIN', desc: 'Type the 17-character VIN — from the windshield, the driver-side door jamb, the title, or the listing.', icon: FileText },
+              { step: '2', title: 'We pull the records', desc: 'We query NMVTIS title data plus insurance, salvage, lien, and odometer records in real time.', icon: Database },
+              { step: '3', title: 'Read your report', desc: 'Get a clear history report online within moments — and negotiate with confidence.', icon: Zap },
             ].map(({ step, title, desc, icon: Icon }) => (
               <div key={step} className="relative bg-white rounded-2xl border border-slate-100 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all p-8">
                 <div className="flex items-center justify-between mb-6">
@@ -207,8 +205,8 @@ export default function Home() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {[
               { icon: DollarSign, t: 'Start for just $1', d: `Unlock your full vehicle history for ${REPORT_PRICE_LINE} — and cancel anytime.` },
-              { icon: Clock, t: 'Under 60 seconds', d: 'Enter a VIN or plate and get a complete report almost instantly.' },
-              { icon: Database, t: 'Official sources', d: 'Title, theft, lien & odometer data straight from NMVTIS, NICB, and state DMVs.' },
+              { icon: Clock, t: 'Results in moments', d: 'Enter a VIN, see the free vehicle preview right away, then unlock the full report online.' },
+              { icon: Database, t: 'NMVTIS title data', d: 'Title and brand history from NMVTIS via an approved data provider, plus theft, lien, and odometer records.' },
               { icon: MapPin, t: 'All 50 states', d: 'Cross-state records catch salvage and flood titles that were washed across state lines.' },
             ].map(({ icon: Icon, t, d }) => (
               <div key={t} className="bg-white/5 border border-white/10 rounded-2xl p-7 card-lift hover:bg-white/10">
@@ -218,48 +216,6 @@ export default function Home() {
                 <h3 className="font-bold text-white mb-2">{t}</h3>
                 <p className="text-slate-400 text-sm leading-relaxed">{d}</p>
               </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ===== Social proof ===== */}
-      <section className="py-16 sm:py-24 px-4 sm:px-6 lg:px-8 bg-slate-50" aria-labelledby="reviews-heading">
-        <div className="max-w-6xl mx-auto scroll-reveal">
-          <p className="text-center text-sm font-semibold text-blue-600 uppercase tracking-widest mb-3">Trusted by buyers</p>
-          <h2 id="reviews-heading" className="font-display text-3xl sm:text-4xl font-bold text-slate-900 text-center mb-6 tracking-tight">
-            Real checks. Real saves.
-          </h2>
-          {/* Rating badge — TODO: wire to a real aggregate rating source. */}
-          <div className="flex flex-col items-center gap-1.5 mb-14">
-            <div className="flex items-center gap-2">
-              <div className="flex gap-0.5" aria-hidden="true">
-                {Array.from({ length: 5 }).map((_, i) => (
-                  <Star key={i} className="w-5 h-5 fill-amber-400 text-amber-400" />
-                ))}
-              </div>
-              <span className="font-display text-2xl font-bold text-slate-900">{RATING}</span>
-              <span className="text-slate-400 text-sm">/ 5</span>
-            </div>
-            <p className="text-xs text-slate-400">Average rating from used-car buyers across all 50 states</p>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {TESTIMONIALS.map((t) => (
-              <figure key={t.name} className="bg-white rounded-2xl border border-slate-100 shadow-sm p-8 flex flex-col">
-                <div className="flex gap-1 mb-4" aria-label="5 out of 5 stars">
-                  {Array.from({ length: 5 }).map((_, i) => (
-                    <Star key={i} className="w-4 h-4 fill-amber-400 text-amber-400" aria-hidden="true" />
-                  ))}
-                </div>
-                <blockquote className="text-slate-700 leading-relaxed flex-1">&ldquo;{t.quote}&rdquo;</blockquote>
-                <figcaption className="mt-6 pt-5 border-t border-slate-100 flex items-center gap-3">
-                  <span className="inline-flex w-9 h-9 rounded-full bg-blue-50 text-blue-700 items-center justify-center font-bold text-xs shrink-0">{initials(t.name)}</span>
-                  <span>
-                    <span className="block font-bold text-slate-900 text-sm">{t.name}</span>
-                    <span className="block text-slate-400 text-xs mt-0.5">{t.role}</span>
-                  </span>
-                </figcaption>
-              </figure>
             ))}
           </div>
         </div>
@@ -295,7 +251,7 @@ export default function Home() {
             Don&apos;t buy a $20,000 problem.
           </h2>
           <p className="text-blue-100 text-base sm:text-lg mb-8">
-            Run the VIN now — the preview is free, and the full report takes less than a minute.
+            Run the VIN now — the vehicle preview is free, and the full report is ready online in moments.
           </p>
           <a href="#vin-search" className="shimmer inline-flex items-center gap-2 bg-white text-blue-700 font-bold px-8 py-4 rounded-full shadow-xl hover:shadow-2xl hover:scale-[1.03] active:scale-100 transition-all">
             <Lock className="w-4 h-4" aria-hidden="true" />

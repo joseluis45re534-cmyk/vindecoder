@@ -2,7 +2,7 @@
 // agents and search engines extract correct, current facts. Pure functions
 // returning plain objects; render them with <JsonLd data={...} />.
 
-import { SITE_URL, SITE_NAME, SITE_DESCRIPTION, SUPPORT_EMAIL, SUPPORT_PHONE, SITE_ADDRESS } from '@/lib/site';
+import { SITE_URL, SITE_NAME, SITE_DESCRIPTION, SUPPORT_EMAIL, SUPPORT_PHONE, SITE_ADDRESS, SOCIAL_PROFILES } from '@/lib/site';
 import { TRIAL_PLAN, formatPrice } from '@/lib/pricing';
 
 type Json = Record<string, unknown>;
@@ -32,6 +32,8 @@ export function organizationLd(): Json {
     areaServed: { '@type': 'Country', name: 'United States' },
     email: SUPPORT_EMAIL,
     ...(SUPPORT_PHONE ? { telephone: SUPPORT_PHONE } : {}),
+    // Entity signals for Google + AI engines — real profiles only (site.ts).
+    ...(SOCIAL_PROFILES.length ? { sameAs: SOCIAL_PROFILES } : {}),
     address: {
       '@type': 'PostalAddress',
       streetAddress: `${SITE_ADDRESS.line1}${SITE_ADDRESS.line2 ? `, ${SITE_ADDRESS.line2}` : ''}`,
@@ -115,14 +117,14 @@ export function vinCheckHowToLd(): Json {
     '@type': 'HowTo',
     name: 'How to run a VIN check on CarVinLookup',
     description:
-      'Check a used vehicle’s history in three steps using a VIN or U.S. license plate.',
+      'Check a used vehicle’s history in three steps using its 17-character VIN.',
     totalTime: 'PT1M',
     step: [
       {
         '@type': 'HowToStep',
         position: 1,
-        name: 'Enter the VIN or plate',
-        text: 'Enter the 17-character VIN, or a U.S. license plate and state.',
+        name: 'Enter the VIN',
+        text: 'Enter the 17-character VIN — it is on the windshield, the driver-side door jamb, and the title or registration.',
         url: `${SITE_URL}/#vin-search`,
       },
       {
@@ -136,7 +138,7 @@ export function vinCheckHowToLd(): Json {
         '@type': 'HowToStep',
         position: 3,
         name: 'Unlock the full report',
-        text: 'Unlock the full NMVTIS, NICB, and DMV history report for the vehicle.',
+        text: 'Unlock the full history report — NMVTIS title data plus theft, lien, and odometer records.',
         url: `${SITE_URL}/#vin-search`,
       },
     ],

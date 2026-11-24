@@ -1,14 +1,15 @@
 import type { Metadata } from 'next';
+import { pageMetadata } from '@/lib/seo';
 import Link from 'next/link';
 
 export const runtime = 'edge';
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: 'Cookie Policy',
   description:
     'What cookies and local storage CarVinLookup uses — essential session cookies, privacy-friendly analytics, and how to control them.',
-  alternates: { canonical: '/cookies' },
-};
+  path: '/cookies',
+});
 
 export default function CookiePage() {
   return (

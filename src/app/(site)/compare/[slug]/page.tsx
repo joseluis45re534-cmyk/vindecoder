@@ -1,9 +1,10 @@
 import type { Metadata } from 'next';
+import { pageMetadata } from '@/lib/seo';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { Check, ShieldCheck, Search, ArrowRight } from 'lucide-react';
 import { getComparisonBySlug, COMPETITORS, comparisonSlug } from '@/lib/comparisons';
-import { SITE_URL, SITE_NAME } from '@/lib/site';
+import { SITE_URL } from '@/lib/site';
 import { TRIAL_PLAN, formatPrice } from '@/lib/pricing';
 import JsonLd from '@/components/JsonLd';
 import { breadcrumbLd, faqPageLd } from '@/lib/structured-data';
@@ -20,33 +21,22 @@ export async function generateMetadata({
   const { slug } = await params;
   const c = getComparisonBySlug(slug);
   if (!c) return { title: 'Comparison not found' };
-  const title = `CarVinLookup vs. ${c.name}: Which Vehicle History Report?`;
-  const description = `CarVinLookup vs. ${c.name} compared head-to-head — data sources, free preview, pricing model, and coverage — so you can pick the right vehicle history report.`;
-  const url = `${SITE_URL}/compare/${comparisonSlug(c.slug)}`;
-  return {
-    title,
-    description,
-    alternates: { canonical: `/compare/${comparisonSlug(c.slug)}` },
-    openGraph: {
-      type: 'website',
-      siteName: SITE_NAME,
-      title,
-      description,
-      url,
-      locale: 'en_US',
-      images: [{ url: '/opengraph-image.png', width: 1200, height: 630, alt: `CarVinLookup vs ${c.name}` }],
-    },
-    twitter: { card: 'summary_large_image', title, description, images: ['/opengraph-image.png'] },
-  };
+  return pageMetadata({
+    title: `CarVinLookup vs. ${c.name}: Which Vehicle History Report?`,
+    absoluteTitle: true, // already names the brand
+    description: `CarVinLookup vs. ${c.name} compared head-to-head — data sources, free preview, pricing model, and coverage — to pick the right VIN report.`,
+    path: `/compare/${comparisonSlug(c.slug)}`,
+    ogAlt: `CarVinLookup vs ${c.name}`,
+  });
 }
 
 const ROWS = [
   { feature: 'Free identity preview before paying', us: 'Yes — always', them: 'Varies by provider' },
   { feature: 'Title brands (salvage, rebuilt, flood)', us: 'Yes — NMVTIS, all 50 states', them: 'Typically yes' },
-  { feature: 'Theft records', us: 'Yes — NICB', them: 'Varies' },
+  { feature: 'Theft check', us: 'Yes', them: 'Varies' },
   { feature: 'Open lien check', us: 'Yes', them: 'Varies' },
   { feature: 'Odometer history', us: 'Yes', them: 'Typically yes' },
-  { feature: 'Search by license plate', us: 'Yes — all 50 states', them: 'Varies' },
+  { feature: 'Search by license plate', us: 'Launching soon', them: 'Varies' },
   { feature: 'Pricing model', us: `Low-cost start from a ${'{fee}'} trial`, them: 'Varies by provider' },
   { feature: 'Cancel anytime', us: 'Yes', them: 'Varies' },
 ];
@@ -65,8 +55,8 @@ export default async function ComparePage({
   const others = COMPETITORS.filter((x) => x.slug !== c.slug).slice(0, 6);
 
   const faq = [
-    { q: `Is CarVinLookup better than ${c.name}?`, a: `For a typical U.S. used-car purchase, CarVinLookup gives you the core records that matter — title brands, theft, liens, and odometer — from NMVTIS, NICB, and state DMVs, with a free preview and a low ${f} start. ${c.name} ${c.bestFor.charAt(0).toLowerCase() + c.bestFor.slice(1)}` },
-    { q: `Do CarVinLookup and ${c.name} use the same data?`, a: `Both rely on official title and records data. CarVinLookup specifically combines NMVTIS title brands, NICB theft records, and state DMV data, and always shows a free identity preview before you pay.` },
+    { q: `Is CarVinLookup better than ${c.name}?`, a: `For a typical U.S. used-car purchase, CarVinLookup gives you the core records that matter — title brands, theft, liens, and odometer — built on NMVTIS title data, with a free preview and a low ${f} start. ${c.name} ${c.bestFor.charAt(0).toLowerCase() + c.bestFor.slice(1)}` },
+    { q: `Do CarVinLookup and ${c.name} use the same data?`, a: `Most U.S. history reports draw on NMVTIS title data plus other record sources. CarVinLookup combines NMVTIS title and brand data (via an approved NMVTIS data provider) with insurance, salvage, lien, odometer, and recall records, and always shows a free vehicle preview before you pay. ${c.name} describes its own sources on its site.` },
     { q: `Which is cheaper?`, a: `CarVinLookup starts from a ${f} trial and shows a free preview first, so you never pay before confirming the vehicle. Competitor pricing changes — check ${c.name}'s site for current rates.` },
   ];
 
@@ -110,7 +100,7 @@ export default async function ComparePage({
         <div className="bg-white rounded-2xl border border-slate-200 shadow-lg p-6 sm:p-8">
           <p className="text-xs font-bold uppercase tracking-wide text-blue-600 mb-2">The short answer</p>
           <p className="text-slate-700 leading-relaxed">
-            {c.known} <strong className="text-slate-900">CarVinLookup</strong> is built for U.S. used-car buyers who want the records that decide a purchase — title brands, theft, liens, and odometer — from NMVTIS, NICB, and DMV data, with a free preview before paying and full access from a {f} trial.
+            {c.known} <strong className="text-slate-900">CarVinLookup</strong> is built for U.S. used-car buyers who want the records that decide a purchase — title brands, theft, liens, and odometer — built on NMVTIS title data, with a free preview before paying and full access from a {f} trial.
           </p>
         </div>
       </section>
@@ -152,7 +142,7 @@ export default async function ComparePage({
             </h3>
             <ul className="space-y-2 text-sm text-slate-600">
               <li>You want to confirm the car with a free preview before paying.</li>
-              <li>You want NMVTIS, NICB, and DMV records in one clear report.</li>
+              <li>You want NMVTIS title data plus theft, lien, and odometer records in one clear report.</li>
               <li>You are buying a U.S. car and want a low-cost start and the ability to cancel anytime.</li>
             </ul>
           </div>

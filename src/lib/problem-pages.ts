@@ -25,7 +25,7 @@ export const PROBLEM_PAGES: ProblemPage[] = [
   {
     slug: 'most-totaled-cars',
     name: 'Most totaled cars',
-    metaTitle: 'What Makes a Car a Total Loss? — CarVinLookup',
+    metaTitle: 'What Makes a Car a Total Loss?',
     metaDescription:
       'What it means when a car is "totaled," which vehicles are written off most easily, and how to check if a used car was ever declared a total loss by VIN.',
     intro:
@@ -64,9 +64,9 @@ export const PROBLEM_PAGES: ProblemPage[] = [
   {
     slug: 'most-flooded-cars',
     name: 'Most flooded cars',
-    metaTitle: 'Flood Cars: Where They Come From & How to Avoid One',
+    metaTitle: 'Flood-Damaged Cars: How to Spot and Avoid One',
     metaDescription:
-      'After major storms, flood-damaged cars are cleaned up and resold nationwide. Learn how flood cars spread, the warning signs, and how to check a VIN for flood damage.',
+      'After major storms, flood-damaged cars are cleaned up and resold nationwide. Learn how they spread, the warning signs, and how to check a VIN for flood damage.',
     intro:
       'After every major storm, tens of thousands of flood-damaged cars are dried out and resold — often far from where they flooded. Here is how they spread and how to avoid buying one.',
     sections: [
@@ -105,7 +105,7 @@ export const PROBLEM_PAGES: ProblemPage[] = [
     name: 'Worst cars to buy',
     metaTitle: 'Red Flags That Make Any Used Car a Bad Buy',
     metaDescription:
-      'The worst used-car buy is not a specific model — it is any car hiding a branded title, flood damage, theft record, or odometer fraud. Learn the red flags and how to check.',
+      'The worst used-car buy is any car hiding a branded title, flood damage, a theft record, or odometer fraud. Learn the red flags and how to check a VIN.',
     intro:
       'The worst used car to buy is not a particular model — it is any car hiding a serious problem the seller did not disclose. Here are the red flags that make any car a bad buy, and how to catch them.',
     sections: [

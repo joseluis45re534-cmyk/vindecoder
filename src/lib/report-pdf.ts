@@ -51,7 +51,7 @@ export async function buildReportPdf(report: FullReport, generatedAtISO: string)
 
     const drawFooter = (p: PDFPage, n: number) => {
         p.drawLine({ start: { x: MARGIN, y: 58 }, end: { x: PAGE_W - MARGIN, y: 58 }, thickness: 0.5, color: HAIR });
-        p.drawText('Sources: NMVTIS · NICB · NHTSA · state DMVs.', { x: MARGIN, y: 44, size: 7, font, color: GRAY });
+        p.drawText('Sources: NMVTIS (via an approved data provider) · insurers · salvage auctions · NHTSA.', { x: MARGIN, y: 44, size: 7, font, color: GRAY });
         p.drawText('Report data reflects records reported to these databases — not a substitute for a professional inspection.', {
             x: MARGIN,
             y: 34,

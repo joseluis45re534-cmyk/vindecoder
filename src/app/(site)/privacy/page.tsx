@@ -1,12 +1,14 @@
 import type { Metadata } from 'next';
+import { pageMetadata } from '@/lib/seo';
 
 export const runtime = 'edge';
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: 'Privacy Policy',
-  description: 'How CarVinLookup collects, uses, and protects your information when you run a vehicle history report.',
-  alternates: { canonical: '/privacy' },
-};
+  description:
+    'How CarVinLookup collects, uses, and protects your information when you run a vehicle history report.',
+  path: '/privacy',
+});
 
 export default function PrivacyPage() {
   return (
@@ -29,7 +31,7 @@ export default function PrivacyPage() {
         <h2>Payment processing</h2>
         <p>Payments are handled by Stripe and PayPal. We never store full card numbers on our servers.</p>
         <h2>Data sources</h2>
-        <p>Vehicle records originate from NMVTIS, NICB, and state DMV databases and are governed by their respective terms.</p>
+        <p>Vehicle records originate from NMVTIS, state titling agencies, insurers, salvage and auction sources, and NHTSA, and are governed by their respective terms.</p>
         <h2>Your choices</h2>
         <p>You can request access to or deletion of your account data by contacting support@carvinlookup.us.</p>
       </article>

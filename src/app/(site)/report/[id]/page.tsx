@@ -30,7 +30,7 @@ export async function generateMetadata({
     // dynamic-route generateMetadata result — keep the site's "X | CarVinLookup"
     // convention explicit here rather than relying on template inheritance.
     const title = `Sample report: ${sample.title} | ${SITE_NAME}`;
-    const description = `See a sample CarVinLookup vehicle history report for a ${sample.title} — title status, accidents, odometer, theft, liens, and recalls. Illustrative example; run your own VIN for a real report.`;
+    const description = `Sample CarVinLookup report for a ${sample.title}: title status, accidents, odometer, theft, liens, and recalls. An illustrative example only.`;
     const url = `${SITE_URL}/report/${sample.vin}`;
     return {
       title: { absolute: title },

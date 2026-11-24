@@ -25,7 +25,7 @@ export async function generateMetadata({
   if (!b || !found) return { title: 'Not found' };
   const label = `${b.name} ${found.model.name}`;
   const title = `${label} VIN Check & History Report`;
-  const description = `Free ${label} VIN check — decode the VIN and check title brands, salvage, theft, liens, recalls, and odometer history from NMVTIS, NICB & DMV data.`;
+  const description = `${label} VIN check — decode the VIN and check title brands, salvage, theft, liens, recalls, and odometer history with NMVTIS title data.`;
   const url = `${SITE_URL}/vin-check/${brand}/${model}`;
   return {
     title,
@@ -67,7 +67,7 @@ export default async function ModelVinCheckPage({
   const faq = [
     { q: `Is the ${label} VIN check free?`, a: `You get a free preview of the ${label}'s identity — year, make, model, and VIN validation. The full history report (title brands, theft, liens, odometer) is a paid unlock.` },
     { q: `What should I check on a used ${label}?`, a: `Confirm the title is clean in every state, the odometer readings only increase, there are no open liens or theft records, and any safety recalls were repaired. ${b.watchFor}` },
-    { q: `Can I check a ${label} by license plate?`, a: `Yes. Enter a U.S. license plate and state and it resolves to the VIN, then pulls the full ${label} report across all 50 states.` },
+    { q: `Can I check a ${label} by license plate?`, a: `Not yet — license-plate search is launching soon. For now, enter the 17-character VIN; it's on the windshield, the driver-side door jamb, and the title or registration.` },
   ];
 
   const schema = [
@@ -121,7 +121,7 @@ export default async function ModelVinCheckPage({
             {label} <span className="bg-gradient-to-r from-blue-400 to-sky-300 bg-clip-text text-transparent">VIN check</span>
           </h1>
           <p className="text-base sm:text-lg text-slate-300 mb-8 max-w-2xl mx-auto">
-            Decode any {label} VIN or U.S. license plate and check title brands, salvage &amp; flood history, theft records, liens, recalls, and odometer readings.
+            Decode any {label} VIN and check title brands, salvage &amp; flood history, theft, liens, recalls, and odometer readings.
           </p>
           <SearchForm />
           <p className="mt-5 text-sm text-slate-400">Free preview · Instant report · All 50 states</p>
@@ -142,7 +142,7 @@ export default async function ModelVinCheckPage({
         <h2>What is included in a {label} report</h2>
         <ul>
           <li><strong>Title &amp; brand history</strong> — salvage, rebuilt, junk, and flood titles across all 50 states (NMVTIS).</li>
-          <li><strong>Theft records</strong> — active theft reports filed with the NICB.</li>
+          <li><strong>Theft check</strong> — flags theft-related records reported for the VIN.</li>
           <li><strong>Lien check</strong> — outstanding loans recorded against the vehicle.</li>
           <li><strong>Odometer history</strong> — reported readings with rollback and tampering alerts.</li>
           <li><strong>Recalls &amp; specs</strong> — open safety recalls plus the full {label} decode.</li>
@@ -151,7 +151,7 @@ export default async function ModelVinCheckPage({
         <h2>How to check a {label} VIN</h2>
         <ol>
           <li>Find the 17-character VIN on the windshield, driver-side door jamb, title, or registration.</li>
-          <li>Enter the VIN (or a U.S. license plate and state) in the search box above.</li>
+          <li>Enter the VIN in the search box above.</li>
           <li>Review the free preview, then unlock the full {label} history report.</li>
         </ol>
 
@@ -166,7 +166,7 @@ export default async function ModelVinCheckPage({
         <div className="max-w-5xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
           {[
             { icon: AlertTriangle, c: 'text-amber-600 bg-amber-50', t: 'Title brands', d: `Salvage, rebuilt & flood ${b.name} titles.` },
-            { icon: ShieldCheck, c: 'text-emerald-600 bg-emerald-50', t: 'Theft records', d: 'NICB theft & recovery data.' },
+            { icon: ShieldCheck, c: 'text-emerald-600 bg-emerald-50', t: 'Theft check', d: 'Theft-related records for the VIN.' },
             { icon: Gauge, c: 'text-blue-600 bg-blue-50', t: 'Odometer', d: 'Rollback & tampering alerts.' },
             { icon: FileText, c: 'text-violet-600 bg-violet-50', t: 'Liens & recalls', d: `Open liens + ${found.model.name} recalls.` },
           ].map(({ icon: Icon, c, t, d }) => (

@@ -4,7 +4,8 @@ import { notFound } from 'next/navigation';
 import { ShieldCheck, FileText, Database, AlertTriangle, Gauge, Search } from 'lucide-react';
 import { getBrand, BRANDS } from '@/lib/brands';
 import { getStickerMake } from '@/lib/window-stickers';
-import { SITE_URL, SITE_NAME } from '@/lib/site';
+import { SITE_URL, CONTENT_REVISED } from '@/lib/site';
+import { pageMetadata } from '@/lib/seo';
 import SearchForm from '@/components/SearchForm';
 
 export const runtime = 'edge';
@@ -17,30 +18,13 @@ export async function generateMetadata({
   const { brand: slug } = await params;
   const brand = getBrand(slug);
   if (!brand) return { title: 'Brand not found' };
-  const title = `${brand.name} VIN Check & Decoder — Free Preview`;
-  // Keep under ~160 chars for all brand names (incl. "Mercedes-Benz").
-  const description = `Free ${brand.name} VIN check — decode any ${brand.name} VIN or plate for title brands, salvage, theft, liens & odometer history from NMVTIS, NICB & DMV data.`;
-  const url = `${SITE_URL}/vin-check/${brand.slug}`;
-  return {
-    title,
-    description,
-    alternates: { canonical: `/vin-check/${brand.slug}` },
-    openGraph: {
-      type: 'website',
-      siteName: SITE_NAME,
-      title,
-      description,
-      url,
-      locale: 'en_US',
-      images: [{ url: '/opengraph-image.png', width: 1200, height: 630, alt: `${brand.name} VIN check` }],
-    },
-    twitter: {
-      card: 'summary_large_image',
-      title,
-      description,
-      images: ['/opengraph-image.png'],
-    },
-  };
+  return pageMetadata({
+    title: `${brand.name} VIN Check & Decoder — Free Preview`,
+    // Keep under ~160 chars for all brand names (incl. "Mercedes-Benz").
+    description: `${brand.name} VIN check — decode any ${brand.name} VIN and check title brands, salvage, theft, liens, and odometer history with NMVTIS title data.`,
+    path: `/vin-check/${brand.slug}`,
+    ogAlt: `${brand.name} VIN check`,
+  });
 }
 
 export default async function BrandPage({
@@ -52,7 +36,21 @@ export default async function BrandPage({
   const brand = getBrand(slug);
   if (!brand) notFound();
 
-  const others = BRANDS.filter((b) => b.slug !== brand.slug).slice(0, 20);
+  // 10 brands either side (wrapping) so every brand page is linked from 20
+  // others — previously the first 20 brands got every link and the rest none.
+  const bi = BRANDS.findIndex((b) => b.slug === brand.slug);
+  const others = Array.from({ length: Math.min(20, BRANDS.length - 1) }, (_, k) => {
+    const d = k < 10 ? k - 10 : k - 9; // -10..-1, 1..10
+    return BRANDS[(bi + d + BRANDS.length) % BRANDS.length];
+  }).filter((b, i, arr) => b.slug !== brand.slug && arr.findIndex((x) => x.slug === b.slug) === i);
+
+  const faq = [
+    { q: `Is the ${brand.name} VIN check free?`, a: `You get a free preview of the vehicle's identity. The full ${brand.name} history report — title brands, theft, liens, and odometer — is a paid unlock.` },
+    { q: `Can I look up a ${brand.name} by license plate?`, a: `Not yet — license-plate search is launching soon. For now, enter the 17-character VIN; it's on the windshield, the driver-side door jamb, and the title or registration.` },
+    { q: `Will it show salvage or flood titles?`, a: `Yes — title brands recorded in any state are pulled from NMVTIS, which catches cars retitled across state lines to hide a brand.` },
+    { q: `Does it check ${brand.name} recalls?`, a: `Yes. The report flags open safety recalls so you can confirm the car was repaired before you buy. You can also check any VIN for free on NHTSA's recall lookup.` },
+    { q: `Where is the VIN on a ${brand.name}?`, a: `Look at the lower-left corner of the windshield (visible from outside), the label on the driver-side door jamb, and the title, registration, or insurance card. All of them should show the same 17 characters.` },
+  ];
   const stickerModels = getStickerMake(slug)?.models ?? [];
 
   const jsonLd = {
@@ -66,6 +64,7 @@ export default async function BrandPage({
         description: `Free ${brand.name} VIN check and decoder with title, theft, lien, and odometer history.`,
         isPartOf: { '@id': `${SITE_URL}/#website` },
         about: { '@type': 'Brand', name: brand.name },
+        dateModified: CONTENT_REVISED,
       },
       {
         '@type': 'BreadcrumbList',
@@ -81,6 +80,17 @@ export default async function BrandPage({
         serviceType: `${brand.name} VIN check`,
         provider: { '@id': `${SITE_URL}/#organization` },
         areaServed: { '@type': 'Country', name: 'United States' },
+      },
+      // Mirrors the visible FAQ below. Google limits FAQ rich results to
+      // gov/health sites, but Bing and AI answer engines still read FAQPage to
+      // extract Q&A — so it's worth emitting when the answers are on the page.
+      {
+        '@type': 'FAQPage',
+        mainEntity: faq.map(({ q, a }) => ({
+          '@type': 'Question',
+          name: q,
+          acceptedAnswer: { '@type': 'Answer', text: a },
+        })),
       },
     ],
   };
@@ -107,7 +117,7 @@ export default async function BrandPage({
             <span className="block bg-gradient-to-r from-blue-400 to-sky-300 bg-clip-text text-transparent mt-1">& Decoder</span>
           </h1>
           <p className="text-base sm:text-lg text-slate-300 mb-8 max-w-2xl mx-auto">
-            Decode any {brand.name} VIN or U.S. license plate for title brands, salvage &amp; flood history, theft records, open liens, recalls, and odometer readings — sourced from NMVTIS, NICB, and DMV records.
+            Decode any {brand.name} VIN and check title brands, salvage &amp; flood history, theft, open liens, recalls, and odometer readings — built on NMVTIS title data.
           </p>
           <SearchForm />
           <p className="mt-5 text-sm text-slate-400">Free preview · Instant report · All 50 states</p>
@@ -135,7 +145,7 @@ export default async function BrandPage({
         <h2>What&apos;s included in a {brand.name} VIN report</h2>
         <ul>
           <li><strong>Title &amp; brand history</strong> — salvage, rebuilt, junk, and flood titles across all 50 states (NMVTIS).</li>
-          <li><strong>Theft records</strong> — active theft reports filed with the NICB.</li>
+          <li><strong>Theft check</strong> — flags theft-related records reported for the VIN.</li>
           <li><strong>Lien check</strong> — outstanding loans recorded against the vehicle.</li>
           <li><strong>Odometer history</strong> — reported readings with rollback and tampering alerts.</li>
           <li><strong>Specs &amp; recalls</strong> — full {brand.name} decode plus open safety-recall lookups.</li>
@@ -162,15 +172,16 @@ export default async function BrandPage({
         <h2>How to check a {brand.name} VIN number</h2>
         <ol>
           <li>Find the 17-character VIN on the windshield, driver-side door jamb, title, or registration.</li>
-          <li>Enter the VIN (or a U.S. license plate and state) in the search box above.</li>
+          <li>Enter the VIN in the search box above.</li>
           <li>Review the free preview, then unlock the full {brand.name} history report.</li>
         </ol>
 
         <h2>{brand.name} VIN data — sources</h2>
         <p>
-          Reports combine the <strong>National Motor Vehicle Title Information System (NMVTIS)</strong>, the{' '}
-          <strong>National Insurance Crime Bureau (NICB)</strong>, and <strong>state DMV</strong> title and registration
-          databases, so a brand or odometer problem recorded in any state shows up — even if the car was retitled to hide it.
+          Reports are built on the <strong>National Motor Vehicle Title Information System (NMVTIS)</strong> — title and
+          brand data that state titling agencies, insurers, and salvage yards report nationwide — plus lien, odometer, and
+          recall records, so a brand or odometer problem recorded in any state shows up, even if the car was retitled to
+          hide it. See our <a href="/data-sources">data sources</a> for what each source covers.
         </p>
       </article>
 
@@ -179,7 +190,7 @@ export default async function BrandPage({
         <div className="max-w-5xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
           {[
             { icon: AlertTriangle, c: 'text-amber-600 bg-amber-50', t: 'Title brands', d: `Salvage, rebuilt & flood ${brand.name} titles.` },
-            { icon: ShieldCheck, c: 'text-emerald-600 bg-emerald-50', t: 'Theft records', d: 'NICB theft & recovery data.' },
+            { icon: ShieldCheck, c: 'text-emerald-600 bg-emerald-50', t: 'Theft check', d: 'Theft-related records for the VIN.' },
             { icon: Gauge, c: 'text-blue-600 bg-blue-50', t: 'Odometer', d: 'Rollback & tampering alerts.' },
             { icon: FileText, c: 'text-violet-600 bg-violet-50', t: 'Liens & specs', d: `Open liens + full ${brand.name} decode.` },
           ].map(({ icon: Icon, c, t, d }) => (
@@ -217,17 +228,12 @@ export default async function BrandPage({
         </div>
       </section>
 
-      {/* FAQ (visible content; FAQPage schema intentionally omitted — Google restricts FAQ rich results to gov/health) */}
+      {/* FAQ — visible Q&A, mirrored in the FAQPage node of the JSON-LD graph above */}
       <section className="bg-white py-14 px-4 sm:px-6 lg:px-8 border-t border-slate-100">
         <div className="max-w-3xl mx-auto">
           <h2 className="text-2xl font-extrabold text-slate-900 mb-8">{brand.name} VIN check — FAQ</h2>
           <div className="space-y-4">
-            {[
-              { q: `Is the ${brand.name} VIN check free?`, a: `You get a free preview of the vehicle's identity. The full ${brand.name} history report — title brands, theft, liens, and odometer — is a paid unlock.` },
-              { q: `Can I look up a ${brand.name} by license plate?`, a: `Yes. Enter a U.S. license plate and state and we'll resolve it to the VIN, then pull the full ${brand.name} report.` },
-              { q: `Will it show salvage or flood titles?`, a: `Yes — title brands recorded in any state are pulled from NMVTIS, which catches cars retitled across state lines to hide a brand.` },
-              { q: `Does it check ${brand.name} recalls?`, a: `Yes. The report flags open safety recalls so you can confirm the car was repaired before you buy.` },
-            ].map(({ q, a }) => (
+            {faq.map(({ q, a }) => (
               <details key={q} className="group bg-slate-50 rounded-2xl border border-slate-100 open:bg-white open:shadow-md transition-all">
                 <summary className="flex items-center justify-between cursor-pointer list-none px-6 py-4 font-bold text-slate-900">
                   {q}

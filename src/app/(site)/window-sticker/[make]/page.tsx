@@ -3,7 +3,8 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { ChevronRight, Search } from 'lucide-react';
 import { getStickerMake, STICKER_MAKES } from '@/lib/window-stickers';
-import { SITE_URL, SITE_NAME } from '@/lib/site';
+import { SITE_URL } from '@/lib/site';
+import { pageMetadata, NOINDEX_FOLLOW } from '@/lib/seo';
 import JsonLd from '@/components/JsonLd';
 import { breadcrumbLd } from '@/lib/structured-data';
 import SearchForm from '@/components/SearchForm';
@@ -18,24 +19,15 @@ export async function generateMetadata({
   const { make } = await params;
   const m = getStickerMake(make);
   if (!m) return { title: 'Make not found' };
-  const title = `${m.name} Window Sticker Lookup by VIN — CarVinLookup`;
-  const description = `Get the original ${m.name} window sticker (Monroney label) by VIN — MSRP, options, and equipment for any ${m.name} model. Free preview, then the full report.`;
-  const url = `${SITE_URL}/window-sticker/${m.slug}`;
-  return {
-    title,
-    description,
-    alternates: { canonical: `/window-sticker/${m.slug}` },
-    openGraph: {
-      type: 'website',
-      siteName: SITE_NAME,
-      title,
-      description,
-      url,
-      locale: 'en_US',
-      images: [{ url: '/opengraph-image.png', width: 1200, height: 630, alt: `${m.name} window sticker` }],
-    },
-    twitter: { card: 'summary_large_image', title, description, images: ['/opengraph-image.png'] },
-  };
+  return pageMetadata({
+    title: `${m.name} Window Sticker Lookup by VIN`,
+    description: `What's on a ${m.name} window sticker (Monroney label) and how to get one by VIN. Sticker lookup is launching soon — decode a ${m.name} VIN free today.`,
+    path: `/window-sticker/${m.slug}`,
+    ogAlt: `${m.name} window sticker`,
+    // Thin templated tier (~100 words/page): kept live for users, out of the
+    // index until sticker data ships and the domain can support it (CLAUDE.md).
+    robots: NOINDEX_FOLLOW,
+  });
 }
 
 export default async function StickerMakePage({
@@ -57,7 +49,7 @@ export default async function StickerMakePage({
       '@id': url,
       name: `${m.name} Window Stickers`,
       url,
-      description: `Look up the original window sticker for any ${m.name} model by VIN.`,
+      description: `${m.name} window stickers by model — what each shows and how to get one by VIN.`,
       isPartOf: { '@id': `${SITE_URL}/#website` },
     },
     breadcrumbLd([
@@ -87,7 +79,7 @@ export default async function StickerMakePage({
             {m.name} window sticker lookup
           </h1>
           <p className="text-base sm:text-lg text-slate-300 mb-8 max-w-2xl mx-auto">
-            Pick your {m.name} model, or enter a VIN to pull the original window sticker — MSRP, options, and equipment as built.
+            Window sticker lookup by VIN is launching soon. Enter a {m.name} VIN now for a free vehicle preview and the full title, theft, lien, and odometer history.
           </p>
           <SearchForm />
         </div>
@@ -126,8 +118,8 @@ export default async function StickerMakePage({
       </section>
 
       <section className="bg-gradient-to-br from-blue-700 to-blue-900 py-14 px-4 text-center">
-        <h2 className="text-2xl sm:text-3xl font-extrabold text-white mb-3">Get any {m.name} window sticker</h2>
-        <p className="text-blue-100 mb-6">Free preview · original sticker + full history by VIN.</p>
+        <h2 className="text-2xl sm:text-3xl font-extrabold text-white mb-3">Check any {m.name} VIN</h2>
+        <p className="text-blue-100 mb-6">Free preview · full history by VIN · window stickers launching soon.</p>
         <Link href="/#vin-search" className="inline-flex items-center gap-2 bg-white text-blue-700 font-bold px-7 py-3.5 rounded-full hover:scale-105 active:scale-100 transition-transform">
           <Search className="w-4 h-4" aria-hidden="true" /> Look up a VIN
         </Link>

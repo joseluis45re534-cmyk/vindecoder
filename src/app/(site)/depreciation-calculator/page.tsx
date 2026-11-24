@@ -1,28 +1,20 @@
 import type { Metadata } from 'next';
+import { pageMetadata } from '@/lib/seo';
 import Link from 'next/link';
 import { Search } from 'lucide-react';
 import DepreciationCalculator from '@/components/calculators/DepreciationCalculator';
-import { SITE_URL, SITE_NAME } from '@/lib/site';
+import { SITE_URL } from '@/lib/site';
 import JsonLd from '@/components/JsonLd';
 import { breadcrumbLd, faqPageLd } from '@/lib/structured-data';
 
 export const runtime = 'edge';
 
-export const metadata: Metadata = {
-  title: 'Car Depreciation Calculator: Estimate Future Value',
+export const metadata: Metadata = pageMetadata({
+  title: 'Car Depreciation Calculator: Future Value',
   description:
     'Free car depreciation calculator. Estimate how much a vehicle will be worth in 1–10 years based on purchase price and yearly depreciation rate.',
-  alternates: { canonical: '/depreciation-calculator' },
-  openGraph: {
-    type: 'website',
-    siteName: SITE_NAME,
-    title: 'Car Depreciation Calculator — CarVinLookup',
-    description: 'Estimate a vehicle future value year by year.',
-    url: `${SITE_URL}/depreciation-calculator`,
-    locale: 'en_US',
-    images: [{ url: '/opengraph-image.png', width: 1200, height: 630, alt: 'Car depreciation calculator' }],
-  },
-};
+  path: '/depreciation-calculator',
+});
 
 const faq = [
   { q: 'How fast do cars depreciate?', a: 'Most new cars lose the largest share of value in the first year, then depreciate more gradually each year after. This calculator lets you set a first-year rate and a separate rate for later years.' },

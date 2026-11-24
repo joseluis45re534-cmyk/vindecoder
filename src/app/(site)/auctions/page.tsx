@@ -1,29 +1,21 @@
 import type { Metadata } from 'next';
+import { pageMetadata } from '@/lib/seo';
 import Link from 'next/link';
 import { Search } from 'lucide-react';
 import { DAMAGE_TYPES, VEHICLE_TYPES } from '@/lib/auctions';
-import { SITE_URL, SITE_NAME } from '@/lib/site';
+import { SITE_URL } from '@/lib/site';
 import JsonLd from '@/components/JsonLd';
 import { breadcrumbLd } from '@/lib/structured-data';
 import SearchForm from '@/components/SearchForm';
 
 export const runtime = 'edge';
 
-export const metadata: Metadata = {
-  title: 'Salvage Auction Guide: Damage Types & What to Check',
+export const metadata: Metadata = pageMetadata({
+  title: 'Salvage Auction Guide: Damage Types Explained',
   description:
     'Buying at a salvage or online car auction? Understand every damage type and vehicle category, the risks, and how to check the VIN before you bid.',
-  alternates: { canonical: '/auctions' },
-  openGraph: {
-    type: 'website',
-    siteName: SITE_NAME,
-    title: 'Salvage Auction Guide — CarVinLookup',
-    description: 'Understand auction damage types and vehicle categories, and check any VIN before you bid.',
-    url: `${SITE_URL}/auctions`,
-    locale: 'en_US',
-    images: [{ url: '/opengraph-image.png', width: 1200, height: 630, alt: 'Salvage auction guide' }],
-  },
-};
+  path: '/auctions',
+});
 
 export default function AuctionsHub() {
   const schema = [

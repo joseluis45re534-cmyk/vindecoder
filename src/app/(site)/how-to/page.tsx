@@ -1,27 +1,19 @@
 import type { Metadata } from 'next';
+import { pageMetadata } from '@/lib/seo';
 import Link from 'next/link';
 import { HOW_TO_GUIDES, type HowToGuide } from '@/lib/how-to';
-import { SITE_URL, SITE_NAME } from '@/lib/site';
+import { SITE_URL } from '@/lib/site';
 import JsonLd from '@/components/JsonLd';
 import { breadcrumbLd } from '@/lib/structured-data';
 
 export const runtime = 'edge';
 
-export const metadata: Metadata = {
-  title: 'How-To Guides: VIN Checks & Buying a Used Car Safely',
+export const metadata: Metadata = pageMetadata({
+  title: 'How-To Guides: VIN Checks & Used-Car Buying',
   description:
-    'Step-by-step how-to guides on checking a VIN, reading a history report, spotting fraud, valuing a car, and negotiating — everything you need to buy used with confidence.',
-  alternates: { canonical: '/how-to' },
-  openGraph: {
-    type: 'website',
-    siteName: SITE_NAME,
-    title: 'How-To Guides — CarVinLookup',
-    description: 'Step-by-step guides on VIN checks, history reports, used-car fraud, and buying safely.',
-    url: `${SITE_URL}/how-to`,
-    locale: 'en_US',
-    images: [{ url: '/opengraph-image.png', width: 1200, height: 630, alt: 'CarVinLookup how-to guides' }],
-  },
-};
+    'Step-by-step guides to checking a VIN, reading a history report, spotting fraud, valuing a car, and negotiating, so you can buy a used car with confidence.',
+  path: '/how-to',
+});
 
 const CATEGORY_ORDER: HowToGuide['category'][] = ['VIN basics', 'Reports & records', 'Fraud & red flags', 'Buying safely'];
 

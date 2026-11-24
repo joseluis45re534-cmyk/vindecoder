@@ -1,28 +1,20 @@
 import type { Metadata } from 'next';
+import { pageMetadata } from '@/lib/seo';
 import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
 import { COMPETITORS, comparisonSlug } from '@/lib/comparisons';
-import { SITE_URL, SITE_NAME } from '@/lib/site';
+import { SITE_URL } from '@/lib/site';
 import JsonLd from '@/components/JsonLd';
 import { breadcrumbLd } from '@/lib/structured-data';
 
 export const runtime = 'edge';
 
-export const metadata: Metadata = {
-  title: 'Compare Vehicle History Report Providers — CarVinLookup',
+export const metadata: Metadata = pageMetadata({
+  title: 'Compare Vehicle History Report Providers',
   description:
-    'Compare CarVinLookup with Carfax, AutoCheck, Bumper, EpicVIN, ClearVin and more. Head-to-head comparisons and alternatives so you pick the right VIN report.',
-  alternates: { canonical: '/compare' },
-  openGraph: {
-    type: 'website',
-    siteName: SITE_NAME,
-    title: 'Compare Vehicle History Report Providers',
-    description: 'CarVinLookup vs. the major vehicle history report providers — compared side by side.',
-    url: `${SITE_URL}/compare`,
-    locale: 'en_US',
-    images: [{ url: '/opengraph-image.png', width: 1200, height: 630, alt: 'Compare VIN report providers' }],
-  },
-};
+    'Compare CarVinLookup with Carfax, AutoCheck, Bumper, EpicVIN, and more. Head-to-head comparisons and alternatives so you pick the right VIN report.',
+  path: '/compare',
+});
 
 export default function CompareHub() {
   const schema = [

@@ -35,7 +35,7 @@ export default function Hero() {
         <div className="text-center lg:text-left">
           <motion.p {...enter(0)} className="inline-flex items-center gap-2 bg-white/10 border border-white/15 text-blue-100 text-xs sm:text-sm font-medium px-4 py-1.5 rounded-full mb-6 backdrop-blur">
             <ShieldCheck className="w-4 h-4 text-emerald-400" aria-hidden="true" />
-            Official NMVTIS, NICB &amp; DMV data · All 50 states
+            NMVTIS title data · All 50 states
           </motion.p>
 
           <motion.h1 {...enter(0.05)} className="font-display text-4xl sm:text-5xl xl:text-6xl font-bold tracking-tight text-white mb-5 leading-[1.07]">
@@ -44,7 +44,7 @@ export default function Hero() {
           </motion.h1>
 
           <motion.p {...enter(0.1)} className="max-w-xl mx-auto lg:mx-0 text-base sm:text-lg text-slate-300 mb-8">
-            Run any VIN or U.S. license plate for an instant vehicle history report — title brands, salvage &amp; flood damage, theft records, open liens, and odometer rollback.
+            Run any 17-character VIN for an instant vehicle history report — title brands, salvage &amp; flood damage, theft records, open liens, and odometer rollback.
           </motion.p>
 
           <motion.div {...enter(0.15)} className="lg:[&_form]:mx-0 lg:[&>div]:mx-0">
@@ -96,7 +96,7 @@ export default function Hero() {
                 </div>
               ))}
             </div>
-            <p className="text-[11px] text-slate-400 mt-4 pt-3 border-t border-slate-100 text-center">40+ verified data points · NMVTIS · NICB · DMV</p>
+            <p className="text-[11px] text-slate-400 mt-4 pt-3 border-t border-slate-100 text-center">Sample preview · Title · Salvage · Theft · Liens · Odometer</p>
           </div>
           {/* floating accent chip */}
           <motion.div

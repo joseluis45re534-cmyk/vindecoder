@@ -62,7 +62,7 @@ const CHECKS = [
   { icon: AlertTriangle, label: 'Salvage / total loss', hint: 'Insurance write-offs', color: 'text-amber-600 bg-amber-50' },
   { icon: Car, label: 'Accident history', hint: 'Reported damage events', color: 'text-rose-600 bg-rose-50' },
   { icon: Gauge, label: 'Odometer readings', hint: 'Rollback & tampering alerts', color: 'text-blue-600 bg-blue-50' },
-  { icon: ShieldCheck, label: 'Theft records', hint: 'NICB theft & recovery', color: 'text-emerald-600 bg-emerald-50' },
+  { icon: ShieldCheck, label: 'Theft check', hint: 'Theft-related records', color: 'text-emerald-600 bg-emerald-50' },
   { icon: BadgeDollarSign, label: 'Liens & loans', hint: 'Open financial claims', color: 'text-violet-600 bg-violet-50' },
   { icon: Gavel, label: 'Auction & sale history', hint: 'Past listings & sales', color: 'text-sky-600 bg-sky-50' },
   { icon: Camera, label: 'Vehicle photos', hint: 'Historical condition photos', color: 'text-fuchsia-600 bg-fuchsia-50' },
@@ -274,7 +274,7 @@ export default function ReportView({ id, sample, initialEmail }: { id: string; s
           </form>
 
           <ul className="mt-6 flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-xs text-slate-500">
-            <li className="flex items-center gap-1.5"><CheckCircle2 className="w-4 h-4 text-emerald-500" aria-hidden="true" /> NMVTIS · NICB · DMV data</li>
+            <li className="flex items-center gap-1.5"><CheckCircle2 className="w-4 h-4 text-emerald-500" aria-hidden="true" /> NMVTIS title data</li>
             <li className="flex items-center gap-1.5"><CheckCircle2 className="w-4 h-4 text-emerald-500" aria-hidden="true" /> Instant preview</li>
           </ul>
         </div>
@@ -413,7 +413,7 @@ export default function ReportView({ id, sample, initialEmail }: { id: string; s
           <p className="text-slate-300 mt-3 max-w-xl mx-auto">
             {sample && !paid
               ? 'An illustrative example of what a full CarVinLookup report covers — not a record for a real vehicle.'
-              : 'Unlock 40+ data points sourced from NMVTIS, NICB & state DMVs — in seconds.'}
+              : 'Unlock the full title, salvage, theft, lien, and odometer history — built on NMVTIS title data.'}
           </p>
         </motion.div>
       </div>
@@ -741,7 +741,7 @@ export default function ReportView({ id, sample, initialEmail }: { id: string; s
 
             <div className="flex items-center justify-center gap-1.5 mt-4 text-xs text-slate-400">
               <Users className="w-3.5 h-3.5 text-blue-400" aria-hidden="true" />
-              Trusted by thousands of U.S. car buyers
+              Built on NMVTIS title data · Cancel anytime
             </div>
           </motion.aside>
         </div>

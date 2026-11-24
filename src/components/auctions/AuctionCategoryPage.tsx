@@ -3,7 +3,8 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { Check, ShieldCheck, Search } from 'lucide-react';
 import { getDamageType, getVehicleType, DAMAGE_TYPES, VEHICLE_TYPES, type AuctionCategory } from '@/lib/auctions';
-import { SITE_URL, SITE_NAME } from '@/lib/site';
+import { SITE_URL } from '@/lib/site';
+import { pageMetadata, NOINDEX_FOLLOW } from '@/lib/seo';
 import JsonLd from '@/components/JsonLd';
 import { breadcrumbLd } from '@/lib/structured-data';
 import SearchForm from '@/components/SearchForm';
@@ -18,32 +19,27 @@ function pathFor(kind: Kind, slug: string): string {
   return `/auctions/${kind === 'damage' ? 'damage' : 'type'}/${slug}`;
 }
 
+const titleCase = (s: string) => s.replace(/\b\w/g, (c) => c.toUpperCase());
+
 export function auctionMetadata(kind: Kind, slug: string): Metadata {
   const cat = resolve(kind, slug);
   if (!cat) return { title: 'Auction category not found' };
   const isDamage = kind === 'damage';
-  const title = isDamage
-    ? `${cat.name} at Auction: What to Check Before You Buy`
-    : `${cat.name} at Auction: VIN Check Guide`;
+  const name = titleCase(cat.name);
+  const title = isDamage ? `${name} at Auction: What to Check` : `${name} at Auction: VIN Check Guide`;
   const description = isDamage
     ? `What ${cat.name.toLowerCase()} means on an auction vehicle, the risks, and what to check with the VIN before you bid. ${cat.short}`
     : `Buying ${cat.name.toLowerCase()} at auction? What to check, common brands, and how to run the VIN history first. ${cat.short}`;
-  const url = `${SITE_URL}${pathFor(kind, slug)}`;
-  return {
+  return pageMetadata({
     title,
     description,
-    alternates: { canonical: pathFor(kind, slug) },
-    openGraph: {
-      type: 'article',
-      siteName: SITE_NAME,
-      title,
-      description,
-      url,
-      locale: 'en_US',
-      images: [{ url: '/opengraph-image.png', width: 1200, height: 630, alt: cat.name }],
-    },
-    twitter: { card: 'summary_large_image', title, description, images: ['/opengraph-image.png'] },
-  };
+    path: pathFor(kind, slug),
+    ogAlt: cat.name,
+    type: 'article',
+    // Thin templated tier (~200 words/page): live for users, out of the index
+    // and sitemap until it's enriched — see CLAUDE.md "Phased indexing".
+    robots: NOINDEX_FOLLOW,
+  });
 }
 
 export function AuctionCategoryPage({ kind, slug }: { kind: Kind; slug: string }) {

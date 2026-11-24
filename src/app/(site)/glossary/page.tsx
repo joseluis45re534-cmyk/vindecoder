@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { pageMetadata } from '@/lib/seo';
 import Link from 'next/link';
 import { BookOpenText } from 'lucide-react';
 import JsonLd from '@/components/JsonLd';
@@ -7,12 +8,12 @@ import { SITE_URL } from '@/lib/site';
 
 export const runtime = 'edge';
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: 'VIN & Vehicle Title Glossary',
   description:
-    'Plain-English definitions of VIN and vehicle-title terms: salvage title, rebuilt title, title washing, odometer rollback, NMVTIS, NICB, liens, recalls, and more.',
-  alternates: { canonical: '/glossary' },
-};
+    'Plain-English definitions of VIN and title terms: salvage, rebuilt, and flood titles, title washing, odometer rollback, NMVTIS, liens, recalls, and more.',
+  path: '/glossary',
+});
 
 // One source of truth for the glossary — rendered visibly AND emitted as
 // DefinedTermSet JSON-LD, so the structured data always mirrors the on-page

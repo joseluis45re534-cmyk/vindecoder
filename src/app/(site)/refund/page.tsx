@@ -1,15 +1,16 @@
 import type { Metadata } from 'next';
+import { pageMetadata } from '@/lib/seo';
 import Link from 'next/link';
 import { TRIAL_PLAN, formatPrice } from '@/lib/pricing';
 
 export const runtime = 'edge';
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: 'Refund & Cancellation Policy',
   description:
     'How CarVinLookup billing works — the $1 trial, the recurring monthly subscription, how to cancel anytime, and our refund terms.',
-  alternates: { canonical: '/refund' },
-};
+  path: '/refund',
+});
 
 const FEE = formatPrice(TRIAL_PLAN.trialFeeCents ?? 100);
 const MONTHLY = formatPrice(TRIAL_PLAN.recurringCents ?? 2900);

@@ -10,7 +10,7 @@
 //   GET /sitemap                                     — slugs + updatedAt
 
 import { getEnv } from '@/lib/cf';
-import { SITE_URL } from '@/lib/site';
+import { SITE_URL, SITE_NAME } from '@/lib/site';
 
 const BASE = 'https://autoseo.it.com/api/content-api/v1';
 export const BLOG_PATH = '/blog';
@@ -84,6 +84,73 @@ export function isOffTopic(slug: string): boolean {
   return OFF_TOPIC.test(slug);
 }
 
+// Consolidated posts -> their one canonical home (308 from /blog/[slug]).
+// AutoSEO generated several posts per competitor / per topic that compete with
+// each other and with our hand-written /compare and /{x}-alternative pages
+// (keyword cannibalization). Each slug here is hidden from /blog, the sitemap,
+// llms.txt, and "Read next", and permanently redirects. ClearVin became a data
+// partner in Nov 2026, so its competitor comparison is retired too.
+// To retire another post: add it here AND delete/unpublish it in AutoSEO.
+export const CONSOLIDATED_POSTS: Record<string, string> = {
+  'carvinlookup-vs-clearvin-comprehensive-comparison': '/compare',
+  'carvinlookup-vs-autocheck-a-comprehensive': '/compare/carvinlookup-vs-autocheck',
+  'autocheck-comparison-autocheck-vs-alternatives': '/autocheck-alternative',
+  'free-autocheck-alternative-discover-comprehensive': '/autocheck-alternative',
+  'carvinlookup-vs-vinaudit-a-comprehensive': '/compare/carvinlookup-vs-vinaudit',
+  'vinaudit-comparison-choosing-the-right-option': '/vinaudit-alternative',
+  'vincheckup-comparison-which-service-is-right': '/blog/carvinlookup-vs-vincheckup-a-comprehensive',
+  'free-vincheckup-alternative-top-options': '/blog/vincheckup-alternatives-discover-the-best-vehicle',
+  'vin-decoder-mazda-unlocking-your-vehicle-s-history': '/blog/mazda-vin-decoder-unlocking-your-vehicle-s-secrets',
+  'vehicle-vin-lookup-your-complete-guide-to-vin': '/blog/vehicle-vin-lookup-your-ultimate-guide-to-vin',
+};
+
+export function consolidatedDestination(slug: string): string | undefined {
+  return Object.prototype.hasOwnProperty.call(CONSOLIDATED_POSTS, slug) ? CONSOLIDATED_POSTS[slug] : undefined;
+}
+
+/** Never listed, linked, or sitemapped: off-topic (404) or consolidated (308). */
+function isHidden(slug: string): boolean {
+  return isOffTopic(slug) || consolidatedDestination(slug) !== undefined;
+}
+
+// Present the article in our own editorial voice: drop AutoSEO's "Powered by
+// AutoSEO — AI SEO content on autopilot" footer (a vendor link on every post),
+// and credit the CarVinLookup Organization as author/publisher instead of a
+// "Person" named after the domain.
+const POWERED_BY = /<p[^>]*class="powered-by-autoseo"[^>]*>[\s\S]*?<\/p>/gi;
+const ARTICLE_TYPES = new Set(['Article', 'BlogPosting', 'NewsArticle']);
+
+function orgRef() {
+  return { '@type': 'Organization', '@id': `${SITE_URL}/#organization`, name: SITE_NAME, url: SITE_URL };
+}
+
+function fixSchemaNode(node: unknown): unknown {
+  if (Array.isArray(node)) return node.map(fixSchemaNode);
+  if (!node || typeof node !== 'object') return node;
+  const out: Record<string, unknown> = {};
+  for (const [k, v] of Object.entries(node as Record<string, unknown>)) out[k] = fixSchemaNode(v);
+  const types = ([] as unknown[]).concat(out['@type']);
+  if (types.some((t) => typeof t === 'string' && ARTICLE_TYPES.has(t))) {
+    out.author = orgRef();
+    out.publisher = { ...orgRef(), logo: { '@type': 'ImageObject', url: `${SITE_URL}/icon-512.png` } };
+  }
+  return out;
+}
+
+function sanitizeArticle(a: ArticleFull): ArticleFull {
+  a.html = (a.html || '').replace(POWERED_BY, '');
+  if (a.seo) {
+    a.seo.jsonLdBlocks = (a.seo.jsonLdBlocks ?? []).map(fixSchemaNode);
+    if (a.seo.jsonLd) {
+      a.seo.jsonLd = a.seo.jsonLd.replace(
+        /"author"\s*:\s*\{[^{}]*"@type"\s*:\s*"Person"[^{}]*\}/g,
+        `"author":${JSON.stringify(orgRef())}`,
+      );
+    }
+  }
+  return a;
+}
+
 async function apiKey(): Promise<string | undefined> {
   const env = await getEnv();
   return env.AUTOSEO_BLOG_API_KEY;
@@ -119,7 +186,7 @@ export async function listArticles(opts: { page?: number; pageSize?: number; tag
   try {
     const data = await af<ArticleList>(`/articles?${q.toString()}`);
     if (!data) throw new AutoSeoError('empty');
-    return { ...data, articles: data.articles.filter((a) => !isOffTopic(a.slug)), ok: true };
+    return { ...data, articles: data.articles.filter((a) => !isHidden(a.slug)), ok: true };
   } catch (err) {
     console.error('[autoseo] listArticles failed:', (err as Error).message);
     return { articles: [], page, pageSize, total: 0, totalPages: 0, ok: false };
@@ -146,8 +213,9 @@ export async function getArticle(slug: string): Promise<ArticleFull | null> {
   const q = new URLSearchParams({ baseUrl: BLOG_INDEX_URL });
   const data = await af<{ article: ArticleFull }>(`/articles/${encodeURIComponent(slug)}?${q.toString()}`, { notFoundOk: true });
   const article = data?.article ?? null;
-  if (article?.related) article.related = article.related.filter((r) => !isOffTopic(r.slug));
-  return article;
+  if (!article) return null;
+  if (article.related) article.related = article.related.filter((r) => !isHidden(r.slug));
+  return sanitizeArticle(article);
 }
 
 export async function getTags(): Promise<{ tag: string; slug: string; count: number }[]> {
@@ -166,7 +234,7 @@ export async function getBlogSitemap(): Promise<{ slug: string; updatedAt: strin
     const data = await af<{ entries: { slug: string; updatedAt: string }[]; count: number }>(`/sitemap`);
     const seen = new Set<string>();
     return (data?.entries ?? []).filter((e) => {
-      if (isOffTopic(e.slug) || seen.has(e.slug)) return false;
+      if (isHidden(e.slug) || seen.has(e.slug)) return false;
       seen.add(e.slug);
       return true;
     });

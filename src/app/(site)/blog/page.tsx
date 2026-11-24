@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { pageMetadata } from '@/lib/seo';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { listArticles } from '@/lib/autoseo';
@@ -14,12 +15,12 @@ function pageNumber(raw?: string): number {
 // page 1 — canonicalizing it to /blog tells Google to ignore those posts' links).
 export async function generateMetadata({ searchParams }: { searchParams: Promise<{ page?: string }> }): Promise<Metadata> {
   const page = pageNumber((await searchParams).page);
-  return {
+  return pageMetadata({
     title: page > 1 ? `VIN & Used-Car Buying Guides – Page ${page}` : 'VIN & Used-Car Buying Guides',
     description:
       'Practical guides on VIN checks, salvage and flood titles, odometer fraud, and buying a used car safely in the United States.',
-    alternates: { canonical: page > 1 ? `/blog?page=${page}` : '/blog' },
-  };
+    path: page > 1 ? `/blog?page=${page}` : '/blog',
+  });
 }
 
 function fmtDate(iso: string) {

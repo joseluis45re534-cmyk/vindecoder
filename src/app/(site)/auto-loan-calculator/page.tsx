@@ -1,28 +1,20 @@
 import type { Metadata } from 'next';
+import { pageMetadata } from '@/lib/seo';
 import Link from 'next/link';
 import { Search } from 'lucide-react';
 import PaymentCalculator from '@/components/PaymentCalculator';
-import { SITE_URL, SITE_NAME } from '@/lib/site';
+import { SITE_URL } from '@/lib/site';
 import JsonLd from '@/components/JsonLd';
 import { breadcrumbLd, faqPageLd } from '@/lib/structured-data';
 
 export const runtime = 'edge';
 
-export const metadata: Metadata = {
-  title: 'Auto Loan Calculator: Estimate Your Monthly Car Payment',
+export const metadata: Metadata = pageMetadata({
+  title: 'Auto Loan Calculator: Monthly Car Payment',
   description:
     'Free auto loan calculator. Enter the price, down payment, APR, and term to estimate your monthly car payment and total interest before you buy.',
-  alternates: { canonical: '/auto-loan-calculator' },
-  openGraph: {
-    type: 'website',
-    siteName: SITE_NAME,
-    title: 'Auto Loan Calculator — CarVinLookup',
-    description: 'Estimate your monthly car payment and total interest.',
-    url: `${SITE_URL}/auto-loan-calculator`,
-    locale: 'en_US',
-    images: [{ url: '/opengraph-image.png', width: 1200, height: 630, alt: 'Auto loan calculator' }],
-  },
-};
+  path: '/auto-loan-calculator',
+});
 
 const faq = [
   { q: 'How is a car loan payment calculated?', a: 'The monthly payment is based on the amount financed (price minus down payment), the APR, and the loan term. The formula amortizes the loan so each payment covers interest plus a share of principal.' },

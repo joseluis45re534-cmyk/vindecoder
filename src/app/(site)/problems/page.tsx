@@ -1,28 +1,20 @@
 import type { Metadata } from 'next';
+import { pageMetadata } from '@/lib/seo';
 import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
 import { PROBLEM_PAGES } from '@/lib/problem-pages';
-import { SITE_URL, SITE_NAME } from '@/lib/site';
+import { SITE_URL } from '@/lib/site';
 import JsonLd from '@/components/JsonLd';
 import { breadcrumbLd } from '@/lib/structured-data';
 
 export const runtime = 'edge';
 
-export const metadata: Metadata = {
-  title: 'Used-Car Problems: Stolen, Totaled & Flood-Damaged Cars',
+export const metadata: Metadata = pageMetadata({
+  title: 'Used-Car Problems: Theft, Total Loss & Flood',
   description:
     'The used-car problems that cost buyers the most — theft, total losses, flood damage, and hidden red flags — and how to check any VIN before you buy.',
-  alternates: { canonical: '/problems' },
-  openGraph: {
-    type: 'website',
-    siteName: SITE_NAME,
-    title: 'Used-Car Problems — CarVinLookup',
-    description: 'Stolen, totaled, and flood-damaged cars, and how to check a VIN before you buy.',
-    url: `${SITE_URL}/problems`,
-    locale: 'en_US',
-    images: [{ url: '/opengraph-image.png', width: 1200, height: 630, alt: 'Used-car problems' }],
-  },
-};
+  path: '/problems',
+});
 
 const CARDS = [
   { href: '/most-stolen-cars', title: 'Most stolen cars', desc: 'The models that top the NICB most-stolen rankings — and how to check for theft.' },

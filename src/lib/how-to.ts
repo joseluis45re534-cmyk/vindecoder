@@ -49,14 +49,14 @@ export const HOW_TO_GUIDES: HowToGuide[] = [
     steps: [
       { name: 'Find the VIN', text: 'Look at the lower-left corner of the windshield, the driver-side door jamb sticker, and the title or registration. All three should match.' },
       { name: 'Confirm it is valid', text: 'A real VIN is exactly 17 characters and uses no I, O, or Q. If it is shorter, it is likely a pre-1981 vehicle with a different format.' },
-      { name: 'Enter the VIN for a free preview', text: 'Type the VIN (or a U.S. license plate and state) into the search box to confirm the year, make, and model at no cost.' },
-      { name: 'Unlock the full history report', text: 'Review title brands, theft records, liens, and odometer readings sourced from NMVTIS, NICB, and state DMVs.' },
+      { name: 'Enter the VIN for a free preview', text: 'Type the VIN into the search box to confirm the year, make, and model at no cost.' },
+      { name: 'Unlock the full history report', text: 'Review title brands, the theft check, liens, and odometer readings — built on NMVTIS title data.' },
       { name: 'Compare against the paperwork', text: 'If the report shows a brand or odometer problem the seller did not disclose, you have your answer before spending a dollar more.' },
     ],
     faq: [
       { q: 'Is a VIN check free?', a: 'The identity preview — year, make, model, and VIN validation — is free. The full history report (title brands, theft, liens, odometer) is a paid unlock.' },
       { q: 'What if the VIN is not 17 characters?', a: 'Vehicles built before 1981 used shorter, non-standard VINs. Modern U.S. vehicles are always 17 characters; a short or malformed VIN on a newer car is a red flag.' },
-      { q: 'Can I check by license plate instead?', a: 'Yes. Enter a U.S. license plate and state and it resolves to the VIN, then pulls the same report.' },
+      { q: 'Can I check by license plate instead?', a: 'Not on CarVinLookup yet — plate-to-VIN search is launching soon. The VIN printed on the car gets you exactly the same report today.' },
     ],
     related: ['decode-wmi', 'read-vin-report', 'check-title-status'],
   },
@@ -121,7 +121,7 @@ export const HOW_TO_GUIDES: HowToGuide[] = [
     slug: 'find-license-plate-vin',
     title: 'How to Find a VIN from a License Plate',
     description:
-      'You can resolve a license plate to a VIN with a plate lookup. Learn how it works, what privacy law limits, and how to run the full history from there.',
+      'How plate-to-VIN lookups work, what privacy law limits, and the faster ways to get a VIN from the car or its paperwork so you can run the full history.',
     keyword: 'find VIN from license plate',
     category: 'VIN basics',
     readingMinutes: 4,
@@ -135,13 +135,13 @@ export const HOW_TO_GUIDES: HowToGuide[] = [
     ],
     steps: [
       { name: 'Note the plate and state', text: 'You need both — plates are only unique within a state.' },
-      { name: 'Run a plate-to-VIN lookup', text: 'Enter the plate and state to resolve the vehicle identity and its VIN.' },
+      { name: 'Run a plate-to-VIN lookup', text: 'A plate-to-VIN service resolves the plate and state to the vehicle and its VIN. CarVinLookup’s is launching soon; until then, ask the seller for the VIN or read it off the windshield or door jamb.' },
       { name: 'Verify the identity', text: 'Confirm the returned year, make, and model match the listing before going further.' },
       { name: 'Pull the full history', text: 'Use the VIN to run the report — title brands, theft, liens, and odometer.' },
     ],
     faq: [
       { q: 'Can I get the owner name from a plate?', a: 'No. The DPPA restricts access to personal information tied to a motor-vehicle record. Any service promising an owner name and address to a random buyer is a red flag.' },
-      { q: 'Does a plate lookup work in every state?', a: 'Coverage varies, but a plate and state can generally resolve to the VIN, which is what you need for a history report.' },
+      { q: 'Does a plate lookup work in every state?', a: 'Coverage varies by provider. CarVinLookup’s plate-to-VIN search is launching soon for all 50 states; until then, the VIN printed on the car gets you the same report.' },
     ],
     related: ['check-vin-number', 'read-vin-report', 'avoid-curbstoner'],
   },
@@ -225,7 +225,7 @@ export const HOW_TO_GUIDES: HowToGuide[] = [
       { name: 'Report suspicions', text: 'If something is off, do not buy. Report a suspected stolen vehicle to local law enforcement.' },
     ],
     faq: [
-      { q: 'Is checking if a car is stolen free?', a: 'The NICB VINCheck is free and screens for theft and salvage records. A full history report adds title, lien, and odometer data.' },
+      { q: 'Is checking if a car is stolen free?', a: 'Yes. The NICB VINCheck is free and screens for unrecovered theft and salvage reports from participating insurers. A full history report is a separate product that adds title, lien, and odometer data.' },
       { q: 'What is VIN cloning?', a: 'Cloning copies a legitimate VIN from one car onto a stolen one. Matching every VIN location against the title is how you catch it.' },
     ],
     related: ['read-vin-report', 'check-vin-number', 'avoid-curbstoner'],

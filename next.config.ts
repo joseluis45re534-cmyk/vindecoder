@@ -36,6 +36,10 @@ const nextConfig: NextConfig = {
       // left to 404 correctly — they should not resolve.
       { source: "/refund-policy", destination: "/refund", permanent: true },
       { source: "/index.html", destination: "/", permanent: true },
+      // ClearVin became a data partner (Nov 2026): its competitor pages are
+      // retired. (The AutoSEO comparison post redirects via CONSOLIDATED_POSTS.)
+      { source: "/clearvin-alternative", destination: "/compare", permanent: true },
+      { source: "/compare/carvinlookup-vs-clearvin", destination: "/compare", permanent: true },
     ];
   },
 };

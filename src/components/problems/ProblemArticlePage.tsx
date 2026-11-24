@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { pageMetadata } from '@/lib/seo';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { ShieldCheck, Search } from 'lucide-react';
@@ -10,22 +11,7 @@ import { breadcrumbLd, faqPageLd } from '@/lib/structured-data';
 export function problemMetadata(slug: string): Metadata {
   const p = getProblemPage(slug);
   if (!p) return { title: 'Not found' };
-  const url = `${SITE_URL}/${p.slug}`;
-  return {
-    title: p.metaTitle,
-    description: p.metaDescription,
-    alternates: { canonical: `/${p.slug}` },
-    openGraph: {
-      type: 'article',
-      siteName: SITE_NAME,
-      title: p.metaTitle,
-      description: p.metaDescription,
-      url,
-      locale: 'en_US',
-      images: [{ url: '/opengraph-image.png', width: 1200, height: 630, alt: p.name }],
-    },
-    twitter: { card: 'summary_large_image', title: p.metaTitle, description: p.metaDescription, images: ['/opengraph-image.png'] },
-  };
+  return pageMetadata({ title: p.metaTitle, description: p.metaDescription, path: `/${p.slug}`, ogAlt: p.name, type: 'article' });
 }
 
 export function ProblemArticlePage({ slug }: { slug: string }) {
@@ -67,7 +53,7 @@ export function ProblemArticlePage({ slug }: { slug: string }) {
               <li className="text-blue-100 font-medium">{p.name}</li>
             </ol>
           </nav>
-          <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-white mb-5 leading-tight">{p.metaTitle.replace(' — CarVinLookup', '')}</h1>
+          <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-white mb-5 leading-tight">{p.metaTitle}</h1>
           <p className="text-base sm:text-lg text-slate-300 max-w-2xl mx-auto">{p.intro}</p>
         </div>
       </section>

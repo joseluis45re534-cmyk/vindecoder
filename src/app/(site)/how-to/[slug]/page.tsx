@@ -1,9 +1,10 @@
 import type { Metadata } from 'next';
+import { pageMetadata } from '@/lib/seo';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { ArrowLeft, CheckCircle2, ShieldCheck, Search } from 'lucide-react';
 import { getGuide, HOW_TO_GUIDES } from '@/lib/how-to';
-import { SITE_URL, SITE_NAME } from '@/lib/site';
+import { SITE_URL } from '@/lib/site';
 import JsonLd from '@/components/JsonLd';
 import { howToLd, breadcrumbLd, faqPageLd } from '@/lib/structured-data';
 
@@ -17,27 +18,13 @@ export async function generateMetadata({
   const { slug } = await params;
   const guide = getGuide(slug);
   if (!guide) return { title: 'Guide not found' };
-  const url = `${SITE_URL}/how-to/${guide.slug}`;
-  return {
+  return pageMetadata({
     title: guide.title,
     description: guide.description,
-    alternates: { canonical: `/how-to/${guide.slug}` },
-    openGraph: {
-      type: 'article',
-      siteName: SITE_NAME,
-      title: guide.title,
-      description: guide.description,
-      url,
-      locale: 'en_US',
-      images: [{ url: '/opengraph-image.png', width: 1200, height: 630, alt: guide.title }],
-    },
-    twitter: {
-      card: 'summary_large_image',
-      title: guide.title,
-      description: guide.description,
-      images: ['/opengraph-image.png'],
-    },
-  };
+    path: `/how-to/${guide.slug}`,
+    ogAlt: guide.title,
+    type: 'article',
+  });
 }
 
 export default async function HowToGuidePage({

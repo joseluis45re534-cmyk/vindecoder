@@ -32,7 +32,7 @@ export const DEFAULT_PLANS: Plan[] = [
         features: [
             'Full NMVTIS title & brand history',
             'Salvage, flood & junk records',
-            'Theft records (NICB)',
+            'Theft check',
             'Open lien check',
             'Odometer rollback alerts',
             'Instant PDF download',

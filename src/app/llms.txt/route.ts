@@ -22,23 +22,25 @@ export async function GET() {
 
   const body = `# CarVinLookup
 
-> CarVinLookup runs instant U.S. vehicle history reports from a VIN or license plate, combining NMVTIS title records, NICB theft data, and state DMV records.
+> CarVinLookup runs instant U.S. vehicle history reports from a 17-character VIN, built on NMVTIS title data (via an approved NMVTIS data provider) plus insurance, salvage-auction, lien, odometer, and NHTSA recall records.
 
-CarVinLookup helps used-car buyers in the United States check a vehicle before purchase. Enter any 17-character VIN or a U.S. license plate (all 50 states) to get a report. A free preview confirms the vehicle's identity first; full report access starts at ${fee} today — a ${days}-day trial that becomes ${monthly}/month unless you cancel. Cancel anytime.
+CarVinLookup helps used-car buyers in the United States check a vehicle before purchase. Enter any 17-character VIN (cars titled in all 50 states) to get a report. License-plate search is launching soon and is not live yet. A free preview confirms the vehicle's identity first; full report access starts at ${fee} today — a ${days}-day trial that becomes ${monthly}/month unless you cancel. Cancel anytime.
 
 ## What a report covers
 
 - Title brands: salvage, rebuilt, junk, and flood-damage titles (sourced from NMVTIS)
-- Theft records: active theft reports from the National Insurance Crime Bureau (NICB)
+- Total-loss and salvage records reported by insurers and salvage yards; salvage-auction records where available
+- Theft check: theft-related records reported for the VIN
 - Open liens: outstanding loans or liens recorded against the vehicle
 - Odometer history: reported mileage readings and rollback or tampering alerts
-- Vehicle identity: make, model, year, body type, engine, and color
+- Open safety recalls (NHTSA)
+- Vehicle identity: make, model, year, body type, and engine
 
 ## How it works
 
-1. Enter the 17-character VIN or a U.S. license plate and state.
-2. CarVinLookup queries NMVTIS, NICB, and DMV title records.
-3. A full vehicle history report is generated instantly.
+1. Enter the 17-character VIN.
+2. Review the free vehicle preview (year, make, model).
+3. Unlock the full history report — generated online immediately.
 
 ## Pricing
 
@@ -51,7 +53,7 @@ CarVinLookup helps used-car buyers in the United States check a vehicle before p
 - Pricing: ${SITE_URL}/pricing
 - Blog (buying guides): ${SITE_URL}/blog
 - How-to guides: ${SITE_URL}/how-to
-- Window sticker lookup by VIN: ${SITE_URL}/window-sticker
+- Window sticker guide (VIN-based sticker lookup launching soon): ${SITE_URL}/window-sticker
 - Salvage auction guide: ${SITE_URL}/auctions
 - Compare providers: ${SITE_URL}/compare
 
@@ -74,15 +76,16 @@ ${checks.map((c) => `- ${c.h1}: ${SITE_URL}/${c.slug}`).join('\n')}
 ## Compare & alternatives
 
 - Compare providers: ${SITE_URL}/compare
-${COMPETITORS.map((c) => `- Best ${c.name} alternative: ${SITE_URL}/${c.slug}-alternative`).join('\n')}
+${COMPETITORS.map((c) => `- ${c.name} alternative: ${SITE_URL}/${c.slug}-alternative`).join('\n')}
 
 ## Data sources
 
-- NMVTIS — National Motor Vehicle Title Information System
-- NICB — National Insurance Crime Bureau
-- NHTSA — National Highway Traffic Safety Administration (recalls)
-- State DMV title and registration databases
-- Full methodology and honest limitations: ${SITE_URL}/data-sources
+- NMVTIS — National Motor Vehicle Title Information System (U.S. DOJ), accessed through an approved NMVTIS data provider
+- Insurers, junk and salvage yards — total-loss and salvage reports (federally required NMVTIS reporting)
+- Salvage-auction sale records, where available
+- NHTSA — National Highway Traffic Safety Administration (recalls, VIN decoding)
+- Not a source: the NICB's free VINCheck is a separate tool; CarVinLookup reports do not include NICB data
+- Full methodology, honest limitations, and the NMVTIS disclaimer: ${SITE_URL}/data-sources
 
 ## Reference
 
