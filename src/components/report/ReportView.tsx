@@ -428,7 +428,6 @@ export default function ReportView({ id, sample, initialEmail }: { id: string; s
                 <div className="relative w-full h-36 sm:h-full min-h-[140px] rounded-2xl overflow-hidden bg-slate-100 border border-slate-200">
                   {hasRealPhoto ? (
                     <>
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
                       <motion.img
                         src={data.photoUrl as string}
                         alt={`${title} — vehicle photo`}

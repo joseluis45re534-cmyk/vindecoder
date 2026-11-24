@@ -31,21 +31,21 @@ export function SiteHeader() {
           <Logo className="h-9 sm:h-10 w-auto group-hover:opacity-90 transition-opacity" />
         </Link>
         <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-slate-600">
-          <a href="/#how-it-works" className="hover:text-slate-900 transition-colors">How it works</a>
+          <Link href="/#how-it-works" className="hover:text-slate-900 transition-colors">How it works</Link>
           <Link href="/vin-check" className="hover:text-slate-900 transition-colors">Brands</Link>
           <Link href="/pricing" className="hover:text-slate-900 transition-colors">Pricing</Link>
           <Link href="/how-to" className="hover:text-slate-900 transition-colors">How-to</Link>
           <Link href="/blog" className="hover:text-slate-900 transition-colors">Blog</Link>
-          <a href="/#faq" className="hover:text-slate-900 transition-colors">FAQ</a>
+          <Link href="/#faq" className="hover:text-slate-900 transition-colors">FAQ</Link>
         </nav>
         <div className="flex items-center gap-3">
           <AccountNav />
-          <a
+          <Link
             href="/#vin-search"
             className="hidden md:inline-flex bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold px-5 py-2.5 rounded-full shadow-md shadow-blue-600/25 transition-all hover:shadow-lg hover:shadow-blue-600/30 active:scale-[0.97]"
           >
             Run a VIN check
-          </a>
+          </Link>
           <MobileMenu />
         </div>
       </div>
@@ -128,11 +128,11 @@ export function SiteFooter() {
           <div>
             <h2 className="text-white text-sm font-semibold mb-4 uppercase tracking-wider">Product</h2>
             <ul className="space-y-2.5 text-sm">
-              <li><a href="/#vin-search" className="hover:text-white transition-colors">VIN check</a></li>
+              <li><Link href="/#vin-search" className="hover:text-white transition-colors">VIN check</Link></li>
               <li><Link href="/vin-check" className="hover:text-white transition-colors">VIN check by brand</Link></li>
               <li><Link href="/window-sticker" className="hover:text-white transition-colors">Window sticker guide</Link></li>
               <li><Link href="/pricing" className="hover:text-white transition-colors">Pricing</Link></li>
-              <li><a href="/#examples" className="hover:text-white transition-colors">Sample reports</a></li>
+              <li><Link href="/#examples" className="hover:text-white transition-colors">Sample reports</Link></li>
               <li><Link href="/compare" className="hover:text-white transition-colors">Compare providers</Link></li>
               <li><Link href="/auto-loan-calculator" className="hover:text-white transition-colors">Auto loan calculator</Link></li>
               <li><Link href="/lease-calculator" className="hover:text-white transition-colors">Lease calculator</Link></li>

@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { FileText, DollarSign, Gauge, Wrench, ShieldCheck, Search } from 'lucide-react';
-import { getStickerModel, getStickerMake } from '@/lib/window-stickers';
+import { getStickerModel } from '@/lib/window-stickers';
 import { SITE_URL, SITE_NAME } from '@/lib/site';
 import JsonLd from '@/components/JsonLd';
 import { breadcrumbLd, faqPageLd } from '@/lib/structured-data';

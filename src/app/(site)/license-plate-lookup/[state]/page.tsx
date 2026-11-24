@@ -106,7 +106,7 @@ export default async function StatePlatePage({
       <article className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-14 prose-content">
         <h2>How a {s.name} license plate lookup works</h2>
         <p>
-          A license plate is a pointer to a vehicle's records. A plate lookup resolves a {s.name} plate and the state to the
+          A license plate is a pointer to a vehicle&apos;s records. A plate lookup resolves a {s.name} plate and the state to the
           17-character VIN, and from there you get the same history report you would by entering the VIN directly. Because plates
           are only unique within a state, the state matters. Our plate-to-VIN search is launching soon — until then, the VIN is
           the fastest route.
@@ -123,8 +123,8 @@ export default async function StatePlatePage({
         <h2>What you can and cannot find</h2>
         <p>
           You can identify the vehicle (year, make, model) and unlock its title, theft, lien, and odometer history. You cannot
-          get the owner's personal details: the federal <strong>Driver's Privacy Protection Act (DPPA)</strong> protects that
-          information, and any service promising an owner's name and address from a plate is a red flag.
+          get the owner&apos;s personal details: the federal <strong>Driver&apos;s Privacy Protection Act (DPPA)</strong> protects that
+          information, and any service promising an owner&apos;s name and address from a plate is a red flag.
         </p>
       </article>
 

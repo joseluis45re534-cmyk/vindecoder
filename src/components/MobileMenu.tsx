@@ -115,13 +115,13 @@ export default function MobileMenu() {
               </Link>
             </div>
           )}
-          <a
+          <Link
             href="/#vin-search"
             onClick={() => setOpen(false)}
             className="mt-4 bg-blue-600 hover:bg-blue-700 text-white text-center font-semibold px-5 py-3.5 rounded-full shadow-md shadow-blue-600/25 active:scale-[0.98] transition-all"
           >
             Run a VIN check
-          </a>
+          </Link>
         </nav>
       </div>
     </div>

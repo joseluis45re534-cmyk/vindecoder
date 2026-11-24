@@ -4,7 +4,8 @@ import { notFound } from 'next/navigation';
 import { ShieldCheck, FileText, Database, AlertTriangle, Gauge, Search } from 'lucide-react';
 import { getBrand, BRANDS } from '@/lib/brands';
 import { getStickerMake } from '@/lib/window-stickers';
-import { SITE_URL, CONTENT_REVISED } from '@/lib/site';
+import { SITE_URL, CONTENT_REVISED, formatRevised } from '@/lib/site';
+import { BRAND_WMIS, BRAND_WMIS_RETRIEVED } from '@/lib/brand-wmis';
 import { pageMetadata } from '@/lib/seo';
 import SearchForm from '@/components/SearchForm';
 
@@ -43,6 +44,24 @@ export default async function BrandPage({
     const d = k < 10 ? k - 10 : k - 9; // -10..-1, 1..10
     return BRANDS[(bi + d + BRANDS.length) % BRANDS.length];
   }).filter((b, i, arr) => b.slug !== brand.slug && arr.findIndex((x) => x.slug === b.slug) === i);
+
+  // Verified NHTSA vPIC manufacturer codes (scripts/fetch-brand-wmis.mjs).
+  // Codes used only by this make first, then North American plants (what U.S.
+  // buyers mostly see), then the rest.
+  const NA = ['United States', 'Canada', 'Mexico'];
+  const rank = (c: string) => (NA.includes(c) ? NA.indexOf(c) : NA.length);
+  const wmis = [...(BRAND_WMIS[brand.slug] ?? [])].sort(
+    (a, b) =>
+      Number(a.sharedWith.length > 0) - Number(b.sharedWith.length > 0) ||
+      rank(a.country) - rank(b.country) ||
+      a.country.localeCompare(b.country) ||
+      a.wmi.localeCompare(b.wmi),
+  );
+  const exclusive = wmis.filter((w) => w.sharedWith.length === 0);
+  const examples = (exclusive.length ? exclusive : wmis).slice(0, 3).map((w) => w.wmi);
+  const countries = [...new Set(wmis.map((w) => w.country))];
+  const listJoin = (a: string[]) => (a.length < 2 ? a.join('') : `${a.slice(0, -1).join(', ')} and ${a[a.length - 1]}`);
+  const WMI_ROWS = 15;
 
   const faq = [
     { q: `Is the ${brand.name} VIN check free?`, a: `You get a free preview of the vehicle's identity. The full ${brand.name} history report — title brands, theft, liens, and odometer — is a paid unlock.` },
@@ -128,11 +147,58 @@ export default async function BrandPage({
         <h2>About {brand.name} VINs</h2>
         <p>
           {brand.name} was founded in {brand.founded} ({brand.country}). {brand.blurb} Every {brand.name} sold in the United
-          States carries a unique 17-character Vehicle Identification Number (VIN). {brand.name} VINs commonly begin with{' '}
-          <strong>{brand.vinHints}</strong>, where the first three characters (the World Manufacturer Identifier) encode the
-          country of origin and manufacturer. Decoding the VIN confirms the model year, plant, engine, and trim — and lets you
+          States carries a unique 17-character Vehicle Identification Number (VIN).{' '}
+          {examples.length > 0 ? (
+            <>
+              NHTSA lists {wmis.length} manufacturer code{wmis.length === 1 ? '' : 's'} for {brand.name} — for example{' '}
+              <strong>{examples.join(', ')}</strong> — where the first three characters (the World Manufacturer Identifier)
+              encode the manufacturer and the country the vehicle was built in.
+            </>
+          ) : (
+            <>The first three characters (the World Manufacturer Identifier) encode the manufacturer and country of origin.</>
+          )} Decoding the VIN confirms the model year, plant, engine, and trim — and lets you
           pull the car&apos;s full history before you buy.
         </p>
+
+        {wmis.length > 0 && (
+          <>
+            <h2>{brand.name} VIN prefixes (WMI codes)</h2>
+            <p>
+              The first three characters of a VIN — the World Manufacturer Identifier — show who built the vehicle and in
+              which country. NHTSA&apos;s vPIC database lists these codes for {brand.name}
+              {countries.length > 0 ? `, covering vehicles built in ${listJoin(countries)}` : ''}:
+            </p>
+            <div className="not-prose overflow-x-auto my-6">
+              <table className="w-full text-sm border border-slate-200 rounded-xl overflow-hidden">
+                <thead className="bg-slate-50 text-slate-500 text-left">
+                  <tr>
+                    <th scope="col" className="px-4 py-2.5 font-semibold">WMI</th>
+                    <th scope="col" className="px-4 py-2.5 font-semibold">Built in</th>
+                    <th scope="col" className="px-4 py-2.5 font-semibold">Vehicle type</th>
+                    <th scope="col" className="px-4 py-2.5 font-semibold">Also registered to</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {wmis.slice(0, WMI_ROWS).map((w) => (
+                    <tr key={w.wmi} className="border-t border-slate-100">
+                      <td className="px-4 py-2 font-mono font-bold text-slate-900">{w.wmi}</td>
+                      <td className="px-4 py-2 text-slate-700">{w.country}</td>
+                      <td className="px-4 py-2 text-slate-700">{w.vehicleType}</td>
+                      <td className="px-4 py-2 text-slate-500">{w.sharedWith.length ? w.sharedWith.join(', ') : '—'}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            {wmis.length > WMI_ROWS && <p>…plus {wmis.length - WMI_ROWS} more {brand.name} codes in vPIC.</p>}
+            <p className="text-sm text-slate-500">
+              A code registered to several makes belongs to their parent manufacturer — positions 4–8 of the VIN identify the
+              actual model. Source:{' '}
+              <a href="https://vpic.nhtsa.dot.gov/decoder/" target="_blank" rel="noopener noreferrer">NHTSA vPIC</a>, retrieved{' '}
+              {formatRevised(BRAND_WMIS_RETRIEVED)}. Try a VIN in the <Link href="/vin-decoder">free VIN decoder</Link>.
+            </p>
+          </>
+        )}
 
         <h2>What to check on a used {brand.name}</h2>
         <p>

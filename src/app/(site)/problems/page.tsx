@@ -2,7 +2,6 @@ import type { Metadata } from 'next';
 import { pageMetadata } from '@/lib/seo';
 import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
-import { PROBLEM_PAGES } from '@/lib/problem-pages';
 import { SITE_URL } from '@/lib/site';
 import JsonLd from '@/components/JsonLd';
 import { breadcrumbLd } from '@/lib/structured-data';

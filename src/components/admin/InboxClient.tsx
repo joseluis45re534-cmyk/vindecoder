@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Loader2, Send, Headset, Mail, Database } from 'lucide-react';
+import { Loader2, Send, Mail, Database } from 'lucide-react';
 
 interface ChatItem {
   id: string;

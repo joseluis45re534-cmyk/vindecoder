@@ -3,7 +3,6 @@
 // Catches errors in the root layout/template. Replaces the whole document, so
 // it must render its own <html>/<body>. Keeps users off a bare 500 page.
 export default function GlobalError({
-  error,
   reset,
 }: {
   error: Error & { digest?: string };
@@ -43,6 +42,7 @@ export default function GlobalError({
             >
               Try again
             </button>
+            {/* eslint-disable-next-line @next/next/no-html-link-for-pages -- a full reload is intended after a root-level crash */}
             <a
               href="/"
               style={{
