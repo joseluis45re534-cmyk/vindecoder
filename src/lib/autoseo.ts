@@ -11,6 +11,7 @@
 
 import { getEnv } from '@/lib/cf';
 import { SITE_URL, SITE_NAME } from '@/lib/site';
+import { COMPETITORS, comparisonSlug } from '@/lib/comparisons';
 
 const BASE = 'https://autoseo.it.com/api/content-api/v1';
 export const BLOG_PATH = '/blog';
@@ -123,8 +124,31 @@ export const CONSOLIDATED_POSTS: Record<string, string> = {
   'vin-decoder-mazda-unlocking-your-vehicle-s-history': '/vin-check/mazda',
 };
 
+// Automatic guard for FUTURE AutoSEO posts that follow the templates found to
+// be unreliable (Nov 2026 review): "carvinlookup-vs-<x>" posts invented
+// CarVinLookup features and prices, and "<competitor> alternative / vs" posts
+// duplicate our hand-written /compare and /<x>-alternative pages. Such slugs are
+// routed to the hand-written page automatically, with no list to maintain.
+// ClearVin is a data partner, so any ClearVin comparison goes to /compare.
+const COMPETITOR_SLUGS = COMPETITORS.map((c) => c.slug);
+
+function patternDestination(slug: string): string | undefined {
+  const s = slug.toLowerCase();
+  if (s.includes('clearvin')) return '/compare';
+  // The competitor named FIRST in the slug ("vinaudit-vs-carfax" -> vinaudit).
+  const competitor = COMPETITOR_SLUGS.map((c) => ({ c, i: s.search(new RegExp(`(^|-)${c}(-|$)`)) }))
+    .filter((x) => x.i >= 0)
+    .sort((a, b) => a.i - b.i)[0]?.c;
+  if (s.startsWith('carvinlookup-vs-')) return competitor ? `/compare/${comparisonSlug(competitor)}` : '/compare';
+  if (competitor && /(^|-)(alternatives?|vs|versus|comparison|compare)(-|$)/.test(s)) {
+    return /(^|-)alternatives?(-|$)/.test(s) ? `/${competitor}-alternative` : `/compare/${comparisonSlug(competitor)}`;
+  }
+  return undefined;
+}
+
 export function consolidatedDestination(slug: string): string | undefined {
-  return Object.prototype.hasOwnProperty.call(CONSOLIDATED_POSTS, slug) ? CONSOLIDATED_POSTS[slug] : undefined;
+  if (Object.prototype.hasOwnProperty.call(CONSOLIDATED_POSTS, slug)) return CONSOLIDATED_POSTS[slug];
+  return patternDestination(slug);
 }
 
 /** Never listed, linked, or sitemapped: off-topic (404) or consolidated (308). */
