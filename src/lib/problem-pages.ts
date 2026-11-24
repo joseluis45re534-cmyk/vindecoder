@@ -68,7 +68,7 @@ export const PROBLEM_PAGES: ProblemPage[] = [
     metaDescription:
       'After major storms, flood-damaged cars are cleaned up and resold nationwide. Learn how they spread, the warning signs, and how to check a VIN for flood damage.',
     intro:
-      'After every major storm, tens of thousands of flood-damaged cars are dried out and resold — often far from where they flooded. Here is how they spread and how to avoid buying one.',
+      'After major storms, flood-damaged cars are often dried out and resold — sometimes far from where they flooded. Here is how they spread and how to avoid buying one.',
     sections: [
       {
         h2: 'Why flood cars end up everywhere',

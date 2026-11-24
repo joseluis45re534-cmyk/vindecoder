@@ -630,7 +630,7 @@ export default function ReportView({ id, sample, initialEmail }: { id: string; s
                   className="mt-4 flex items-center justify-center gap-2 rounded-2xl bg-slate-50 border border-slate-100 px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-100 transition-colors"
                 >
                   <Lock className="w-4 h-4" aria-hidden="true" />
-                  Unlock the full history — {totalRecords > 0 ? `${totalRecords} records` : '40+ data points'}
+                  Unlock the full history — {totalRecords > 0 ? `${totalRecords} records` : 'every record we find'}
                 </a>
               </motion.div>
             ) : (
@@ -658,7 +658,7 @@ export default function ReportView({ id, sample, initialEmail }: { id: string; s
                     <Lock className="w-5 h-5 text-white" aria-hidden="true" />
                   </span>
                   <p className="font-bold text-slate-900">Unlock to reveal the full history</p>
-                  <p className="text-sm text-slate-500 mt-1">40+ verified data points</p>
+                  <p className="text-sm text-slate-500 mt-1">Title, salvage, theft, lien &amp; odometer records</p>
                 </div>
               </motion.div>
             )}

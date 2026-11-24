@@ -97,7 +97,7 @@ export const TRIAL_PLAN: Plan = {
         'Accident & auction history',
         'Real vehicle photos',
         'Open safety recalls',
-        'Full specs & 40+ data points',
+        'Full factory specs',
         'Downloadable PDF report',
     ],
 };
