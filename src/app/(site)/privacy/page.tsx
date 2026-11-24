@@ -22,7 +22,7 @@ export default function PrivacyPage() {
         </p>
         <h2>Information we collect</h2>
         <ul>
-          <li><strong>VIN / plate lookups</strong> you enter to generate a report.</li>
+          <li><strong>VIN lookups</strong> you enter to generate a report, and the email address you give to see a free vehicle preview.</li>
           <li><strong>Account &amp; billing details</strong> (email, payment confirmation) when you purchase a report.</li>
           <li><strong>Usage data</strong> such as pages viewed, collected via privacy-friendly first-party analytics.</li>
         </ul>

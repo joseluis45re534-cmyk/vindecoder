@@ -11,7 +11,7 @@ const SOURCES = ['NMVTIS', 'State title records', 'Insurers & salvage yards', 'N
 const METRICS = [
   { icon: ShieldCheck, value: 'Free', label: 'Vehicle preview first' },
   { icon: MapPin, value: '50', label: 'States covered' },
-  { icon: Database, value: formatPrice(TRIAL_PLAN.trialFeeCents ?? 100), label: 'Full-access trial' },
+  { icon: Database, value: formatPrice(TRIAL_PLAN.trialFeeCents ?? 100), label: `Trial per vehicle, then ${formatPrice(TRIAL_PLAN.recurringCents ?? 2900)}/mo` },
   { icon: Clock, value: '24/7', label: 'Online, no app needed' },
 ];
 

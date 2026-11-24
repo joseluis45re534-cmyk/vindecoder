@@ -161,17 +161,43 @@ function fixSchemaNode(node: unknown): unknown {
 // point at hidden posts, send links to retired posts straight to their
 // canonical page, unlink self-references and links to off-topic (404) posts,
 // and repoint the parked carvinlookup.com domain AutoSEO sometimes writes.
-const OWN_POST = /^(?:https?:\/\/(?:www\.)?carvinlookup\.us)?\/blog\/([a-z0-9-]+)\/?$/i;
-const postSlug = (href: string): string | undefined => OWN_POST.exec(href)?.[1];
+const OWN_HOSTS = new Set(['carvinlookup.us', 'www.carvinlookup.us']);
+const PARKED_HOSTS = new Set(['carvinlookup.com', 'www.carvinlookup.com']);
 
-function sanitizeLinks(html: string, selfSlug: string): string {
+function parseHref(href: string): URL | undefined {
+  try {
+    return new URL(href, SITE_URL);
+  } catch {
+    return undefined;
+  }
+}
+
+/** Slug of one of OUR blog posts (any host spelling, ignoring ?query/#hash). */
+function postSlug(href: string): string | undefined {
+  const u = parseHref(href);
+  if (!u || !OWN_HOSTS.has(u.hostname)) return undefined;
+  return /^\/blog\/([a-z0-9-]+)\/?$/i.exec(u.pathname)?.[1];
+}
+
+/** Exported for tests. */
+export function sanitizeLinks(html: string, selfSlug: string): string {
   return html
-    .replace(/<li>\s*<a\b[^>]*href="([^"]+)"[^>]*>[\s\S]*?<\/a>\s*<\/li>/gi, (li, href: string) => {
+    // Drop list items whose link points at a hidden post. The body may not cross
+    // another <li> boundary, so a match can never swallow neighbouring items,
+    // headings, or sections.
+    .replace(/<li>\s*<a\b[^>]*\bhref="([^"]+)"[^>]*>(?:(?!<\/?li\b)[\s\S])*?<\/li>/gi, (li, href: string) => {
       const slug = postSlug(href);
       return slug && isHidden(slug) ? '' : li;
     })
+    // A related-posts nav left with an empty list renders a bare heading.
+    .replace(/<nav\b[^>]*class="[^"]*related[^"]*"[^>]*>(?:(?!<\/nav>)[\s\S])*?<ul>\s*<\/ul>(?:(?!<\/nav>)[\s\S])*?<\/nav>/gi, '')
     .replace(/<a\b([^>]*?)href="([^"]+)"([^>]*)>([\s\S]*?)<\/a>/gi, (m, pre: string, href: string, post: string, text: string) => {
-      if (/^https?:\/\/(?:www\.)?carvinlookup\.com\/?$/i.test(href)) return `<a${pre}href="${SITE_URL}/#vin-search"${post}>${text}</a>`;
+      const u = parseHref(href);
+      if (u && PARKED_HOSTS.has(u.hostname)) {
+        const slug = /^\/blog\/([a-z0-9-]+)\/?$/i.exec(u.pathname)?.[1];
+        const to = slug && !isHidden(slug) ? `${SITE_URL}/blog/${slug}` : `${SITE_URL}/#vin-search`;
+        return `<a${pre}href="${to}"${post}>${text}</a>`;
+      }
       const slug = postSlug(href);
       if (!slug) return m;
       if (slug === selfSlug || isOffTopic(slug)) return text;

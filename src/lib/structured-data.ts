@@ -14,6 +14,22 @@ function entryPrice(): string {
   return ((TRIAL_PLAN.trialFeeCents ?? 100) / 100).toFixed(2);
 }
 
+/** Both prices, per vehicle, so agents don't read "$1" as the whole price. */
+function priceSpecification(): Json[] {
+  const days = TRIAL_PLAN.trialDays ?? 3;
+  return [
+    { '@type': 'UnitPriceSpecification', name: `${days}-day trial, per vehicle`, price: entryPrice(), priceCurrency: 'USD' },
+    {
+      '@type': 'UnitPriceSpecification',
+      name: 'Monthly after the trial, per vehicle, until cancelled',
+      price: ((TRIAL_PLAN.recurringCents ?? 2900) / 100).toFixed(2),
+      priceCurrency: 'USD',
+      unitCode: 'MON',
+      referenceQuantity: { '@type': 'QuantitativeValue', value: 1, unitCode: 'MON' },
+    },
+  ];
+}
+
 function offerDescription(): string {
   const fee = formatPrice(TRIAL_PLAN.trialFeeCents ?? 100);
   const monthly = formatPrice(TRIAL_PLAN.recurringCents ?? 2900);
@@ -79,12 +95,13 @@ export function serviceLd(): Json {
     provider: { '@id': ORG_ID },
     areaServed: { '@type': 'Country', name: 'United States' },
     description:
-      'Instant U.S. vehicle history reports covering title brands, salvage and flood damage, theft records, open liens, and odometer history.',
+      'U.S. vehicle history reports covering title brands, salvage and flood records, a theft check, open liens, and odometer readings.',
     offers: {
       '@type': 'Offer',
       price: entryPrice(),
       priceCurrency: 'USD',
       description: offerDescription(),
+      priceSpecification: priceSpecification(),
       availability: 'https://schema.org/InStock',
       url: SITE_URL,
     },

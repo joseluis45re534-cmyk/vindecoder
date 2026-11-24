@@ -61,7 +61,7 @@ export default async function BrandPage({
         '@id': `${SITE_URL}/vin-check/${brand.slug}`,
         name: `${brand.name} VIN Check & Decoder`,
         url: `${SITE_URL}/vin-check/${brand.slug}`,
-        description: `${brand.name} VIN check and decoder: a free vehicle preview, then the full title, theft, lien, and odometer history as a paid report.`,
+        description: `${brand.name} VIN check and decoder: a free vehicle preview, then a paid full report with title brands, liens, odometer readings, and a theft check.`,
         isPartOf: { '@id': `${SITE_URL}/#website` },
         about: { '@type': 'Brand', name: brand.name },
         dateModified: CONTENT_REVISED,
@@ -145,7 +145,7 @@ export default async function BrandPage({
         <h2>What&apos;s included in a {brand.name} VIN report</h2>
         <ul>
           <li><strong>Title &amp; brand history</strong> — salvage, rebuilt, junk, and flood titles across all 50 states (NMVTIS).</li>
-          <li><strong>Theft check</strong> — flags theft-related records reported for the VIN.</li>
+          <li><strong>Theft check</strong> — a theft-risk flag for the VIN from our data provider.</li>
           <li><strong>Lien check</strong> — outstanding loans recorded against the vehicle.</li>
           <li><strong>Odometer history</strong> — reported readings with rollback and tampering alerts.</li>
           <li><strong>Specs &amp; recalls</strong> — full {brand.name} decode plus open safety-recall lookups.</li>
@@ -190,8 +190,8 @@ export default async function BrandPage({
         <div className="max-w-5xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
           {[
             { icon: AlertTriangle, c: 'text-amber-600 bg-amber-50', t: 'Title brands', d: `Salvage, rebuilt & flood ${brand.name} titles.` },
-            { icon: ShieldCheck, c: 'text-emerald-600 bg-emerald-50', t: 'Theft check', d: 'Theft-related records for the VIN.' },
-            { icon: Gauge, c: 'text-blue-600 bg-blue-50', t: 'Odometer', d: 'Rollback & tampering alerts.' },
+            { icon: ShieldCheck, c: 'text-emerald-600 bg-emerald-50', t: 'Theft check', d: 'Theft-risk flag for the VIN.' },
+            { icon: Gauge, c: 'text-blue-600 bg-blue-50', t: 'Odometer', d: 'Reported readings by date.' },
             { icon: FileText, c: 'text-violet-600 bg-violet-50', t: 'Liens & specs', d: `Open liens + full ${brand.name} decode.` },
           ].map(({ icon: Icon, c, t, d }) => (
             <div key={t} className="bg-slate-50 rounded-2xl border border-slate-100 p-6 card-lift">

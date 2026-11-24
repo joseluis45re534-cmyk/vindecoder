@@ -8,7 +8,7 @@ import {
   Loader2, Lock, ShieldCheck, AlertTriangle, Gauge, FileText,
   Camera, Gavel, BadgeDollarSign, Bell, Users, Car, CheckCircle2, Clock, RotateCcw, Mail, FlaskConical,
 } from 'lucide-react';
-import { TRIAL_PLAN, formatPrice } from '@/lib/pricing';
+import { TRIAL_PLAN, formatPrice, reportPriceLine, PER_VEHICLE_NOTE } from '@/lib/pricing';
 import { track } from '@/lib/track';
 import type { SampleReport } from '@/lib/sample-reports';
 import PriceCountUp from '@/components/checkout/PriceCountUp';
@@ -61,12 +61,12 @@ const CHECKS = [
   { icon: FileText, label: 'Title & brand history', hint: 'Clean · salvage · rebuilt · junk', color: 'text-blue-600 bg-blue-50' },
   { icon: AlertTriangle, label: 'Salvage / total loss', hint: 'Insurance write-offs', color: 'text-amber-600 bg-amber-50' },
   { icon: Car, label: 'Accident history', hint: 'Reported damage events', color: 'text-rose-600 bg-rose-50' },
-  { icon: Gauge, label: 'Odometer readings', hint: 'Rollback & tampering alerts', color: 'text-blue-600 bg-blue-50' },
-  { icon: ShieldCheck, label: 'Theft check', hint: 'Theft-related records', color: 'text-emerald-600 bg-emerald-50' },
+  { icon: Gauge, label: 'Odometer readings', hint: 'Reported readings by date', color: 'text-blue-600 bg-blue-50' },
+  { icon: ShieldCheck, label: 'Theft check', hint: 'Theft-risk flag', color: 'text-emerald-600 bg-emerald-50' },
   { icon: BadgeDollarSign, label: 'Liens & loans', hint: 'Open financial claims', color: 'text-violet-600 bg-violet-50' },
   { icon: Gavel, label: 'Auction & sale history', hint: 'Past listings & sales', color: 'text-sky-600 bg-sky-50' },
   { icon: Camera, label: 'Vehicle photos', hint: 'Historical condition photos', color: 'text-fuchsia-600 bg-fuchsia-50' },
-  { icon: Bell, label: 'Open recalls', hint: 'Manufacturer safety recalls', color: 'text-orange-600 bg-orange-50' },
+  { icon: Bell, label: 'Safety recalls', hint: 'NHTSA recall data', color: 'text-orange-600 bg-orange-50' },
 ];
 
 // Illustrative example values shown on SAMPLE report pages only — curated static
@@ -78,7 +78,7 @@ function sampleSectionRows(sample: SampleReport): { label: string; value: string
     { icon: FileText, label: 'Title & brand history', value: s.titleBrand },
     { icon: Car, label: 'Accident history', value: s.accidents },
     { icon: Gauge, label: 'Odometer readings', value: s.odometer },
-    { icon: ShieldCheck, label: 'Theft records', value: s.theft },
+    { icon: ShieldCheck, label: 'Theft check', value: s.theft },
     { icon: BadgeDollarSign, label: 'Liens & loans', value: s.liens },
     { icon: Gavel, label: 'Auction & sale history', value: s.auction },
     { icon: Bell, label: 'Open recalls', value: s.recalls },
@@ -232,7 +232,7 @@ export default function ReportView({ id, sample, initialEmail }: { id: string; s
             <span className="inline-flex w-14 h-14 rounded-2xl bg-primary/10 text-primary items-center justify-center mb-4">
               <ShieldCheck className="w-7 h-7" aria-hidden="true" />
             </span>
-            <h1 className="font-display text-2xl font-bold text-slate-900">Your free vehicle preview is ready</h1>
+            <h1 className="font-display text-2xl font-bold text-slate-900">Get your free vehicle preview</h1>
             <p className="text-sm text-slate-500 mt-2 leading-relaxed">
               Enter your email to see the vehicle history preview for
               <span className="font-mono text-slate-700"> {id}</span>.
@@ -263,7 +263,7 @@ export default function ReportView({ id, sample, initialEmail }: { id: string; s
               type="submit"
               className="w-full inline-flex items-center justify-center gap-2 bg-primary text-white font-bold py-3 rounded-xl hover:brightness-110 active:scale-[0.99] transition"
             >
-              See my report
+              See my free preview
             </button>
 
             <p className="text-[11px] text-slate-400 text-center leading-relaxed">
@@ -274,7 +274,7 @@ export default function ReportView({ id, sample, initialEmail }: { id: string; s
 
           <ul className="mt-6 flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-xs text-slate-500">
             <li className="flex items-center gap-1.5"><CheckCircle2 className="w-4 h-4 text-emerald-500" aria-hidden="true" /> NMVTIS title data</li>
-            <li className="flex items-center gap-1.5"><CheckCircle2 className="w-4 h-4 text-emerald-500" aria-hidden="true" /> Instant preview</li>
+            <li className="flex items-center gap-1.5"><CheckCircle2 className="w-4 h-4 text-emerald-500" aria-hidden="true" /> Free preview</li>
           </ul>
         </div>
       </div>
@@ -695,11 +695,26 @@ export default function ReportView({ id, sample, initialEmail }: { id: string; s
                   </Link>
                 </div>
               </div>
+            ) : sample ? (
+              /* ---- Sample: fictional vehicle, nothing to buy ---- */
+              <div className="bg-white rounded-3xl shadow-xl shadow-slate-900/10 border border-slate-100 p-6">
+                <p className="text-xs uppercase tracking-widest text-blue-600 font-semibold">Sample report</p>
+                <p className="text-sm text-slate-600 mt-3 leading-relaxed">
+                  This sample describes a fictional vehicle, so it can&apos;t be unlocked. Run your own VIN for a free vehicle
+                  preview; unlocking a vehicle&apos;s full report costs {reportPriceLine()}. {PER_VEHICLE_NOTE}
+                </p>
+                <Link
+                  href="/#vin-search"
+                  className="mt-5 inline-flex items-center justify-center w-full bg-primary text-white text-sm font-bold py-3 rounded-xl hover:brightness-110 transition"
+                >
+                  Check your own VIN
+                </Link>
+              </div>
             ) : (
               /* ---- Checkout panel ---- */
               <div className="bg-white rounded-3xl shadow-xl shadow-slate-900/10 border border-slate-100 overflow-hidden">
                 <div className="bg-slate-900 px-6 py-5 text-white">
-                  <p className="text-xs uppercase tracking-widest text-blue-300 font-semibold">Full report access</p>
+                  <p className="text-xs uppercase tracking-widest text-blue-300 font-semibold">Full report for this vehicle</p>
                   <p className="text-sm text-slate-300 mt-1">{title}</p>
                 </div>
                 <div className="p-6">
@@ -708,7 +723,11 @@ export default function ReportView({ id, sample, initialEmail }: { id: string; s
                     <span className="text-slate-400 font-medium mb-1.5">today</span>
                   </div>
                   <p className="text-xs text-slate-500 font-medium mb-5">
-                    then <span className="font-bold text-slate-700">{formatPrice(TRIAL_MONTHLY)}/mo</span> after your {TRIAL_DAYS}-day trial
+                    then <span className="font-bold text-slate-700">{formatPrice(TRIAL_MONTHLY)}/mo</span> after your {TRIAL_DAYS}-day trial, unless you cancel
+                  </p>
+                  <p className="text-[11px] text-slate-500 mb-5 leading-relaxed">
+                    {PER_VEHICLE_NOTE} Already unlocked this vehicle?{' '}
+                    <Link href="/account" className="underline hover:text-slate-700">Open it from your account</Link> — no need to buy it again.
                   </p>
 
                   <ul className="space-y-2.5 mb-6">
@@ -725,7 +744,7 @@ export default function ReportView({ id, sample, initialEmail }: { id: string; s
                   <div className="grid grid-cols-3 gap-2 mt-5 text-center">
                     {[
                       { icon: ShieldCheck, t: 'Secure' },
-                      { icon: Clock, t: 'Instant' },
+                      { icon: Clock, t: 'Online report' },
                       { icon: RotateCcw, t: 'Cancel anytime' },
                     ].map(({ icon: Icon, t }) => (
                       <div key={t} className="flex flex-col items-center gap-1 text-[11px] text-slate-400 font-medium">
@@ -747,11 +766,11 @@ export default function ReportView({ id, sample, initialEmail }: { id: string; s
       </div>
 
       {/* Mobile sticky unlock bar (hidden once paid) */}
-      {!paid && (
+      {!paid && !sample && (
         <div className="lg:hidden fixed bottom-0 inset-x-0 z-40 bg-white border-t border-slate-200 px-4 py-3 flex items-center justify-between gap-3 shadow-[0_-4px_20px_rgba(0,0,0,0.06)]">
           <div>
-            <p className="text-xs text-slate-400 leading-none">Start today for</p>
-            <p className="text-lg font-extrabold text-slate-900 leading-tight">{formatPrice(TRIAL_FEE)}</p>
+            <p className="text-xs text-slate-400 leading-none">{formatPrice(TRIAL_FEE)} today</p>
+            <p className="text-sm font-extrabold text-slate-900 leading-tight">then {formatPrice(TRIAL_MONTHLY)}/mo per vehicle</p>
           </div>
           <a
             href="#order"

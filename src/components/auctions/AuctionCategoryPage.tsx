@@ -91,7 +91,7 @@ export function AuctionCategoryPage({ kind, slug }: { kind: Kind; slug: string }
           </nav>
           <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-white mb-5 leading-tight">{h1}</h1>
           <p className="text-base sm:text-lg text-slate-300 mb-8 max-w-2xl mx-auto">{cat.body}</p>
-          <SearchForm />
+          {!NON_VIN.has(cat.slug) && <SearchForm />}
           <p className="mt-5 text-sm text-slate-400">
             {NON_VIN.has(cat.slug)
               ? 'CarVinLookup reports cover 17-character VINs. Boats (HIN) and equipment serial numbers aren’t supported.'
@@ -122,10 +122,12 @@ export function AuctionCategoryPage({ kind, slug }: { kind: Kind; slug: string }
                 <span>{c}</span>
               </li>
             ))}
-            <li className="flex items-start gap-3 text-slate-700">
-              <Check className="w-5 h-5 text-emerald-500 shrink-0 mt-0.5" aria-hidden="true" />
-              <span>The full VIN history — <Link href="/#vin-search" className="text-blue-600 font-medium hover:underline">run it here</Link> before you bid.</span>
-            </li>
+            {!NON_VIN.has(cat.slug) && (
+              <li className="flex items-start gap-3 text-slate-700">
+                <Check className="w-5 h-5 text-emerald-500 shrink-0 mt-0.5" aria-hidden="true" />
+                <span>The full VIN history — <Link href="/#vin-search" className="text-blue-600 font-medium hover:underline">run it here</Link> before you bid.</span>
+              </li>
+            )}
           </ul>
         </div>
       </section>
@@ -148,6 +150,7 @@ export function AuctionCategoryPage({ kind, slug }: { kind: Kind; slug: string }
         </div>
       </section>
 
+      {!NON_VIN.has(cat.slug) && (
       <section className="bg-gradient-to-br from-blue-700 to-blue-900 py-14 px-4 text-center">
         <ShieldCheck className="w-8 h-8 text-blue-200 mx-auto mb-3" aria-hidden="true" />
         <h2 className="text-2xl sm:text-3xl font-extrabold text-white mb-3">Check the VIN before you bid</h2>
@@ -156,6 +159,7 @@ export function AuctionCategoryPage({ kind, slug }: { kind: Kind; slug: string }
           <Search className="w-4 h-4" aria-hidden="true" /> Run a VIN check
         </Link>
       </section>
+      )}
     </main>
   );
 }

@@ -53,10 +53,10 @@ const FAQ = [
 
 const CHECKS = [
   { href: '/salvage-check', icon: AlertTriangle, color: 'text-amber-600 bg-amber-50', title: 'Title brands', desc: 'Salvage, rebuilt, junk, and flood-damage titles across all 50 states.' },
-  { href: '/odometer-check', icon: Gauge, color: 'text-blue-600 bg-blue-50', title: 'Odometer history', desc: 'Reported mileage readings with rollback and tampering alerts.' },
-  { href: '/stolen-vehicle-check', icon: ShieldCheck, color: 'text-emerald-600 bg-emerald-50', title: 'Theft check', desc: 'Flags theft-related records reported for the VIN before you hand over any money.' },
+  { href: '/odometer-check', icon: Gauge, color: 'text-blue-600 bg-blue-50', title: 'Odometer history', desc: 'Reported mileage readings with their dates, so a reading that went backwards stands out.' },
+  { href: '/stolen-vehicle-check', icon: ShieldCheck, color: 'text-emerald-600 bg-emerald-50', title: 'Theft check', desc: 'A theft-risk flag for the VIN, plus a pointer to the free NICB VINCheck.' },
   { href: '/lien-check', icon: BadgeDollarSign, color: 'text-violet-600 bg-violet-50', title: 'Open liens', desc: 'Outstanding loans or liens recorded against the vehicle.' },
-  { href: '/accident-check', icon: Database, color: 'text-sky-600 bg-sky-50', title: 'Title history', desc: 'Title records and the title timeline across the states the car has been titled in.' },
+  { href: '/how-to/check-title-status', icon: Database, color: 'text-sky-600 bg-sky-50', title: 'Title history', desc: 'Title records and the title timeline across the states the car has been titled in.' },
   { href: '/vin-decoder', icon: FileText, color: 'text-rose-600 bg-rose-50', title: 'Vehicle identity', desc: 'Make, model, year, body type, engine, and factory specifications.' },
 ];
 

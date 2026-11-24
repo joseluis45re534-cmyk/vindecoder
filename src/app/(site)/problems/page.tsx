@@ -82,7 +82,7 @@ export default function ProblemsHub() {
           </p>
           <ul>
             <li><strong>Theft:</strong> run the VIN through a <Link href="/stolen-vehicle-check">stolen vehicle check</Link> and confirm the VIN plates match the title.</li>
-            <li><strong>Total loss:</strong> a <Link href="/salvage-check">salvage title check</Link> shows salvage, rebuilt, and junk brands from any state.</li>
+            <li><strong>Total loss:</strong> a <Link href="/salvage-check">salvage title check</Link> is designed to catch salvage, rebuilt, and junk brands, plus insurer total-loss reports, recorded in any state.</li>
             <li><strong>Flood damage:</strong> a <Link href="/flood-damage-check">flood damage check</Link> plus a close inspection for silt, rust, and electrical faults.</li>
             <li><strong>Odometer fraud:</strong> an <Link href="/odometer-check">odometer check</Link> lines up the mileage readings reported over time.</li>
           </ul>

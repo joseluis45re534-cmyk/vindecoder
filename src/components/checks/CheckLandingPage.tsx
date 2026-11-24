@@ -270,7 +270,7 @@ export function CheckLandingPage({ slug }: { slug: string }) {
       <section className="bg-gradient-to-br from-blue-700 to-blue-900 py-14 px-4 text-center">
         <ShieldCheck className="w-8 h-8 text-blue-200 mx-auto mb-3" aria-hidden="true" />
         <h2 className="text-2xl sm:text-3xl font-extrabold text-white mb-3">{c.icon === 'plate' ? 'Check a car by VIN now' : `Run ${withArticle(c.name)} now`}</h2>
-        <p className="text-blue-100 mb-6">Free vehicle preview · full report online in moments.</p>
+        <p className="text-blue-100 mb-6">Free vehicle preview · full report online right after checkout.</p>
         <Link href="/#vin-search" className="inline-flex items-center gap-2 bg-white text-blue-700 font-bold px-7 py-3.5 rounded-full hover:scale-105 active:scale-100 transition-transform">
           <Search className="w-4 h-4" aria-hidden="true" /> Check a VIN
         </Link>

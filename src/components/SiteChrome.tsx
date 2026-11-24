@@ -69,7 +69,7 @@ export function SiteFooter() {
               <span className="text-white font-bold">{SITE_NAME}</span>
             </div>
             <p className="text-sm leading-relaxed max-w-xs">
-              Instant U.S. vehicle history reports built on NMVTIS title data. Know before you buy.
+              U.S. vehicle history reports built on NMVTIS title data. Know before you buy.
             </p>
             <address className="not-italic mt-5 space-y-2.5 text-sm">
               <a href={`mailto:${SUPPORT_EMAIL}`} className="flex items-center gap-2 hover:text-white transition-colors">

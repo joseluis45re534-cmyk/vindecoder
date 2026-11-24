@@ -30,7 +30,7 @@ const COMPARE_ROWS = [
   { feature: 'Lien check', us: true, them: 'varies' as const },
   { feature: 'Odometer history', us: true, them: true },
   { feature: 'Instant VIN decode', us: true, them: 'varies' as const },
-  { feature: 'Free vehicle preview, then a $1 trial', us: true, them: 'varies' as const },
+  { feature: 'Full price shown before checkout', us: true, them: 'varies' as const },
   { feature: 'Cancel anytime', us: true, them: 'varies' as const },
 ];
 
@@ -139,7 +139,7 @@ export function AlternativePage({ slug }: { slug: string }) {
                   <Check className="w-5 h-5" aria-hidden="true" />
                 </span>
                 <h3 className="font-bold text-slate-900 mb-1">{a.label}</h3>
-                <p className="text-sm text-slate-500">{a.detail.replace('{fee}', trialFeeLabel())}</p>
+                <p className="text-sm text-slate-500">{a.detail.replace('{price}', reportPriceLine()).replace('{fee}', trialFeeLabel())}</p>
               </div>
             ))}
           </div>

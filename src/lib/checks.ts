@@ -60,7 +60,7 @@ export const CHECK_PAGES: CheckPage[] = [
     intro:
       'Find out whether a car was ever declared a total loss and branded salvage — in any state, not just the one on the title.',
     whatItIs:
-      'A salvage title check looks for a salvage, rebuilt, or junk brand on a vehicle title. A state brands the title salvage when an insurer declares the car a total loss, or when damage exceeds a state-set threshold. Because sellers sometimes move a car across state lines to wash the brand off the paperwork, a multi-state check via NMVTIS is what actually catches it.',
+      'A salvage title check looks for a salvage, rebuilt, or junk brand on a vehicle title. Each state sets its own rules: most brand a title salvage when an insurer declares the car a total loss or when damage exceeds a state-set share of its value, and some states exempt older vehicles. Because sellers sometimes move a car across state lines to wash the brand off the paperwork, a multi-state check via NMVTIS is what actually catches it.',
     reportShows: [
       'Salvage, rebuilt, reconstructed, and junk title brands',
       'The state and, where available, the date a brand was applied',
@@ -259,7 +259,7 @@ export const CHECK_PAGES: CheckPage[] = [
     whatItIs:
       'A stolen vehicle check screens a VIN against theft records. If you unknowingly buy a stolen car, it can be seized and you may lose your payment. Checking theft records and confirming the VIN plates match the title is how buyers avoid that.',
     reportShows: [
-      'Theft-related records reported for the VIN',
+      'A theft-risk check for the VIN (a flag from our data provider)',
       'Unrecovered-theft flags where available',
       'Salvage and total-loss events that can accompany theft-recovery',
       "Title history (state and date of each title record) to compare with the seller's paperwork",
@@ -372,7 +372,7 @@ export const CHECK_PAGES: CheckPage[] = [
     ],
     related: ['salvage-check', 'accident-check', 'vin-decoder'],
     answer:
-      "To check a car for open safety recalls, enter its 17-character VIN in NHTSA's free recall lookup at nhtsa.gov/recalls, or run it through a history report that includes recall records. Recall repairs are free at an authorized dealer for most vehicles. Except for rental-car companies, which must fix open recalls before selling a rental car, federal law doesn't require used-car sellers to repair open recalls before a sale, so check before you buy.",
+      "To check a car for open safety recalls, enter its 17-character VIN in NHTSA's free recall lookup at nhtsa.gov/recalls, or run it through a history report that includes recall records. Recall repairs are free at an authorized dealer for most vehicles. Except for rental companies with fleets of 35 or more vehicles, which must fix an open recall before renting or selling a car (Safe Rental Car Act), federal law doesn't require used-car sellers to repair open recalls before a sale, so check before you buy.",
     sections: [
       {
         h2: "How recall repairs work",
@@ -398,15 +398,15 @@ export const CHECK_PAGES: CheckPage[] = [
     h1: 'Free VIN Decoder',
     metaTitle: 'Free VIN Decoder — Decode Any 17-Digit VIN',
     metaDescription:
-      'Decode any 17-character VIN free. See the make, model, year, plant, and engine encoded in the VIN, then run the full title, theft, lien, and odometer history.',
+      'Decode any 17-character VIN free. See the make, model, year, body, and engine, then run the full title, lien, and odometer history plus a theft check.',
     icon: 'decoder',
     intro:
       'Every VIN encodes what a car was built as. Decode it free, then check what actually happened to the car.',
     whatItIs:
-      'A VIN decoder reads the 17 characters of a Vehicle Identification Number to reveal the manufacturer, model year, plant, and build details defined by federal standard. Decoding tells you what the car should be; a history report tells you what happened to it.',
+      'A VIN decoder reads the 17 characters of a Vehicle Identification Number to reveal the manufacturer, model year, and build details defined by federal standard. Decoding tells you what the car should be; a history report tells you what happened to it.',
     reportShows: [
       'Make, manufacturer, and country of origin (WMI)',
-      'Model year and country of manufacture',
+      'Model year',
       'Body, engine, and build details from the VIN',
       'A format check (17 characters, no I, O, or Q) before the lookup',
     ],

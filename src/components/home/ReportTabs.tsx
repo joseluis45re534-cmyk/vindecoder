@@ -30,10 +30,9 @@ const TABS: { id: string; icon: typeof FileText; label: string; rows: Row[]; not
     id: 'odometer', icon: Gauge, label: 'Odometer',
     rows: [
       { k: 'Last reported', v: '60,431 mi' },
-      { k: 'Rollback alert', v: 'None', ok: true },
       { k: 'Reading history', v: '6 records' },
     ],
-    note: 'Reported readings over time flag rollbacks and tampering.',
+    note: 'Each reported reading with its date. A later, lower reading is a red flag to ask about.',
   },
   {
     id: 'accidents', icon: Car, label: 'Accidents',
@@ -57,7 +56,7 @@ const TABS: { id: string; icon: typeof FileText; label: string; rows: Row[]; not
       { k: 'Open recalls', v: '1 open', warn: true },
       { k: 'Source', v: 'NHTSA' },
     ],
-    note: 'Open manufacturer safety recalls, straight from NHTSA.',
+    note: 'Manufacturer safety recalls (NHTSA data). Confirm open status free at nhtsa.gov/recalls.',
   },
 ];
 

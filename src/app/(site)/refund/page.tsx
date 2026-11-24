@@ -29,8 +29,9 @@ export default function RefundPage() {
 
         <h2>How billing works</h2>
         <ul>
-          <li>You are charged <strong>{FEE} today</strong> to start full report access. This begins a <strong>{DAYS}-day trial</strong>.</li>
-          <li>If you do <strong>not</strong> cancel within {DAYS} days, your subscription automatically renews at <strong>{MONTHLY} per month</strong>, and continues monthly on the same date until you cancel.</li>
+          <li>You are charged <strong>{FEE} today</strong> to unlock the full report for one vehicle. This begins a <strong>{DAYS}-day trial</strong>.</li>
+          <li><strong>Billing is per vehicle.</strong> Each vehicle you unlock starts its own trial and, unless cancelled, its own {MONTHLY}/month subscription.</li>
+          <li>If you do <strong>not</strong> cancel within {DAYS} days, that vehicle&apos;s subscription automatically renews at <strong>{MONTHLY} per month</strong>, and continues monthly on the same date until you cancel. If you unlocked more than one vehicle and don&apos;t see every subscription in your account, email support@carvinlookup.us with the VINs and we&apos;ll cancel them.</li>
           <li>You always see a free preview of the vehicle&apos;s identity before any charge.</li>
         </ul>
 

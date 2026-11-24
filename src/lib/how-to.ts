@@ -66,7 +66,7 @@ export const HOW_TO_GUIDES: HowToGuide[] = [
     ],
     related: ['decode-wmi', 'read-vin-report', 'check-title-status'],
     answer:
-      "To check a VIN, find the 17-character number on the lower-left corner of the windshield or the driver-side door jamb, confirm it matches the title and registration, and enter it into a VIN check. A valid VIN never contains I, O, or Q. The free preview confirms the car; a full report adds title, theft, lien, and odometer history.",
+      "To check a VIN, find the 17-character number on the lower-left corner of the windshield or the driver-side door jamb, confirm it matches the title and registration, and enter it into a VIN check. A valid VIN never contains I, O, or Q. The free preview confirms the car; a full report adds title-brand, lien, and odometer records plus a theft check.",
     sources: ['nmvtis', 'nicb', 'vpic'],
   },
   {
@@ -160,7 +160,7 @@ export const HOW_TO_GUIDES: HowToGuide[] = [
     ],
     related: ['check-vin-number', 'read-vin-report', 'avoid-curbstoner'],
     answer:
-      "The quickest way to get a car's VIN is from the car or its paperwork: it's on the lower-left of the windshield, the driver-side door jamb, the title, the registration, and the insurance card. Plate-to-VIN services resolve a plate and state to the VIN, but consumer lookups never show the owner's personal details, which the federal DPPA protects. CarVinLookup's plate search is launching soon.",
+      "The quickest way to get a car's VIN is from the car or its paperwork: it's on the lower-left of the windshield, the driver-side door jamb, the title, the registration, and the insurance card. Plate-to-VIN services resolve a plate and state to the VIN, but a legitimate consumer lookup won't show the owner's name or address: the federal DPPA limits that information to specific permitted uses. CarVinLookup's plate search is launching soon.",
     sources: ['dppa'],
   },
   {
@@ -191,7 +191,7 @@ export const HOW_TO_GUIDES: HowToGuide[] = [
     ],
     related: ['negotiate-used-car-price', 'check-title-status', 'avoid-curbstoner'],
     answer:
-      "To value a used car, start from published market values for the same year, make, model, trim, and mileage, then adjust for condition, options, and history. A branded title, past accident, or open lien lowers what a car is worth, so run a history check and get an independent inspection before you settle on a number.",
+      "To value a used car, start from published market values for the same year, make, model, trim, and mileage, then adjust for condition, options, and history. A branded title or past accident lowers what a car is worth, and an open lien must be paid off and released before the title can transfer to you, so run a history check and get an independent inspection before you settle on a number.",
     sources: ['ftcDealer'],
   },
   {

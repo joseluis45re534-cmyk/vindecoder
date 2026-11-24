@@ -86,12 +86,13 @@ export default function CompareHub() {
         <div className="max-w-3xl mx-auto prose-content">
           <h2>How vehicle history reports differ</h2>
           <p>
-            Most U.S. vehicle history reports start from the same backbone — title and brand data reported to NMVTIS by
-            state titling agencies, insurers, and salvage yards — then add their own extra sources. The differences that
-            matter to a buyer are:
+            Many U.S. vehicle history reports — including those from the Justice Department&apos;s approved NMVTIS data
+            providers — start from the same backbone: title and brand data from state titling agencies, plus total-loss and
+            junk/salvage reports from insurers and salvage yards, collected in NMVTIS. Others build their reports from their
+            own data sources. Each provider then adds its own extra records. The differences that matter to a buyer are:
           </p>
           <ul>
-            <li><strong>Data sources:</strong> NMVTIS access, plus any insurance, auction, or service records a provider adds.</li>
+            <li><strong>Data sources:</strong> whether the report includes NMVTIS data, plus any insurance, auction, or service records a provider adds.</li>
             <li><strong>Preview before paying:</strong> whether you can confirm the vehicle before you buy anything.</li>
             <li><strong>Pricing model:</strong> a one-off report versus a subscription, and how easy it is to cancel.</li>
             <li><strong>Coverage:</strong> U.S. VINs only, or imported and overseas vehicles too.</li>

@@ -97,7 +97,7 @@ export const TRIAL_PLAN: Plan = {
         'Lien & loan records',
         'Accident & auction history',
         'Vehicle photos when on file',
-        'Open safety recalls (NHTSA)',
+        'Safety recalls (NHTSA data)',
         'Decoded vehicle specs',
         'Downloadable PDF report',
     ],
@@ -114,7 +114,7 @@ export function reportPriceLine(style: 'long' | 'short' = 'long'): string {
     const monthly = formatPrice(TRIAL_PLAN.recurringCents ?? 2900);
     const days = TRIAL_PLAN.trialDays ?? 3;
     return style === 'short'
-        ? `${fee} trial, then ${monthly}/mo`
+        ? `${fee} trial, then ${monthly}/mo per vehicle`
         : `${fee} today for a ${days}-day trial, then ${monthly}/month unless you cancel`;
 }
 

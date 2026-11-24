@@ -22,7 +22,7 @@ export async function GET() {
 
   const body = `# CarVinLookup
 
-> CarVinLookup runs instant U.S. vehicle history reports from a 17-character VIN, built on NMVTIS title data (via an approved NMVTIS data provider) plus insurance, salvage-auction, lien, odometer, and NHTSA recall records.
+> CarVinLookup runs U.S. vehicle history reports from a 17-character VIN, built on NMVTIS title data (via an approved NMVTIS data provider) plus insurance, salvage-auction, lien, odometer, and NHTSA recall records.
 
 CarVinLookup helps used-car buyers in the United States check a vehicle before purchase. Enter any 17-character VIN (cars titled in all 50 states) to get a report. License-plate search is launching soon and is not live yet. A free preview confirms the vehicle's identity first; unlocking a vehicle's full report costs ${fee} today for a ${days}-day trial, then ${monthly}/month unless you cancel. Billing is per vehicle (each unlock starts its own trial). Cancel anytime.
 
@@ -30,9 +30,9 @@ CarVinLookup helps used-car buyers in the United States check a vehicle before p
 
 - Title brands: salvage, rebuilt, junk, and flood-damage titles (sourced from NMVTIS)
 - Total-loss and salvage records reported by insurers and salvage yards; salvage-auction records where available
-- Theft check: theft-related records reported for the VIN
+- Theft check: a theft-risk flag from the data provider (not police or NICB records)
 - Open liens: outstanding loans or liens recorded against the vehicle
-- Odometer history: reported mileage readings and rollback or tampering alerts
+- Odometer history: reported mileage readings with dates
 - Open safety recalls (NHTSA)
 - Vehicle identity: make, model, year, body type, and engine
 

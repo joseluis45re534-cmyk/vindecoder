@@ -270,7 +270,7 @@ export async function buildReportPdf(report: FullReport, generatedAtISO: string)
         }
     }
 
-    heading('Open Recalls (NHTSA)');
+    heading('Safety Recalls (NHTSA data)');
     {
         const recalls = a(report.recalls);
         if (recalls.length) {
@@ -283,7 +283,7 @@ export async function buildReportPdf(report: FullReport, generatedAtISO: string)
                 if (summary) paragraph(summary, { size: 9, indent: 12, color: GRAY });
             });
         } else {
-            paragraph('No open recalls found.', { color: GRAY, indent: 4 });
+            paragraph('No recall records found. Confirm open recalls free at nhtsa.gov/recalls.', { color: GRAY, indent: 4 });
         }
     }
 
@@ -305,15 +305,18 @@ export async function buildReportPdf(report: FullReport, generatedAtISO: string)
         }
     }
 
-    // Final-page footer.
-    drawFooter(page, pageNo);
-
-    heading('NMVTIS Consumer Disclaimer');
+    // Summary of the official NMVTIS consumer disclaimer (not the verbatim text —
+    // the full PDF is linked). Drawn BEFORE the final footer so a page break here
+    // still leaves every page with its footer.
+    heading('About NMVTIS Data (Summary)');
     paragraph(
-        'NMVTIS holds title and brand information reported by state titling agencies, plus total-loss and salvage reports from insurers and junk and salvage yards. Some states do not yet provide complete data, so NMVTIS does not contain information on every vehicle, and it does not include detailed repair history. A vehicle history report is not a substitute for an independent vehicle inspection.',
+        'NMVTIS holds title and brand information reported by state titling agencies, plus total-loss and salvage reports from insurers and junk and salvage yards. Some states do not yet provide complete data, so NMVTIS does not contain information on every vehicle, and it does not include detailed repair history. Significant past damage may not appear if the vehicle was never declared a total loss by an insurer or branded by a state, and states report on different schedules, so recent events may be missing. A vehicle history report is not a substitute for an independent vehicle inspection.',
         { color: GRAY, indent: 4 },
     );
-    paragraph('Full disclaimer: vehiclehistory.bja.ojp.gov (NMVTIS Consumer Access Product Disclaimer).', { color: GRAY, indent: 4 });
+    paragraph('Official disclaimer: https://vehiclehistory.bja.ojp.gov/sites/vehiclehist/files/media/document/CAPDisclaimer_1_0.pdf', { color: GRAY, indent: 4 });
+
+    // Final-page footer.
+    drawFooter(page, pageNo);
 
     return pdf.save();
 }

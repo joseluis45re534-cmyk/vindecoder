@@ -30,7 +30,7 @@ export default function TermsPage() {
         </p>
         <h2>Payments &amp; refunds</h2>
         <p>
-          Report prices are shown at checkout. Because reports are delivered digitally, refunds are handled per
+          Report prices are shown at checkout, and billing is per vehicle — see our refund &amp; cancellation policy. Because reports are delivered digitally, refunds are handled per
           our refund policy — contact support@carvinlookup.us if a report failed to generate.
         </p>
         <h2>Limitation of liability</h2>

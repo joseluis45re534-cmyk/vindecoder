@@ -62,7 +62,8 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   // AutoSEO meta titles are sometimes cut mid-phrase; prefer the full H1 when it
   // fits, and always spell the brand correctly.
   const brand = (t: string) => t.replace(/carvinlookup(?!\.us)/gi, 'CarVinLookup');
-  const seoTitle = brand(a.title.length <= 60 ? a.title : a.metaTitle || a.title);
+  const h1 = a.title.replace(/\s*\(\d{4}(?: Guide)?\)\s*$/, '');
+  const seoTitle = brand(h1.length <= 60 ? h1 : a.metaTitle || a.title);
 
   return {
     // `absolute` so AutoSEO's SEO title is used verbatim (no "| CarVinLookup" suffix).

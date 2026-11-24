@@ -11,12 +11,12 @@ export const runtime = 'edge';
 export const metadata: Metadata = pageMetadata({
   title: 'Most Stolen Cars in the U.S. (NICB Data)',
   description:
-    'The vehicles that consistently top the NICB Hot Wheels most-stolen list, why they are targeted, and how to check if a used car was ever reported stolen.',
+    'The vehicles that consistently top the NICB most-stolen rankings, why they are targeted, and how to check if a used car was ever reported stolen.',
   path: '/most-stolen-cars',
   type: 'article',
 });
 
-// Models that have consistently appeared in recent NICB "Hot Wheels" top-ten
+// Models that have consistently appeared in recent NICB most-stolen top-ten
 // most-stolen reporting. Presented as a list (not with per-model theft counts,
 // which shift yearly) with a live link to the current NICB report.
 const MOST_STOLEN = [
@@ -33,7 +33,7 @@ const MOST_STOLEN = [
 ];
 
 const faq = [
-  { q: 'What is the most stolen car in the U.S.?', a: 'In recent NICB Hot Wheels reporting, the Hyundai Elantra has ranked at or near the top, alongside other Hyundai and Kia models and full-size pickups. Exact rankings change each year — check the current NICB report for the latest.' },
+  { q: 'What is the most stolen car in the U.S.?', a: 'In NICB data for 2025 thefts (released March 2026), the Hyundai Elantra was the most stolen model, followed by the Honda Accord and Hyundai Sonata. Rankings change each year, so check NICB for the latest release.' },
   { q: 'Why are Hyundai and Kia models targeted?', a: 'A widely reported security vulnerability made certain Hyundai and Kia models easier to steal. The manufacturers have since issued software updates, and NICB has reported thefts of these models declining as a result.' },
   { q: 'How do I check if a used car was stolen?', a: 'Run the VIN through a history report and the free NICB VINCheck, which screens for unrecovered theft reports from participating insurers. Also confirm the VIN plates on the dashboard and door jamb match the title. See our stolen-vehicle check.' },
 ];
@@ -82,22 +82,22 @@ export default function MostStolenCarsPage() {
 
       <article className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-14 prose-content">
         <p>
-          Each year the National Insurance Crime Bureau (NICB) publishes its &ldquo;Hot Wheels&rdquo; report of the most stolen
-          vehicles in the United States. The following models have consistently appeared among the ten most stolen in recent
+          Each year the National Insurance Crime Bureau (NICB) publishes national vehicle-theft data that includes the most
+          stolen models in the United States. The following models have consistently appeared among the ten most stolen in recent
           reporting. Rankings and theft counts shift year to year, so treat this as the pattern of high-risk models rather than
           a fixed order — the{' '}
           <a href="https://www.nicb.org/news/news-releases/us-vehicle-thefts-experience-historic-decline" rel="noopener" target="_blank">
-            NICB&apos;s latest vehicle-theft data (March 2026)
+            NICB&apos;s 2025 most-stolen list (released March 2026)
           </a>{' '}
           has the current figures.
         </p>
 
         <h2>Frequently among the most stolen (per NICB)</h2>
-        <ol>
+        <ul>
           {MOST_STOLEN.map((m) => (
             <li key={m}>{m}</li>
           ))}
-        </ol>
+        </ul>
 
         <h2>Why these vehicles?</h2>
         <p>

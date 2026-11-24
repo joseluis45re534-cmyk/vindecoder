@@ -41,7 +41,7 @@ export const COMPETITORS: Competitor[] = [
     known: 'A subscription-based vehicle history and research service marketed around unlimited lookups.',
     bestFor: 'High-volume shoppers who run many reports every month.',
     switchAngle:
-      "Start with a free vehicle preview, then unlock only the cars you're serious about — and cancel each one from your account when you're done.",
+      "Start with a free vehicle preview, then unlock only the cars you're serious about. Each unlock is its own subscription, so cancel it once you're done.",
   },
   {
     slug: 'epicvin',
@@ -99,9 +99,9 @@ export function getComparisonBySlug(slug: string): Competitor | undefined {
  */
 export const OUR_ADVANTAGES: { label: string; detail: string }[] = [
   { label: 'Free preview before you pay', detail: 'Confirm the year, make, model, and VIN at no cost before unlocking anything.' },
-  { label: 'Low-cost start', detail: 'Unlock a vehicle for a {fee} trial, then a monthly plan you can cancel anytime.' },
+  { label: 'Low-cost start', detail: 'Unlock a vehicle for {price}, billed per vehicle.' },
   { label: 'U.S. title data', detail: 'Title brands from NMVTIS via an approved data provider, plus theft, lien, and odometer records.' },
   { label: 'Any U.S. VIN', detail: 'Search any 17-character VIN for cars titled in all 50 states. License-plate search is launching soon.' },
-  { label: 'Instant online report', detail: 'The full history is generated online as soon as you unlock it — no waiting for an email.' },
+  { label: 'Online report + PDF', detail: 'The full history appears online right after checkout, with a PDF download.' },
   { label: 'Cancel anytime', detail: 'Manage or cancel your plan whenever you want.' },
 ];

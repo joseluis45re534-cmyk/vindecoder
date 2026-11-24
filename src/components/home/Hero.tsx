@@ -44,7 +44,7 @@ export default function Hero() {
           </motion.h1>
 
           <motion.p {...enter(0.1)} className="max-w-xl mx-auto lg:mx-0 text-base sm:text-lg text-slate-300 mb-8">
-            Run any 17-character VIN for an instant vehicle history report — title brands, salvage &amp; flood damage, theft records, open liens, and odometer rollback.
+            Run any 17-character VIN for a vehicle history report — title brands, salvage &amp; flood records, a theft check, open liens, and odometer readings. See the vehicle free before you pay.
           </motion.p>
 
           <motion.div {...enter(0.15)} className="lg:[&_form]:mx-0 lg:[&>div]:mx-0">

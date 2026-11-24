@@ -25,7 +25,7 @@ export const SITE_NAME = 'CarVinLookup';
 // provider actually supplies — see /data-sources. License-plate search is not
 // live yet (it ships with the ClearVin integration), so it is not promised here.
 export const SITE_DESCRIPTION =
-  'Run an instant U.S. vehicle history report by VIN. Check title brands, salvage and flood damage, theft, open liens, and odometer records with NMVTIS title data.';
+  'Run a U.S. vehicle history report by VIN: a free preview, then title brands, salvage and flood records, a theft check, open liens, and odometer readings.';
 
 export const SITE_TAGLINE = 'U.S. Vehicle History Reports by VIN';
 

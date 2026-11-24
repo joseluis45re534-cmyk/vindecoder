@@ -53,7 +53,7 @@ export default async function ComparePage({
   const others = COMPETITORS.filter((x) => x.slug !== c.slug).slice(0, 6);
 
   const faq = [
-    { q: `Is CarVinLookup better than ${c.name}?`, a: `For a typical U.S. used-car purchase, CarVinLookup gives you the core records that matter — title brands, theft, liens, and odometer — built on NMVTIS title data, with a free preview and a ${reportPriceLine('short')} start (cancel anytime). ${c.name} ${c.bestFor.charAt(0).toLowerCase() + c.bestFor.slice(1)}` },
+    { q: `Is CarVinLookup better than ${c.name}?`, a: `For a typical U.S. used-car purchase, CarVinLookup gives you the core records that matter — title brands, theft, liens, and odometer — built on NMVTIS title data, with a free preview first; unlocking a vehicle's full report costs ${reportPriceLine()}, billed per vehicle. ${c.name} ${c.bestFor.charAt(0).toLowerCase() + c.bestFor.slice(1)}` },
     { q: `Do CarVinLookup and ${c.name} use the same data?`, a: `Most U.S. history reports draw on NMVTIS title data plus other record sources. CarVinLookup combines NMVTIS title and brand data (via an approved NMVTIS data provider) with insurance, salvage, lien, odometer, and recall records, and always shows a free vehicle preview before you pay. ${c.name} describes its own sources on its site.` },
     { q: `Which is cheaper?`, a: `CarVinLookup costs ${reportPriceLine()}, billed per vehicle, and the vehicle preview is free. Competitor pricing changes — check ${c.name}'s site for current rates.` },
   ];
@@ -98,7 +98,7 @@ export default async function ComparePage({
         <div className="bg-white rounded-2xl border border-slate-200 shadow-lg p-6 sm:p-8">
           <p className="text-xs font-bold uppercase tracking-wide text-blue-600 mb-2">The short answer</p>
           <p className="text-slate-700 leading-relaxed">
-            {c.known} <strong className="text-slate-900">CarVinLookup</strong> is built for U.S. used-car buyers who want the records that decide a purchase — title brands, theft, liens, and odometer — built on NMVTIS title data, with a free preview before paying and full access for {reportPriceLine()} (per vehicle) — trial.
+            {c.known} <strong className="text-slate-900">CarVinLookup</strong> is built for U.S. used-car buyers who want the records that decide a purchase — title brands, theft, liens, and odometer — built on NMVTIS title data, with a free preview before paying. Unlocking a vehicle&apos;s full report costs {reportPriceLine()}, billed per vehicle — trial.
           </p>
         </div>
       </section>

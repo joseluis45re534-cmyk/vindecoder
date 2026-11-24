@@ -26,7 +26,7 @@ const MONTHLY = formatPrice(TRIAL_PLAN.recurringCents ?? 2900);
 const DAYS = TRIAL_PLAN.trialDays ?? 3;
 
 export const metadata: Metadata = pageMetadata({
-  title: `Pricing — Free Preview, Then a ${FEE} Trial`,
+  title: `Pricing — Free Preview, ${FEE} Trial, Then ${MONTHLY}/mo`,
   description: `CarVinLookup pricing: a free vehicle preview, then the full history report for ${reportPriceLine()}. Billed per vehicle.`,
   path: '/pricing',
 });
@@ -43,15 +43,15 @@ const FAQ = [
   },
   {
     q: 'What happens after the trial?',
-    a: `Unless you cancel within the ${DAYS} days, the subscription renews at ${MONTHLY}/month. You can cancel anytime from your account.`,
+    a: `Unless you cancel within the ${DAYS} days, that vehicle's subscription renews at ${MONTHLY}/month until you cancel.`,
   },
   {
     q: 'Is billing per vehicle?',
-    a: `Yes. ${PER_VEHICLE_NOTE} If you check several cars, cancel the subscriptions you no longer need from your account.`,
+    a: `Yes. ${PER_VEHICLE_NOTE} To cancel, use "Manage or cancel subscription" in your account. If you unlocked more than one vehicle and don't see every subscription there, email support@carvinlookup.us with the VINs and we'll cancel them.`,
   },
   {
     q: 'How do I cancel or get a refund?',
-    a: `Sign in to your account and use "Manage or cancel subscription", or email ${SUPPORT_EMAIL}. Refund terms are in our refund & cancellation policy.`,
+    a: `Sign in to your account and use "Manage or cancel subscription", or email ${SUPPORT_EMAIL} with the VIN. Refund terms are in our refund & cancellation policy.`,
   },
 ];
 
@@ -109,7 +109,7 @@ export default async function PricingPage() {
                 <span className="text-4xl font-extrabold text-slate-900">Free</span>
               </p>
               <ul className="space-y-3 text-sm text-slate-600 mb-8 flex-1">
-                {['Year, make, and model', 'Decoded factory details', 'Works for any 17-character VIN', 'No card required'].map((f) => (
+                {['Year, make, and model', 'Decoded factory details', 'Enter any 17-character VIN', 'Just your email — no card required'].map((f) => (
                   <li key={f} className="flex items-start gap-2.5">
                     <Check className="w-4 h-4 text-emerald-500 mt-0.5 shrink-0" aria-hidden="true" />
                     {f}
@@ -154,7 +154,7 @@ export default async function PricingPage() {
         )}
 
         <p className="text-center text-sm text-slate-400 mt-10">
-          Secure checkout via Stripe. Unlocked reports stay in your account. Cancel anytime from your account.
+          Secure checkout via Stripe. Unlocked reports stay in your account. Cancel from your account or by emailing support.
         </p>
       </section>
 
