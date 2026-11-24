@@ -1,11 +1,12 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { ShieldCheck, FileText, Database, AlertTriangle, Gauge, Search } from 'lucide-react';
+import { Database, Search } from 'lucide-react';
 import { getBrand, BRANDS } from '@/lib/brands';
 import { getStickerMake } from '@/lib/window-stickers';
 import { SITE_URL, CONTENT_REVISED, formatRevised } from '@/lib/site';
 import { BRAND_WMIS, BRAND_WMIS_RETRIEVED } from '@/lib/brand-wmis';
+import { BRAND_RECALLS, BRAND_RECALLS_RETRIEVED, BRAND_RECALLS_YEARS } from '@/lib/brand-recalls';
 import { pageMetadata } from '@/lib/seo';
 import SearchForm from '@/components/SearchForm';
 
@@ -62,12 +63,18 @@ export default async function BrandPage({
   const countries = [...new Set(wmis.map((w) => w.country))];
   const listJoin = (a: string[]) => (a.length < 2 ? a.join('') : `${a.slice(0, -1).join(', ')} and ${a[a.length - 1]}`);
   const WMI_ROWS = 15;
+  // Verified NHTSA recall campaigns for popular models (scripts/fetch-brand-recalls.mjs).
+  const recalls = [...(BRAND_RECALLS[brand.slug] ?? [])].sort((a, b) => b.campaigns - a.campaigns);
+  const { first: recallFrom, last: recallTo } = BRAND_RECALLS_YEARS;
 
   const faq = [
-    { q: `Is the ${brand.name} VIN check free?`, a: `You get a free preview of the vehicle's identity. The full ${brand.name} history report — title brands, theft, liens, and odometer — is a paid unlock.` },
-    { q: `Can I look up a ${brand.name} by license plate?`, a: `Not yet — license-plate search is launching soon. For now, enter the 17-character VIN; it's on the windshield, the driver-side door jamb, and the title or registration.` },
-    { q: `Will it show salvage or flood titles?`, a: `Yes — title brands recorded in any state are pulled from NMVTIS, which catches cars retitled across state lines to hide a brand.` },
-    { q: `Does it check ${brand.name} recalls?`, a: `Yes. The report flags open safety recalls so you can confirm the car was repaired before you buy. You can also check any VIN for free on NHTSA's recall lookup.` },
+    { q: `Is the ${brand.name} VIN check free?`, a: `You get a free preview of the vehicle's identity. The full ${brand.name} history report — title brands, a theft check, liens, and odometer readings — is a paid unlock.` },
+    ...(examples.length
+      ? [{ q: `What do ${brand.name} VINs start with?`, a: `${brand.name} VINs begin with a three-character manufacturer code (WMI) such as ${examples.join(', ')}. NHTSA lists ${wmis.length} codes for ${brand.name}${countries.length ? `, covering vehicles built in ${listJoin(countries)}` : ''}.` }]
+      : []),
+    ...(recalls.length
+      ? [{ q: `How many recalls does the ${brand.name} ${recalls[0].model} have?`, a: `NHTSA lists ${recalls[0].campaigns} recall campaign${recalls[0].campaigns === 1 ? '' : 's'} for the ${brand.name} ${recalls[0].model} across model years ${recallFrom}–${recallTo}${recalls[0].topComponent ? `, most often in NHTSA's "${recalls[0].topComponent}" component category` : ''}. That counts campaigns, not affected cars — check a specific car's open recalls with its VIN.` }]
+      : []),
     { q: `Where is the VIN on a ${brand.name}?`, a: `Look at the lower-left corner of the windshield (visible from outside), the label on the driver-side door jamb, and the title, registration, or insurance card. All of them should show the same 17 characters.` },
   ];
   const stickerModels = getStickerMake(slug)?.models ?? [];
@@ -136,7 +143,7 @@ export default async function BrandPage({
             <span className="block bg-gradient-to-r from-blue-400 to-sky-300 bg-clip-text text-transparent mt-1">& Decoder</span>
           </h1>
           <p className="text-base sm:text-lg text-slate-300 mb-8 max-w-2xl mx-auto">
-            Decode any {brand.name} VIN and check title brands, salvage &amp; flood history, theft, open liens, recalls, and odometer readings — built on NMVTIS title data.
+            {brand.blurb} Decode any {brand.name} VIN, then check its title, liens, and odometer history.
           </p>
           <SearchForm />
           <p className="mt-5 text-sm text-slate-400">Free preview · Full report online · All 50 states</p>
@@ -200,22 +207,50 @@ export default async function BrandPage({
           </>
         )}
 
+        {recalls.length > 0 && (
+          <>
+            <h2>NHTSA safety recalls for popular {brand.name} models</h2>
+            <p>
+              Unique recall campaigns NHTSA lists for model years {recallFrom}–{recallTo}. The count shows how often a model
+              was recalled, not whether a particular car was repaired — check any VIN free at{' '}
+              <a href="https://www.nhtsa.gov/recalls" target="_blank" rel="noopener noreferrer">nhtsa.gov/recalls</a> or with our{' '}
+              <Link href="/recalls">recall check</Link>.
+            </p>
+            <div className="not-prose overflow-x-auto my-6">
+              <table className="w-full text-sm border border-slate-200 rounded-xl overflow-hidden">
+                <thead className="bg-slate-50 text-slate-500 text-left">
+                  <tr>
+                    <th scope="col" className="px-4 py-2.5 font-semibold">Model</th>
+                    <th scope="col" className="px-4 py-2.5 font-semibold">Recall campaigns ({recallFrom}–{recallTo})</th>
+                    <th scope="col" className="px-4 py-2.5 font-semibold">Most-recalled component</th>
+                    <th scope="col" className="px-4 py-2.5 font-semibold">Latest campaign</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {recalls.map((r) => (
+                    <tr key={r.model} className="border-t border-slate-100">
+                      <td className="px-4 py-2 font-semibold text-slate-900">{brand.name} {r.model}</td>
+                      <td className="px-4 py-2 text-slate-700">{r.campaigns}</td>
+                      <td className="px-4 py-2 text-slate-700">{r.topComponent || '—'}</td>
+                      <td className="px-4 py-2 text-slate-500">{r.latest ? formatRevised(r.latest) : '—'}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <p className="text-sm text-slate-500">
+              Source: NHTSA recalls data, retrieved {formatRevised(BRAND_RECALLS_RETRIEVED)}. Models NHTSA files under several
+              names (for example hybrid or trim variants) are left out rather than estimated, so this is not a ranking of every
+              {' '}{brand.name} model.
+            </p>
+          </>
+        )}
+
         <h2>What to check on a used {brand.name}</h2>
         <p>
-          {brand.name} models hold up well on the used market, but a few brand-specific issues are worth confirming before you
-          commit. {brand.watchFor} Beyond the mechanicals, the records that matter most are the ones a seller can&apos;t see at a
-          glance: a <strong>salvage or flood title</strong> applied in another state, an <strong>open lien</strong>, an{' '}
-          <strong>odometer rollback</strong>, or a <strong>theft record</strong>. A VIN history report surfaces all of them.
+          {brand.watchFor} Then check the records a seller can&apos;t show you at a glance: a salvage or flood brand from
+          another state, an open lien, the odometer readings, and the theft check.
         </p>
-
-        <h2>What&apos;s included in a {brand.name} VIN report</h2>
-        <ul>
-          <li><strong>Title &amp; brand history</strong> — salvage, rebuilt, junk, and flood titles across all 50 states (NMVTIS).</li>
-          <li><strong>Theft check</strong> — a theft-risk flag for the VIN from our data provider.</li>
-          <li><strong>Lien check</strong> — outstanding loans recorded against the vehicle.</li>
-          <li><strong>Odometer history</strong> — reported readings with rollback and tampering alerts.</li>
-          <li><strong>Specs &amp; recalls</strong> — full {brand.name} decode plus open safety-recall lookups.</li>
-        </ul>
 
         <h2>Popular {brand.name} models to VIN check</h2>
         <p>Check the history of a specific {brand.name} model:</p>
@@ -235,41 +270,14 @@ export default async function BrandPage({
           </ul>
         )}
 
-        <h2>How to check a {brand.name} VIN number</h2>
-        <ol>
-          <li>Find the 17-character VIN on the windshield, driver-side door jamb, title, or registration.</li>
-          <li>Enter the VIN in the search box above.</li>
-          <li>Review the free preview, then unlock the full {brand.name} history report.</li>
-        </ol>
-
-        <h2>{brand.name} VIN data — sources</h2>
+        <h2>How to check a {brand.name} VIN</h2>
         <p>
-          Reports are built on the <strong>National Motor Vehicle Title Information System (NMVTIS)</strong> — title and
-          brand data that state titling agencies, insurers, and salvage yards report nationwide — plus lien, odometer, and
-          recall records, so a brand or odometer problem recorded in any state shows up, even if the car was retitled to
-          hide it. See our <a href="/data-sources">data sources</a> for what each source covers.
+          Find the 17-character VIN on the windshield, the driver-side door jamb, or the title, and enter it above for a free
+          vehicle preview. The full report covers NMVTIS title brands, salvage and flood records, liens, odometer readings, a
+          theft check, and recalls — see <Link href="/how-to/check-vin-number">how to check a VIN</Link> and our{' '}
+          <Link href="/data-sources">data sources</Link>.
         </p>
       </article>
-
-      {/* Feature cards */}
-      <section className="bg-white py-14 px-4 sm:px-6 lg:px-8 border-y border-slate-100">
-        <div className="max-w-5xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-          {[
-            { icon: AlertTriangle, c: 'text-amber-600 bg-amber-50', t: 'Title brands', d: `Salvage, rebuilt & flood ${brand.name} titles.` },
-            { icon: ShieldCheck, c: 'text-emerald-600 bg-emerald-50', t: 'Theft check', d: 'Theft-risk flag for the VIN.' },
-            { icon: Gauge, c: 'text-blue-600 bg-blue-50', t: 'Odometer', d: 'Reported readings by date.' },
-            { icon: FileText, c: 'text-violet-600 bg-violet-50', t: 'Liens & specs', d: `Open liens + full ${brand.name} decode.` },
-          ].map(({ icon: Icon, c, t, d }) => (
-            <div key={t} className="bg-slate-50 rounded-2xl border border-slate-100 p-6 card-lift">
-              <span className={`inline-flex w-11 h-11 rounded-xl items-center justify-center mb-4 ${c}`}>
-                <Icon className="w-5 h-5" aria-hidden="true" />
-              </span>
-              <h3 className="font-bold text-slate-900 mb-1">{t}</h3>
-              <p className="text-sm text-slate-500">{d}</p>
-            </div>
-          ))}
-        </div>
-      </section>
 
       {/* Other brands */}
       <section className="py-14 px-4 sm:px-6 lg:px-8" aria-labelledby="other-brands">
