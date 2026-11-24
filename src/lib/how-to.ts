@@ -9,6 +9,8 @@
 // are intentionally NOT duplicated here — the guides cross-link to them instead
 // to avoid keyword cannibalization.
 
+import { SRC } from '@/lib/sources';
+
 export interface HowToStep {
   name: string;
   text: string;
@@ -27,6 +29,10 @@ export interface HowToGuide {
   steps: HowToStep[];
   faq: { q: string; a: string }[];
   related: string[]; // other how-to slugs
+  /** 40–70 word direct answer, rendered first — the passage answer engines quote. */
+  answer?: string;
+  /** Authority sources (keys of SRC in lib/sources.ts) — verified live. */
+  sources?: (keyof typeof SRC)[];
 }
 
 export const HOW_TO_GUIDES: HowToGuide[] = [
@@ -34,7 +40,7 @@ export const HOW_TO_GUIDES: HowToGuide[] = [
     slug: 'check-vin-number',
     title: 'How to Check a VIN Number: A Step-by-Step Guide',
     description:
-      'Checking a VIN takes about a minute and can save you thousands. Learn where to find the VIN, how to validate it, and how to pull a full vehicle history.',
+      'Checking a VIN can save you from an expensive mistake. Learn where to find the VIN, how to validate it, and how to pull a full vehicle history.',
     keyword: 'how to check a VIN number',
     category: 'VIN basics',
     readingMinutes: 4,
@@ -43,7 +49,7 @@ export const HOW_TO_GUIDES: HowToGuide[] = [
       'A VIN check is the fastest way to confirm a used car is what the seller claims. Here is exactly how to find, validate, and check any 17-character VIN.',
     takeaways: [
       'A VIN is 17 characters and never contains the letters I, O, or Q.',
-      'You can check a VIN in about a minute — the free preview confirms the car identity before you pay.',
+      "The free preview confirms the car's identity before you pay.",
       'A history report checks title brands, theft, liens, and odometer across all 50 states, not just the one on the title.',
     ],
     steps: [
@@ -59,6 +65,9 @@ export const HOW_TO_GUIDES: HowToGuide[] = [
       { q: 'Can I check by license plate instead?', a: 'Not on CarVinLookup yet — plate-to-VIN search is launching soon. The VIN printed on the car gets you exactly the same report today.' },
     ],
     related: ['decode-wmi', 'read-vin-report', 'check-title-status'],
+    answer:
+      "To check a VIN, find the 17-character number on the lower-left corner of the windshield or the driver-side door jamb, confirm it matches the title and registration, and enter it into a VIN check. A valid VIN never contains I, O, or Q. The free preview confirms the car; a full report adds title, theft, lien, and odometer history.",
+    sources: ['nmvtis', 'nicb', 'vpic'],
   },
   {
     slug: 'read-vin-report',
@@ -88,6 +97,9 @@ export const HOW_TO_GUIDES: HowToGuide[] = [
       { q: 'What is the most important section?', a: 'The title/brand section. A salvage or flood brand affects safety, insurability, financing, and resale all at once.' },
     ],
     related: ['check-title-status', 'check-vin-number', 'find-stolen-car'],
+    answer:
+      "Read a vehicle history report from the title section down: look for brands such as salvage, flood, or rebuilt first, then confirm the odometer readings only increase, check for open liens and theft flags, and review accident and auction records. Compare every section with the seller's paperwork, and remember a clean report only means nothing was reported.",
+    sources: ['nmvtis', 'ftcDealer'],
   },
   {
     slug: 'decode-wmi',
@@ -102,12 +114,12 @@ export const HOW_TO_GUIDES: HowToGuide[] = [
       'The World Manufacturer Identifier is the first three characters of every VIN. Decoding it tells you where a car was made and by whom.',
     takeaways: [
       'Characters 1–3 of a VIN are the WMI: region, country, and manufacturer.',
-      'The first character alone tells you the region — 1, 4, and 5 are the United States.',
+      'The first character alone tells you the region — 1, 4, and 5 (plus some newer 7s) are the United States.',
       'The WMI confirms origin but not history — pair it with a full report.',
     ],
     steps: [
       { name: 'Isolate the first three characters', text: 'Write out the VIN and separate positions 1, 2, and 3 — that block is the WMI.' },
-      { name: 'Read the region from character 1', text: '1, 4, and 5 = United States; 2 = Canada; 3 = Mexico; J = Japan; K = Korea; S–Z = Europe.' },
+      { name: 'Read the region from character 1', text: '1, 4, and 5 (and some newer 7s) = United States; 2 = Canada; 3 = Mexico; J = Japan; K = South Korea; S–Z = Europe.' },
       { name: 'Identify the manufacturer', text: 'Characters 2 and 3 narrow it to a specific maker (for example, 1HG = Honda built in the USA).' },
       { name: 'Cross-check the badge', text: 'If the WMI says one manufacturer and the badges say another, treat it as a serious red flag for a cloned VIN.' },
     ],
@@ -116,6 +128,9 @@ export const HOW_TO_GUIDES: HowToGuide[] = [
       { q: 'Why do some makers have several WMIs?', a: 'Large manufacturers use different WMIs per country and plant, so the same brand can start with different three-character codes.' },
     ],
     related: ['check-vin-number', 'read-vin-report', 'find-motorcycle-vin'],
+    answer:
+      "The World Manufacturer Identifier (WMI) is the first three characters of a VIN. The first character shows where the vehicle was built — 1, 4, or 5 (and some newer 7s) for the United States, 2 for Canada, 3 for Mexico, J for Japan, K for South Korea, W for Germany — and the three characters together identify the manufacturer. NHTSA's free vPIC tool decodes them.",
+    sources: ['vpic', 'cfr565'],
   },
   {
     slug: 'find-license-plate-vin',
@@ -144,6 +159,9 @@ export const HOW_TO_GUIDES: HowToGuide[] = [
       { q: 'Does a plate lookup work in every state?', a: 'Coverage varies by provider. CarVinLookup’s plate-to-VIN search is launching soon for all 50 states; until then, the VIN printed on the car gets you the same report.' },
     ],
     related: ['check-vin-number', 'read-vin-report', 'avoid-curbstoner'],
+    answer:
+      "The quickest way to get a car's VIN is from the car or its paperwork: it's on the lower-left of the windshield, the driver-side door jamb, the title, the registration, and the insurance card. Plate-to-VIN services resolve a plate and state to the VIN, but consumer lookups never show the owner's personal details, which the federal DPPA protects. CarVinLookup's plate search is launching soon.",
+    sources: ['dppa'],
   },
   {
     slug: 'value-used-car',
@@ -157,7 +175,7 @@ export const HOW_TO_GUIDES: HowToGuide[] = [
       'A fair price starts with a fair valuation. Here is how to build one from public data and the car actual history.',
     takeaways: [
       'Start from published book values, then adjust for real condition and history.',
-      'A branded title (salvage, rebuilt, flood) can cut value 20–50%.',
+      "A branded title (salvage, rebuilt, flood) can substantially cut a car's value.",
       'A history report gives you documented leverage to negotiate.',
     ],
     steps: [
@@ -168,10 +186,13 @@ export const HOW_TO_GUIDES: HowToGuide[] = [
       { name: 'Factor in needed repairs', text: 'Deduct the cost of tires, brakes, or deferred maintenance the car needs now.' },
     ],
     faq: [
-      { q: 'How much does a salvage title lower value?', a: 'Commonly 20–50% versus a clean-title equivalent, and it also limits financing and insurance. See our guide on salvage vs. rebuilt titles.' },
+      { q: 'How much does a salvage title lower value?', a: 'It varies by car and market, but a branded title typically sells well below a comparable clean-title car, and it can limit financing and insurance. See our salvage title check for what the brand means.' },
       { q: 'Do valuation tools account for accidents?', a: 'Not automatically. You have to adjust for reported accidents and brands yourself — which is why you pull the history first.' },
     ],
     related: ['negotiate-used-car-price', 'check-title-status', 'avoid-curbstoner'],
+    answer:
+      "To value a used car, start from published market values for the same year, make, model, trim, and mileage, then adjust for condition, options, and history. A branded title, past accident, or open lien lowers what a car is worth, so run a history check and get an independent inspection before you settle on a number.",
+    sources: ['ftcDealer'],
   },
   {
     slug: 'avoid-curbstoner',
@@ -200,6 +221,9 @@ export const HOW_TO_GUIDES: HowToGuide[] = [
       { q: 'Is curbstoning illegal?', a: 'Selling cars for profit without a dealer license is illegal in most states. It is also a strong signal the car history is being hidden.' },
     ],
     related: ['value-used-car', 'check-title-status', 'find-stolen-car'],
+    answer:
+      "A curbstoner is an unlicensed dealer posing as a private seller. To avoid one, make sure the name on the title matches the seller's ID, be wary of a seller with several cars for sale or one who will only meet in a parking lot, and run the VIN for hidden title brands before you pay.",
+    sources: ['ftcUsed', 'nmvtisTips'],
   },
   {
     slug: 'find-stolen-car',
@@ -229,6 +253,9 @@ export const HOW_TO_GUIDES: HowToGuide[] = [
       { q: 'What is VIN cloning?', a: 'Cloning copies a legitimate VIN from one car onto a stolen one. Matching every VIN location against the title is how you catch it.' },
     ],
     related: ['read-vin-report', 'check-vin-number', 'avoid-curbstoner'],
+    answer:
+      "To check if a car is stolen, run its VIN through the free NICB VINCheck and a vehicle history report, then confirm the VIN on the dashboard, the driver-side door jamb, and the title all match. Make sure the seller's ID matches the name on the title. If anything doesn't line up, walk away and contact local police.",
+    sources: ['nicb', 'ftcUsed'],
   },
   {
     slug: 'read-carfax-report',
@@ -257,6 +284,9 @@ export const HOW_TO_GUIDES: HowToGuide[] = [
       { q: 'Can a report miss an accident?', a: 'Yes. Only reported events appear. A crash repaired privately and never reported to any provider can be invisible on paper.' },
     ],
     related: ['read-vin-report', 'check-title-status', 'value-used-car'],
+    answer:
+      "Read a Carfax-style report the same way as any vehicle history report: check the title section for brands first, then the odometer readings, reported accidents and damage, ownership and service entries, and open recalls. Treat it as a record of what was reported, not an inspection, and compare it with a second source and the seller's paperwork.",
+    sources: ['ftcDealer', 'nhtsaRecalls'],
   },
   {
     slug: 'find-motorcycle-vin',
@@ -285,6 +315,9 @@ export const HOW_TO_GUIDES: HowToGuide[] = [
       { q: 'Is the engine number the VIN?', a: 'No. The engine number is separate. The frame VIN — usually on the steering neck — is the identifier used for titles and history reports.' },
     ],
     related: ['check-vin-number', 'decode-wmi', 'read-vin-report'],
+    answer:
+      "On most motorcycles the 17-character VIN is stamped on the steering neck (headstock), and it often appears on a frame label too; it's also on the title and registration. Motorcycles built for U.S. roads since the 1981 model year use the same 17-character format as cars, so you can decode and check one the same way.",
+    sources: ['cfr565', 'vpic'],
   },
   {
     slug: 'check-title-status',
@@ -313,6 +346,9 @@ export const HOW_TO_GUIDES: HowToGuide[] = [
       { q: 'Is a clean title a guarantee?', a: 'No. It means no brand is currently on that state paperwork. A full history report checks whether a brand exists anywhere else.' },
     ],
     related: ['read-vin-report', 'check-vin-number', 'read-carfax-report'],
+    answer:
+      "To check a car's title status, run the VIN through a history check that searches NMVTIS, which collects title brands from state titling agencies and total-loss reports from insurers and salvage yards. Then compare the result with the physical title: a brand in the records that isn't on the paper title can be a sign of title washing.",
+    sources: ['nmvtis', 'nmvtisTips'],
   },
   {
     slug: 'negotiate-used-car-price',
@@ -341,6 +377,9 @@ export const HOW_TO_GUIDES: HowToGuide[] = [
       { q: 'Should I negotiate on monthly payments?', a: 'No. Always negotiate the total out-the-door price. Monthly-payment framing can hide a higher price stretched over a longer loan.' },
     ],
     related: ['value-used-car', 'check-title-status', 'read-vin-report'],
+    answer:
+      "To negotiate a used car price, research the market value for the same model, mileage, and condition, set a walk-away number, and use documented problems — a history-report finding or an inspection result — as leverage. Negotiate the total out-the-door price rather than the monthly payment, and be ready to walk away.",
+    sources: ['ftcDealer'],
   },
 ];
 

@@ -13,9 +13,9 @@ const MOCK_SPECS = ['2021', 'Sedan', '2.5L I4', '60,431 mi'];
 const MOCK_ROWS: [string, string][] = [
   ['Title brand', 'Clean'],
   ['Accidents', 'None reported'],
-  ['Previous owners', '2 owners'],
+  ['Title records', '4 found'],
   ['Open liens', 'None found'],
-  ['Odometer', 'Verified'],
+  ['Odometer', 'No rollback flagged'],
 ];
 
 export default function Hero() {
@@ -57,7 +57,7 @@ export default function Hero() {
             </span>
           </motion.div>
           <motion.ul {...enter(0.25)} className="mt-3 flex flex-wrap justify-center lg:justify-start gap-x-5 gap-y-2 text-sm text-slate-400">
-            {['Free vehicle preview', 'Instant delivery', 'Secure checkout'].map((t) => (
+            {['Free vehicle preview', 'PDF download', 'Secure checkout'].map((t) => (
               <li key={t} className="flex items-center gap-1.5">
                 <CheckCircle2 className="w-4 h-4 text-emerald-400" aria-hidden="true" /> {t}
               </li>

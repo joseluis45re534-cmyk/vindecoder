@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import { pageMetadata } from '@/lib/seo';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { listArticles } from '@/lib/autoseo';
+import { listAllArticlesWithStatus } from '@/lib/autoseo';
 
 export const runtime = 'edge';
 export const dynamic = 'force-dynamic'; // always-fresh; AutoSEO fetched per request
@@ -30,9 +30,14 @@ function fmtDate(iso: string) {
 
 export default async function BlogIndex({ searchParams }: { searchParams: Promise<{ page?: string }> }) {
   const page = pageNumber((await searchParams).page);
-  const { articles, totalPages, ok } = await listArticles({ page, pageSize: 12 });
+  // Filter hidden posts FIRST, then paginate locally — paginating the API and
+  // filtering afterwards left pages short (or empty soft-404s).
+  const { articles: all, ok } = await listAllArticlesWithStatus();
+  const PER_PAGE = 12;
+  const totalPages = Math.max(1, Math.ceil(all.length / PER_PAGE));
   // A page past the end is a real 404, not an empty 200 (a soft-404 to Google).
   if (ok && page > 1 && page > totalPages) notFound();
+  const articles = all.slice((page - 1) * PER_PAGE, page * PER_PAGE);
 
   return (
     <main className="min-h-screen bg-slate-50">

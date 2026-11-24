@@ -148,7 +148,7 @@ export default function DataSourcesPage() {
           </li>
           <li>
             <strong>Records can lag.</strong> A very recent accident, sale, or title change may not have been reported
-            to the underlying database yet.
+            to the underlying database yet, and a report may be served from a copy retrieved up to 30 days earlier.
           </li>
           <li>
             <strong>A clean report isn&apos;t a guarantee.</strong> It means no problems were reported to these

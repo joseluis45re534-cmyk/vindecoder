@@ -4,7 +4,6 @@ import { getBlogSitemap } from "@/lib/autoseo";
 import { allGuides } from "@/lib/how-to";
 import { COMPETITORS, comparisonSlug } from "@/lib/comparisons";
 import { allCheckPages } from "@/lib/checks";
-import { US_STATES } from "@/lib/us-states";
 import { BRANDS } from "@/lib/brands";
 import { SAMPLE_REPORTS } from "@/lib/sample-reports";
 
@@ -84,16 +83,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   //   - /window-sticker/[make]/[model] and /vin-check/[brand]/[model] (deep model tiers)
   //   - /window-sticker/[make]   (~100 words/page; sticker data not live until ClearVin)
   //   - /auctions/damage/[type] and /auctions/type/[type]   (~200 words/page)
+  //   - /license-plate-lookup/[state]   (51 near-identical pages; plate search not live)
   // On a young domain they'd only dilute crawl budget; concentrate it on the
   // brand hubs, checks, guides, and blog. Re-add them here (and drop the
   // noindex) once each tier is enriched and the domain has indexing authority.
-
-  const statePlates: MetadataRoute.Sitemap = US_STATES.map((s) => ({
-    url: `${SITE_URL}/license-plate-lookup/${s.slug}`,
-    lastModified: now,
-    changeFrequency: "monthly",
-    priority: 0.5,
-  }));
 
   const compare: MetadataRoute.Sitemap = COMPETITORS.flatMap((c) => [
     {
@@ -125,7 +118,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...posts,
     ...guides,
     ...checks,
-    ...statePlates,
     ...compare,
     ...sampleReports,
   ];

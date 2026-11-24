@@ -20,7 +20,7 @@ export default function ContactPage() {
       <section className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         <h1 className="text-4xl font-extrabold text-slate-900 mb-4 tracking-tight">Contact us</h1>
         <p className="text-slate-500 mb-10 text-lg">
-          Questions about a report, billing, or a dealer plan? We&apos;re happy to help.
+          Questions about a report or billing? We&apos;re happy to help.
         </p>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 mb-10">
           {[

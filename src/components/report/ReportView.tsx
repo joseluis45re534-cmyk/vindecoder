@@ -82,7 +82,6 @@ function sampleSectionRows(sample: SampleReport): { label: string; value: string
     { icon: BadgeDollarSign, label: 'Liens & loans', value: s.liens },
     { icon: Gavel, label: 'Auction & sale history', value: s.auction },
     { icon: Bell, label: 'Open recalls', value: s.recalls },
-    { icon: Users, label: 'Ownership history', value: s.owners },
   ];
 }
 
@@ -233,7 +232,7 @@ export default function ReportView({ id, sample, initialEmail }: { id: string; s
             <span className="inline-flex w-14 h-14 rounded-2xl bg-primary/10 text-primary items-center justify-center mb-4">
               <ShieldCheck className="w-7 h-7" aria-hidden="true" />
             </span>
-            <h1 className="font-display text-2xl font-bold text-slate-900">Your free report is ready</h1>
+            <h1 className="font-display text-2xl font-bold text-slate-900">Your free vehicle preview is ready</h1>
             <p className="text-sm text-slate-500 mt-2 leading-relaxed">
               Enter your email to see the vehicle history preview for
               <span className="font-mono text-slate-700"> {id}</span>.
@@ -268,7 +267,7 @@ export default function ReportView({ id, sample, initialEmail }: { id: string; s
             </button>
 
             <p className="text-[11px] text-slate-400 text-center leading-relaxed">
-              We&apos;ll email your report link. No spam — unsubscribe anytime. See our{' '}
+              We won&apos;t sell your email address. See our{' '}
               <Link href="/privacy" className="underline hover:text-slate-600">privacy policy</Link>.
             </p>
           </form>
@@ -328,7 +327,7 @@ export default function ReportView({ id, sample, initialEmail }: { id: string; s
   // VIN whose full report may in fact carry title/odometer history.
   const recordTiles = (rf
     ? [
-        { icon: FileText, label: 'Title & owner', count: rf.titleRecords, alert: false },
+        { icon: FileText, label: 'Title records', count: rf.titleRecords, alert: false },
         { icon: AlertTriangle, label: 'Accident / damage', count: rf.accidentOrDamage, alert: rf.accidentOrDamage > 0 },
         { icon: Gauge, label: 'Odometer readings', count: rf.odometerReadings, alert: false },
         { icon: Gavel, label: 'Auction sales', count: rf.auctionRecords, alert: false },
@@ -580,10 +579,10 @@ export default function ReportView({ id, sample, initialEmail }: { id: string; s
                     <h3 className="font-display font-bold text-slate-900 leading-tight">
                       {totalRecords > 0
                         ? `We found ${totalRecords} record${totalRecords === 1 ? '' : 's'} for this VIN`
-                        : 'VIN verified — no adverse records surfaced'}
+                        : 'Vehicle found — record details unlock with the full report'}
                     </h3>
                     <p className="text-sm text-slate-500 mt-0.5">
-                      Confirmed before you pay. Unlock the full report to see every detail.
+                      Record counts aren&apos;t available for every VIN before purchase. Unlock the full report to see every detail.
                     </p>
                   </div>
                 </div>

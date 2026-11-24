@@ -81,6 +81,50 @@ export default function AuctionsHub() {
         </div>
       </section>
 
+      {/* The category pages are noindexed, so the hub carries their substance. */}
+      <section className="bg-white border-t border-slate-100 py-16 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-3xl mx-auto">
+          <h2 className="text-2xl font-extrabold text-slate-900 mb-3">Auction damage types explained</h2>
+          <p className="text-slate-600 mb-8">
+            What each damage label on an auction listing means, and what to check before you bid.
+          </p>
+          <div className="space-y-3 mb-14">
+            {DAMAGE_TYPES.map((d) => (
+              <details key={d.slug} className="group bg-slate-50 rounded-2xl border border-slate-100 open:bg-white open:shadow-md transition-all">
+                <summary className="flex items-center justify-between cursor-pointer list-none px-6 py-4 font-bold text-slate-900">
+                  {d.name}
+                  <span className="ml-4 text-blue-600 transition-transform group-open:rotate-45 text-xl leading-none" aria-hidden="true">+</span>
+                </summary>
+                <div className="px-6 pb-5 text-slate-600 leading-relaxed">
+                  <p>{d.body}</p>
+                  <ul className="list-disc pl-5 mt-3 space-y-1 text-sm">
+                    {d.checks.map((c) => <li key={c}>{c}</li>)}
+                  </ul>
+                </div>
+              </details>
+            ))}
+          </div>
+
+          <h2 className="text-2xl font-extrabold text-slate-900 mb-3">Vehicle types at auction</h2>
+          <div className="space-y-3">
+            {VEHICLE_TYPES.map((v) => (
+              <details key={v.slug} className="group bg-slate-50 rounded-2xl border border-slate-100 open:bg-white open:shadow-md transition-all">
+                <summary className="flex items-center justify-between cursor-pointer list-none px-6 py-4 font-bold text-slate-900">
+                  {v.name}
+                  <span className="ml-4 text-blue-600 transition-transform group-open:rotate-45 text-xl leading-none" aria-hidden="true">+</span>
+                </summary>
+                <div className="px-6 pb-5 text-slate-600 leading-relaxed">
+                  <p>{v.body}</p>
+                  <ul className="list-disc pl-5 mt-3 space-y-1 text-sm">
+                    {v.checks.map((c) => <li key={c}>{c}</li>)}
+                  </ul>
+                </div>
+              </details>
+            ))}
+          </div>
+        </div>
+      </section>
+
       <section className="bg-gradient-to-br from-blue-700 to-blue-900 py-14 px-4 text-center">
         <h2 className="text-2xl sm:text-3xl font-extrabold text-white mb-3">Check any auction VIN</h2>
         <p className="text-blue-100 mb-6">Title brands, theft, liens, and odometer history · free preview.</p>

@@ -24,7 +24,7 @@ export async function GET() {
 
 > CarVinLookup runs instant U.S. vehicle history reports from a 17-character VIN, built on NMVTIS title data (via an approved NMVTIS data provider) plus insurance, salvage-auction, lien, odometer, and NHTSA recall records.
 
-CarVinLookup helps used-car buyers in the United States check a vehicle before purchase. Enter any 17-character VIN (cars titled in all 50 states) to get a report. License-plate search is launching soon and is not live yet. A free preview confirms the vehicle's identity first; full report access starts at ${fee} today — a ${days}-day trial that becomes ${monthly}/month unless you cancel. Cancel anytime.
+CarVinLookup helps used-car buyers in the United States check a vehicle before purchase. Enter any 17-character VIN (cars titled in all 50 states) to get a report. License-plate search is launching soon and is not live yet. A free preview confirms the vehicle's identity first; unlocking a vehicle's full report costs ${fee} today for a ${days}-day trial, then ${monthly}/month unless you cancel. Billing is per vehicle (each unlock starts its own trial). Cancel anytime.
 
 ## What a report covers
 
@@ -40,12 +40,29 @@ CarVinLookup helps used-car buyers in the United States check a vehicle before p
 
 1. Enter the 17-character VIN.
 2. Review the free vehicle preview (year, make, model).
-3. Unlock the full history report — generated online immediately.
+3. Unlock the full history report online after checkout.
 
 ## Pricing
 
-- Full report access — ${fee} today, then ${monthly}/month after a ${days}-day trial. Cancel anytime.
+- Full report for one vehicle — ${fee} today for a ${days}-day trial, then ${monthly}/month unless you cancel. Billed per vehicle; cancel anytime.
 - A free vehicle-identity preview is always shown before any charge.
+
+## Data sources
+
+- NMVTIS — National Motor Vehicle Title Information System (U.S. DOJ), accessed through an approved NMVTIS data provider
+- Insurers, junk and salvage yards — total-loss and salvage reports (federally required NMVTIS reporting)
+- Salvage-auction sale records, where available
+- NHTSA — National Highway Traffic Safety Administration (recalls, VIN decoding)
+- Not a source: the NICB's free VINCheck is a separate tool; CarVinLookup reports do not include NICB data
+- Full methodology, honest limitations, and the NMVTIS disclaimer: ${SITE_URL}/data-sources
+
+## Specialty checks
+
+${checks.map((c) => `- ${c.h1}: ${SITE_URL}/${c.slug}`).join('\n')}
+
+## How-to guides
+
+${guides.map((g) => `- ${g.title}: ${SITE_URL}/how-to/${g.slug}`).join('\n')}
 
 ## Key pages
 
@@ -61,37 +78,20 @@ CarVinLookup helps used-car buyers in the United States check a vehicle before p
 
 ${topBrands.map((b) => `- ${b.name} VIN check: ${SITE_URL}/vin-check/${b.slug}`).join('\n')}
 
-## Guides
-
-${posts.map((p) => `- ${p.title}: ${SITE_URL}/blog/${p.slug}`).join('\n')}
-
-## How-to guides
-
-${guides.map((g) => `- ${g.title}: ${SITE_URL}/how-to/${g.slug}`).join('\n')}
-
-## Specialty checks
-
-${checks.map((c) => `- ${c.h1}: ${SITE_URL}/${c.slug}`).join('\n')}
-
 ## Compare & alternatives
 
 - Compare providers: ${SITE_URL}/compare
 ${COMPETITORS.map((c) => `- ${c.name} alternative: ${SITE_URL}/${c.slug}-alternative`).join('\n')}
-
-## Data sources
-
-- NMVTIS — National Motor Vehicle Title Information System (U.S. DOJ), accessed through an approved NMVTIS data provider
-- Insurers, junk and salvage yards — total-loss and salvage reports (federally required NMVTIS reporting)
-- Salvage-auction sale records, where available
-- NHTSA — National Highway Traffic Safety Administration (recalls, VIN decoding)
-- Not a source: the NICB's free VINCheck is a separate tool; CarVinLookup reports do not include NICB data
-- Full methodology, honest limitations, and the NMVTIS disclaimer: ${SITE_URL}/data-sources
 
 ## Reference
 
 - VIN & title glossary: ${SITE_URL}/glossary
 - Data sources & methodology: ${SITE_URL}/data-sources
 - Sample reports: ${SITE_URL}/#examples
+
+## Blog posts
+
+${posts.map((p) => `- ${p.title}: ${SITE_URL}/blog/${p.slug}`).join('\n')}
 
 ## Full content
 

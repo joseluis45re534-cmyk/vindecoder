@@ -79,8 +79,9 @@ export default function AboutPage() {
 
         <h2>How we make money</h2>
         <p>
-          The vehicle preview is free. Full report access costs {fee} today for a {days}-day trial, then {monthly} per
-          month until you cancel — and you can cancel anytime from your account. See{' '}
+          The vehicle preview is free. Unlocking a vehicle&apos;s full report costs {fee} today for a {days}-day trial,
+          then {monthly} per month until you cancel — and you can cancel anytime from your account. Billing is per
+          vehicle: each vehicle you unlock starts its own trial subscription. See{' '}
           <Link href="/pricing">pricing</Link> and our <Link href="/refund">refund &amp; cancellation policy</Link>.
           We don&apos;t sell your personal information, and we never show vehicle owners&apos; personal information, which the
           federal Driver&apos;s Privacy Protection Act protects.

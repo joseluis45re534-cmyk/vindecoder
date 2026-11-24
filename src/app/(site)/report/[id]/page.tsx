@@ -71,7 +71,8 @@ export default async function ReportPage({
   // Guarded so a missing Supabase config just falls through to the gate.
   let initialEmail: string | undefined;
   try {
-    if (process.env.NEXT_PUBLIC_SUPABASE_URL) {
+    // Sample reports have no email gate, so skip the auth round-trip for them.
+    if (!sample && process.env.NEXT_PUBLIC_SUPABASE_URL) {
       const supabase = await createClient();
       initialEmail = (await supabase.auth.getUser()).data.user?.email ?? undefined;
     }
@@ -84,9 +85,16 @@ export default async function ReportPage({
       {sample && (
         <JsonLd data={sampleReportLd({ vin: sample.vin, title: sample.title, url: `${SITE_URL}/report/${sample.vin}` })} />
       )}
-      <Suspense fallback={<div className="min-h-screen flex items-center justify-center bg-slate-50"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>}>
-        <ReportView id={id} sample={sample} initialEmail={initialEmail} />
-      </Suspense>
+      {sample ? (
+        // Indexable sample: render inline (no Suspense) so the H1 and report rows
+        // are in the initial HTML, not a hidden streaming chunk that
+        // non-JavaScript crawlers and AI extractors skip.
+        <ReportView id={id} sample={sample} />
+      ) : (
+        <Suspense fallback={<div className="min-h-screen flex items-center justify-center bg-slate-50"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>}>
+          <ReportView id={id} sample={sample} initialEmail={initialEmail} />
+        </Suspense>
+      )}
     </>
   );
 }

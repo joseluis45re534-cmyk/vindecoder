@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
-import { FileText, Users, Gauge, Car, Camera, Bell } from 'lucide-react';
+import { FileText, History, Gauge, Car, Camera, Bell } from 'lucide-react';
 
 type Row = { k: string; v: string; ok?: boolean; warn?: boolean };
 
@@ -18,14 +18,13 @@ const TABS: { id: string; icon: typeof FileText; label: string; rows: Row[]; not
     note: 'Catches title washing — brands hidden by moving a car across state lines.',
   },
   {
-    id: 'ownership', icon: Users, label: 'Ownership',
+    id: 'title-history', icon: History, label: 'Title history',
     rows: [
-      { k: 'Previous owners', v: '2 owners' },
-      { k: 'Ownership length', v: '3 yrs · 4 yrs' },
+      { k: 'Title records', v: '4 records' },
       { k: 'Last titled in', v: 'Florida' },
-      { k: 'Use type', v: 'Personal' },
+      { k: 'Lien records', v: 'None found', ok: true },
     ],
-    note: 'See how long each owner kept it — and whether it was a fleet or rental.',
+    note: 'Each title record with its state and date — useful for spotting a car moved across state lines.',
   },
   {
     id: 'odometer', icon: Gauge, label: 'Odometer',
@@ -41,24 +40,22 @@ const TABS: { id: string; icon: typeof FileText; label: string; rows: Row[]; not
     rows: [
       { k: 'Accidents', v: 'None reported', ok: true },
       { k: 'Damage records', v: '0' },
-      { k: 'Airbag deployment', v: 'None', ok: true },
     ],
-    note: 'Reported collision and damage events, with severity where available.',
+    note: 'Reported accident, total-loss, and auction damage records, where available.',
   },
   {
     id: 'photos', icon: Camera, label: 'Photos',
     rows: [
-      { k: 'Listing photos', v: 'When available' },
-      { k: 'Condition images', v: 'Historical' },
+      { k: 'Auction photos', v: 'When on file' },
+      { k: 'Damage shown', v: 'As listed' },
     ],
-    note: 'Past listing photos help you compare condition over time.',
+    note: 'Photos appear when the VIN has a salvage or insurance auction history.',
   },
   {
     id: 'recalls', icon: Bell, label: 'Recalls',
     rows: [
       { k: 'Open recalls', v: '1 open', warn: true },
-      { k: 'Safety campaigns', v: 'NHTSA' },
-      { k: 'Remedy available', v: 'Yes', ok: true },
+      { k: 'Source', v: 'NHTSA' },
     ],
     note: 'Open manufacturer safety recalls, straight from NHTSA.',
   },
@@ -77,7 +74,7 @@ export default function ReportTabs() {
           <h2 id="report-heading" className="font-display text-3xl sm:text-4xl font-bold text-slate-900 tracking-tight">
             Everything you need, before you buy
           </h2>
-          <p className="text-slate-500 mt-3 max-w-2xl mx-auto">Tap through a sample report to see exactly what a VIN unlocks.</p>
+          <p className="text-slate-500 mt-3 max-w-2xl mx-auto">Tap through a sample report to see the kinds of records a VIN check can surface.</p>
         </div>
 
         <div className="grid lg:grid-cols-[260px_1fr] gap-6 lg:gap-10 items-start">

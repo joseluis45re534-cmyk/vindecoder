@@ -2,9 +2,10 @@ import type { Metadata } from 'next';
 import { pageMetadata } from '@/lib/seo';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { ArrowLeft, CheckCircle2, ShieldCheck, Search } from 'lucide-react';
+import { ArrowLeft, CheckCircle2, ShieldCheck, Search, ExternalLink } from 'lucide-react';
 import { getGuide, HOW_TO_GUIDES } from '@/lib/how-to';
-import { SITE_URL } from '@/lib/site';
+import { SITE_URL, CONTENT_REVISED, formatRevised } from '@/lib/site';
+import { SRC } from '@/lib/sources';
 import JsonLd from '@/components/JsonLd';
 import { howToLd, breadcrumbLd, faqPageLd } from '@/lib/structured-data';
 
@@ -41,7 +42,21 @@ export default async function HowToGuidePage({
     .map((s) => HOW_TO_GUIDES.find((g) => g.slug === s))
     .filter((g): g is NonNullable<typeof g> => Boolean(g));
 
+  const sources = (guide.sources ?? []).map((k) => SRC[k]);
   const schema = [
+    {
+      '@context': 'https://schema.org',
+      '@type': 'WebPage',
+      '@id': url,
+      name: guide.title,
+      url,
+      description: guide.description,
+      dateModified: CONTENT_REVISED,
+      lastReviewed: CONTENT_REVISED,
+      isPartOf: { '@id': `${SITE_URL}/#website` },
+      publisher: { '@id': `${SITE_URL}/#organization` },
+      ...(sources.length ? { citation: sources.map((s) => s.href) } : {}),
+    },
     howToLd({ name: guide.title, description: guide.description, url, steps: guide.steps, totalTime: guide.totalTime }),
     breadcrumbLd([
       { name: 'Home', url: SITE_URL },
@@ -76,6 +91,17 @@ export default async function HowToGuidePage({
       </section>
 
       <article className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        {guide.answer && (
+          <div className="bg-white border border-blue-100 rounded-2xl p-6 shadow-sm mb-10">
+            <p className="text-xs font-bold uppercase tracking-widest text-blue-600 mb-2">Quick answer</p>
+            <p className="text-slate-700 leading-relaxed">{guide.answer}</p>
+            <p className="text-xs text-slate-400 mt-4">
+              Last reviewed <time dateTime={CONTENT_REVISED}>{formatRevised()}</time> by the{' '}
+              <Link href="/about" className="underline hover:text-slate-600">CarVinLookup team</Link>
+            </p>
+          </div>
+        )}
+
         {/* Key takeaways */}
         <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6 mb-10">
           <h2 className="text-sm font-bold uppercase tracking-wide text-slate-500 mb-4">Key takeaways</h2>
@@ -107,11 +133,27 @@ export default async function HowToGuidePage({
         <div className="bg-gradient-to-br from-blue-700 to-blue-900 rounded-2xl p-8 text-center mb-12">
           <ShieldCheck className="w-8 h-8 text-blue-200 mx-auto mb-3" aria-hidden="true" />
           <h2 className="text-2xl font-extrabold text-white mb-2">Check the VIN before you buy</h2>
-          <p className="text-blue-100 mb-6">Title brands, theft records, liens, and odometer history in under a minute.</p>
+          <p className="text-blue-100 mb-6">Title brands, a theft check, liens, and odometer history — with a free vehicle preview first.</p>
           <Link href="/#vin-search" className="inline-flex items-center gap-2 bg-white text-blue-700 font-bold px-7 py-3 rounded-full hover:scale-105 transition-transform">
             <Search className="w-4 h-4" aria-hidden="true" /> Check a VIN now
           </Link>
         </div>
+
+        {sources.length > 0 && (
+          <section className="mb-12">
+            <h2 className="text-2xl font-extrabold text-slate-900 mb-4">Sources &amp; further reading</h2>
+            <ul className="space-y-2.5">
+              {sources.map((s) => (
+                <li key={s.href}>
+                  <a href={s.href} target="_blank" rel="noopener noreferrer" className="inline-flex items-start gap-2 text-blue-600 hover:underline">
+                    <ExternalLink className="w-4 h-4 mt-0.5 shrink-0" aria-hidden="true" />
+                    {s.label}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
 
         {/* FAQ */}
         <h2 className="text-2xl font-extrabold text-slate-900 mb-6">Frequently asked questions</h2>

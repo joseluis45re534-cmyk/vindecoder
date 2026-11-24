@@ -61,7 +61,7 @@ export default async function BrandPage({
         '@id': `${SITE_URL}/vin-check/${brand.slug}`,
         name: `${brand.name} VIN Check & Decoder`,
         url: `${SITE_URL}/vin-check/${brand.slug}`,
-        description: `Free ${brand.name} VIN check and decoder with title, theft, lien, and odometer history.`,
+        description: `${brand.name} VIN check and decoder: a free vehicle preview, then the full title, theft, lien, and odometer history as a paid report.`,
         isPartOf: { '@id': `${SITE_URL}/#website` },
         about: { '@type': 'Brand', name: brand.name },
         dateModified: CONTENT_REVISED,
@@ -120,7 +120,7 @@ export default async function BrandPage({
             Decode any {brand.name} VIN and check title brands, salvage &amp; flood history, theft, open liens, recalls, and odometer readings — built on NMVTIS title data.
           </p>
           <SearchForm />
-          <p className="mt-5 text-sm text-slate-400">Free preview · Instant report · All 50 states</p>
+          <p className="mt-5 text-sm text-slate-400">Free preview · Full report online · All 50 states</p>
         </div>
       </section>
 
@@ -249,7 +249,7 @@ export default async function BrandPage({
       {/* Final CTA */}
       <section className="bg-gradient-to-br from-blue-700 to-blue-900 py-14 px-4 text-center">
         <h2 className="text-2xl sm:text-3xl font-extrabold text-white mb-3">Run your {brand.name} VIN now</h2>
-        <p className="text-blue-100 mb-6">Free preview · full report in under a minute.</p>
+        <p className="text-blue-100 mb-6">Free preview · full report online right after checkout.</p>
         <Link href="/#vin-search" className="inline-flex items-center gap-2 bg-white text-blue-700 font-bold px-7 py-3.5 rounded-full hover:scale-105 active:scale-100 transition-transform">
           <Search className="w-4 h-4" aria-hidden="true" /> Check a {brand.name} VIN
         </Link>

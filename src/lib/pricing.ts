@@ -88,19 +88,40 @@ export const TRIAL_PLAN: Plan = {
     recurringCents: 2900, // $29/month after the 3-day window
     highlighted: true,
     cta: 'Start for $1 today',
+    // Only what the report provider actually returns (see lib/vincheck.ts).
     features: [
         'NMVTIS title-brand history',
-        'Salvage, junk & flood check',
-        'Odometer rollback alerts',
-        'Theft & recovery records',
-        'Liens, loans & impound info',
+        'Salvage, junk & flood records',
+        'Odometer readings over time',
+        'Theft check (risk-assessment flag)',
+        'Lien & loan records',
         'Accident & auction history',
-        'Real vehicle photos',
-        'Open safety recalls',
-        'Full factory specs',
+        'Vehicle photos when on file',
+        'Open safety recalls (NHTSA)',
+        'Decoded vehicle specs',
         'Downloadable PDF report',
     ],
 };
+
+/**
+ * The ONE honest description of report billing — reuse it wherever price is
+ * mentioned (pages, schema, llms.txt, chat). Billing is per vehicle: each VIN
+ * unlock starts its own trial subscription (see lib/account.ts + the checkout
+ * route). If the billing model changes, change it here.
+ */
+export function reportPriceLine(style: 'long' | 'short' = 'long'): string {
+    const fee = formatPrice(TRIAL_PLAN.trialFeeCents ?? 100);
+    const monthly = formatPrice(TRIAL_PLAN.recurringCents ?? 2900);
+    const days = TRIAL_PLAN.trialDays ?? 3;
+    return style === 'short'
+        ? `${fee} trial, then ${monthly}/mo`
+        : `${fee} today for a ${days}-day trial, then ${monthly}/month unless you cancel`;
+}
+
+/** "$1" — the trial fee as displayed. */
+export const trialFeeLabel = (): string => formatPrice(TRIAL_PLAN.trialFeeCents ?? 100);
+
+export const PER_VEHICLE_NOTE = 'Billed per vehicle: each vehicle you unlock starts its own trial subscription.';
 
 export function isTrialPlan(plan: Plan): boolean {
     return plan.trialFeeCents != null && plan.recurringCents != null;

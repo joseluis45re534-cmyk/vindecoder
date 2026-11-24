@@ -5,12 +5,11 @@ import { notFound } from 'next/navigation';
 import { Check, X, ShieldCheck, Search } from 'lucide-react';
 import { getCompetitor, comparisonSlug, OUR_ADVANTAGES, COMPETITORS } from '@/lib/comparisons';
 import { SITE_URL } from '@/lib/site';
-import { TRIAL_PLAN, formatPrice } from '@/lib/pricing';
+import { reportPriceLine, trialFeeLabel } from '@/lib/pricing';
 import JsonLd from '@/components/JsonLd';
 import { breadcrumbLd, faqPageLd } from '@/lib/structured-data';
 import SearchForm from '@/components/SearchForm';
 
-const fee = () => formatPrice(TRIAL_PLAN.trialFeeCents ?? 100);
 
 /** Static Metadata for a /{slug}-alternative page. */
 export function altMetadata(slug: string): Metadata {
@@ -18,7 +17,7 @@ export function altMetadata(slug: string): Metadata {
   if (!c) return { title: 'Alternative not found' };
   return pageMetadata({
     title: `${c.name} Alternative for VIN History Reports`,
-    description: `Looking for a ${c.name} alternative? CarVinLookup runs U.S. vehicle history reports built on NMVTIS title data, with a free preview and a ${fee()} trial.`,
+    description: `Looking for a ${c.name} alternative? CarVinLookup runs U.S. vehicle history reports built on NMVTIS title data. Free preview, then a ${reportPriceLine('short')}.`,
     path: `/${c.slug}-alternative`,
     ogAlt: `${c.name} alternative`,
   });
@@ -31,7 +30,7 @@ const COMPARE_ROWS = [
   { feature: 'Lien check', us: true, them: 'varies' as const },
   { feature: 'Odometer history', us: true, them: true },
   { feature: 'Instant VIN decode', us: true, them: 'varies' as const },
-  { feature: 'Low-cost trial start', us: true, them: 'varies' as const },
+  { feature: 'Free vehicle preview, then a $1 trial', us: true, them: 'varies' as const },
   { feature: 'Cancel anytime', us: true, them: 'varies' as const },
 ];
 
@@ -47,11 +46,10 @@ export function AlternativePage({ slug }: { slug: string }) {
 
   const others = COMPETITORS.filter((x) => x.slug !== c.slug).slice(0, 6);
   const url = `${SITE_URL}/${c.slug}-alternative`;
-  const f = fee();
 
   const faq = [
-    { q: `Is CarVinLookup a good ${c.name} alternative?`, a: `Yes. CarVinLookup covers the core records that matter on a used car — title brands, theft, liens, and odometer history — built on NMVTIS title data, with a free vehicle preview before you pay and full access from a ${f} trial.` },
-    { q: `How much does CarVinLookup cost compared to ${c.name}?`, a: `Full report access starts from a ${f} trial and then continues monthly unless you cancel. You always see a free preview first, so you confirm the vehicle before spending anything.` },
+    { q: `Is CarVinLookup a good ${c.name} alternative?`, a: `Yes. CarVinLookup covers the core records that matter on a used car — title brands, theft, liens, and odometer history — built on NMVTIS title data, with a free vehicle preview before you pay and full access for ${reportPriceLine()} (per vehicle).` },
+    { q: `How much does CarVinLookup cost compared to ${c.name}?`, a: `Unlocking a vehicle's full report costs ${reportPriceLine()}, billed per vehicle. You always see a free preview first, so you confirm the vehicle before spending anything. ${c.name}'s pricing changes, so check its site for current rates.` },
     { q: `Can I check a car by license plate?`, a: `Not yet — license-plate search is launching soon. For now, enter the 17-character VIN; it's on the windshield, the driver-side door jamb, and the title or registration.` },
   ];
 
@@ -60,7 +58,7 @@ export function AlternativePage({ slug }: { slug: string }) {
       '@context': 'https://schema.org',
       '@type': 'WebPage',
       '@id': url,
-      name: `The Best ${c.name} Alternative`,
+      name: `${c.name} Alternative for VIN History Reports`,
       url,
       description: `Why CarVinLookup is a strong ${c.name} alternative for U.S. vehicle history reports.`,
       isPartOf: { '@id': `${SITE_URL}/#website` },
@@ -92,13 +90,13 @@ export function AlternativePage({ slug }: { slug: string }) {
             </ol>
           </nav>
           <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-white mb-5 leading-tight">
-            The best <span className="bg-gradient-to-r from-blue-400 to-sky-300 bg-clip-text text-transparent">{c.name} alternative</span>
+            A <span className="bg-gradient-to-r from-blue-400 to-sky-300 bg-clip-text text-transparent">{c.name} alternative</span> for VIN history reports
           </h1>
           <p className="text-base sm:text-lg text-slate-300 mb-8 max-w-2xl mx-auto">
             {c.known} CarVinLookup gives you the records that actually decide a used-car purchase — with a free preview before you pay a cent.
           </p>
           <SearchForm />
-          <p className="mt-5 text-sm text-slate-400">Free preview · Full report from {f} · All 50 states</p>
+          <p className="mt-5 text-sm text-slate-400">Free preview · Full report {reportPriceLine('short')} unless you cancel · All 50 states</p>
         </div>
       </section>
 
@@ -141,7 +139,7 @@ export function AlternativePage({ slug }: { slug: string }) {
                   <Check className="w-5 h-5" aria-hidden="true" />
                 </span>
                 <h3 className="font-bold text-slate-900 mb-1">{a.label}</h3>
-                <p className="text-sm text-slate-500">{a.detail.replace('{fee}', f)}</p>
+                <p className="text-sm text-slate-500">{a.detail.replace('{fee}', trialFeeLabel())}</p>
               </div>
             ))}
           </div>
@@ -197,7 +195,7 @@ export function AlternativePage({ slug }: { slug: string }) {
       <section className="bg-gradient-to-br from-blue-700 to-blue-900 py-14 px-4 text-center">
         <ShieldCheck className="w-8 h-8 text-blue-200 mx-auto mb-3" aria-hidden="true" />
         <h2 className="text-2xl sm:text-3xl font-extrabold text-white mb-3">Run your VIN now</h2>
-        <p className="text-blue-100 mb-6">Free preview · full report in under a minute.</p>
+        <p className="text-blue-100 mb-6">Free preview · full report online right after checkout.</p>
         <Link href="/#vin-search" className="inline-flex items-center gap-2 bg-white text-blue-700 font-bold px-7 py-3.5 rounded-full hover:scale-105 active:scale-100 transition-transform">
           <Search className="w-4 h-4" aria-hidden="true" /> Check a VIN
         </Link>

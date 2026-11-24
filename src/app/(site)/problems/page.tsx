@@ -71,6 +71,27 @@ export default function ProblemsHub() {
           ))}
         </div>
       </section>
+
+      <section className="bg-white border-t border-slate-100 py-16 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-3xl mx-auto prose-content">
+          <h2>The used-car problems a test drive won&apos;t reveal</h2>
+          <p>
+            The most expensive used-car problems are the ones you can&apos;t see or feel on a test drive. A car that was
+            stolen, declared a total loss, flooded, or had its odometer rolled back can look and drive fine — the evidence
+            lives in title, insurance, and auction records instead.
+          </p>
+          <ul>
+            <li><strong>Theft:</strong> run the VIN through a <Link href="/stolen-vehicle-check">stolen vehicle check</Link> and confirm the VIN plates match the title.</li>
+            <li><strong>Total loss:</strong> a <Link href="/salvage-check">salvage title check</Link> shows salvage, rebuilt, and junk brands from any state.</li>
+            <li><strong>Flood damage:</strong> a <Link href="/flood-damage-check">flood damage check</Link> plus a close inspection for silt, rust, and electrical faults.</li>
+            <li><strong>Odometer fraud:</strong> an <Link href="/odometer-check">odometer check</Link> lines up the mileage readings reported over time.</li>
+          </ul>
+          <p>
+            No report sees every event, so pair the history check with an independent pre-purchase inspection. Our{' '}
+            <Link href="/how-to">how-to guides</Link> walk through each step.
+          </p>
+        </div>
+      </section>
     </main>
   );
 }

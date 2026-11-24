@@ -86,10 +86,10 @@ export default function MostStolenCarsPage() {
           vehicles in the United States. The following models have consistently appeared among the ten most stolen in recent
           reporting. Rankings and theft counts shift year to year, so treat this as the pattern of high-risk models rather than
           a fixed order — the{' '}
-          <a href="https://www.nicb.org/news/news-releases/nicb-releases-annual-hot-wheels-report-americas-top-ten-most-stolen-vehicles" rel="nofollow noopener" target="_blank">
-            current NICB Hot Wheels report
+          <a href="https://www.nicb.org/news/news-releases/us-vehicle-thefts-experience-historic-decline" rel="noopener" target="_blank">
+            NICB&apos;s latest vehicle-theft data (March 2026)
           </a>{' '}
-          has the latest figures.
+          has the current figures.
         </p>
 
         <h2>Frequently among the most stolen (per NICB)</h2>

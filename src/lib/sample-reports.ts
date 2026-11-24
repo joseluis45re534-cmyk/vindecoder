@@ -30,7 +30,6 @@ export interface SampleReport {
     liens: string;
     auction: string;
     recalls: string;
-    owners: string;
   };
 }
 
@@ -50,7 +49,7 @@ export const SAMPLE_REPORTS: SampleReport[] = [
     alt: 'White Toyota sedan parked outdoors',
     statusLabel: 'Clean history',
     badgeClass: 'bg-emerald-600',
-    finding: 'No brands, liens, or theft records found. Verified odometer.',
+    finding: 'No brands, liens, or theft flags found. Odometer readings consistent.',
     sections: {
       titleBrand: 'Clean — no brands recorded',
       accidents: 'No accidents reported',
@@ -59,7 +58,6 @@ export const SAMPLE_REPORTS: SampleReport[] = [
       liens: 'None found',
       auction: '1 sale record (dealer auction, 2023)',
       recalls: 'No open recalls',
-      owners: '2 previous owners',
     },
   },
   {
@@ -86,7 +84,6 @@ export const SAMPLE_REPORTS: SampleReport[] = [
       liens: 'None found',
       auction: 'No auction records',
       recalls: 'No open recalls',
-      owners: '1 previous owner',
     },
   },
   {
@@ -113,7 +110,6 @@ export const SAMPLE_REPORTS: SampleReport[] = [
       liens: 'None found',
       auction: '1 salvage-auction sale record',
       recalls: 'No open recalls',
-      owners: '3 previous owners',
     },
   },
   {
@@ -140,7 +136,6 @@ export const SAMPLE_REPORTS: SampleReport[] = [
       liens: 'Active lien — lender has not released the title',
       auction: 'No auction records',
       recalls: '1 open recall (fuel pump)',
-      owners: '1 previous owner',
     },
   },
 ];

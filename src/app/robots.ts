@@ -28,6 +28,7 @@ const AI_CRAWLERS = [
   "ClaudeBot", // index
   "anthropic-ai",
   "Claude-User", // Claude live fetch
+  "Claude-SearchBot", // Claude search index
   // Perplexity
   "PerplexityBot",
   "Perplexity-User", // live fetch

@@ -64,7 +64,7 @@ const TERMS: Term[] = [
   {
     term: 'Salvage title',
     definition:
-      'A title brand applied when an insurer declares a vehicle a total loss, usually because repair costs would exceed a set percentage of its value. A salvage-titled vehicle generally cannot be legally driven or registered until it’s repaired and passes a state inspection.',
+      'A title brand a state applies when a vehicle is declared a total loss — usually because repair costs would exceed a set percentage of its value. A salvage-titled vehicle generally cannot be legally driven or registered until it’s repaired and passes a state inspection.',
     related: { label: 'Salvage vs. rebuilt title', href: '/salvage-check' },
   },
   {

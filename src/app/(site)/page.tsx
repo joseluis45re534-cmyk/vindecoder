@@ -9,7 +9,7 @@ import SupportBand from '@/components/home/SupportBand';
 import ProblemBlock from '@/components/home/ProblemBlock';
 import { BRANDS } from '@/lib/brands';
 import { SAMPLE_REPORTS } from '@/lib/sample-reports';
-import { TRIAL_PLAN, formatPrice } from '@/lib/pricing';
+import { reportPriceLine, PER_VEHICLE_NOTE } from '@/lib/pricing';
 import { faqPageLd, vinCheckHowToLd } from '@/lib/structured-data';
 import { pageMetadata } from '@/lib/seo';
 import { SITE_NAME, SITE_TAGLINE, SITE_DESCRIPTION } from '@/lib/site';
@@ -27,9 +27,8 @@ export const metadata = pageMetadata({
 });
 
 // Report pricing line, sourced from pricing.ts so it never goes stale.
-const REPORT_PRICE_LINE = `${formatPrice(TRIAL_PLAN.trialFeeCents ?? 100)} today, then ${formatPrice(
-  TRIAL_PLAN.recurringCents ?? 2900,
-)}/month after a ${TRIAL_PLAN.trialDays ?? 3}-day trial`;
+// Billing is per vehicle — each unlock starts its own trial (see pricing.ts).
+const REPORT_PRICE_LINE = reportPriceLine();
 
 // Single source for the FAQ — rendered visibly AND emitted as FAQPage JSON-LD,
 // so the structured data always mirrors the on-page text.
@@ -48,17 +47,17 @@ const FAQ = [
   },
   {
     q: 'How much does a full report cost?',
-    a: `Full report access starts at ${REPORT_PRICE_LINE}, and you can cancel anytime. You always get a free preview of the vehicle’s identity first, so you know we found the right car before you pay.`,
+    a: `Unlocking a vehicle’s full report costs ${REPORT_PRICE_LINE}. ${PER_VEHICLE_NOTE} You always get a free preview of the vehicle’s identity first, so you know we found the right car before you pay.`,
   },
 ];
 
 const CHECKS = [
-  { icon: AlertTriangle, color: 'text-amber-600 bg-amber-50', title: 'Title brands', desc: 'Salvage, rebuilt, junk, and flood-damage titles across all 50 states.' },
-  { icon: Gauge, color: 'text-blue-600 bg-blue-50', title: 'Odometer history', desc: 'Reported mileage readings with rollback and tampering alerts.' },
-  { icon: ShieldCheck, color: 'text-emerald-600 bg-emerald-50', title: 'Theft check', desc: 'Flags theft-related records reported for the VIN before you hand over any money.' },
-  { icon: BadgeDollarSign, color: 'text-violet-600 bg-violet-50', title: 'Open liens', desc: 'Outstanding loans or liens recorded against the vehicle.' },
-  { icon: Database, color: 'text-sky-600 bg-sky-50', title: 'Title history', desc: 'Title records and the title timeline across the states the car has been titled in.' },
-  { icon: FileText, color: 'text-rose-600 bg-rose-50', title: 'Vehicle identity', desc: 'Make, model, year, body type, engine, and factory specifications.' },
+  { href: '/salvage-check', icon: AlertTriangle, color: 'text-amber-600 bg-amber-50', title: 'Title brands', desc: 'Salvage, rebuilt, junk, and flood-damage titles across all 50 states.' },
+  { href: '/odometer-check', icon: Gauge, color: 'text-blue-600 bg-blue-50', title: 'Odometer history', desc: 'Reported mileage readings with rollback and tampering alerts.' },
+  { href: '/stolen-vehicle-check', icon: ShieldCheck, color: 'text-emerald-600 bg-emerald-50', title: 'Theft check', desc: 'Flags theft-related records reported for the VIN before you hand over any money.' },
+  { href: '/lien-check', icon: BadgeDollarSign, color: 'text-violet-600 bg-violet-50', title: 'Open liens', desc: 'Outstanding loans or liens recorded against the vehicle.' },
+  { href: '/accident-check', icon: Database, color: 'text-sky-600 bg-sky-50', title: 'Title history', desc: 'Title records and the title timeline across the states the car has been titled in.' },
+  { href: '/vin-decoder', icon: FileText, color: 'text-rose-600 bg-rose-50', title: 'Vehicle identity', desc: 'Make, model, year, body type, engine, and factory specifications.' },
 ];
 
 export default function Home() {
@@ -78,7 +77,7 @@ export default function Home() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 relative">
             {[
               { step: '1', title: 'Enter the VIN', desc: 'Type the 17-character VIN — from the windshield, the driver-side door jamb, the title, or the listing.', icon: FileText },
-              { step: '2', title: 'We pull the records', desc: 'We query NMVTIS title data plus insurance, salvage, lien, and odometer records in real time.', icon: Database },
+              { step: '2', title: 'We pull the records', desc: 'We pull NMVTIS title data plus insurance, salvage, lien, and odometer records for that VIN.', icon: Database },
               { step: '3', title: 'Read your report', desc: 'Get a clear history report online within moments — and negotiate with confidence.', icon: Zap },
             ].map(({ step, title, desc, icon: Icon }) => (
               <div key={step} className="relative bg-white rounded-2xl border border-slate-100 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all p-8">
@@ -104,17 +103,17 @@ export default function Home() {
             What we check on every vehicle
           </h2>
           <p className="text-center text-slate-500 max-w-2xl mx-auto mb-16">
-            Every report cross-references federal and state databases so nothing the seller forgot to mention slips through.
+            Every report pulls NMVTIS title data plus insurance, salvage, lien, and odometer records, so problems a seller doesn&apos;t mention are easier to catch. Pair it with an independent inspection.
           </p>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {CHECKS.map(({ icon: Icon, color, title, desc }) => (
-              <div key={title} className="group bg-slate-50 hover:bg-white rounded-2xl border border-slate-100 hover:border-blue-100 hover:shadow-lg transition-all p-7">
+            {CHECKS.map(({ href, icon: Icon, color, title, desc }) => (
+              <Link key={title} href={href} className="group block bg-slate-50 hover:bg-white rounded-2xl border border-slate-100 hover:border-blue-100 hover:shadow-lg transition-all p-7">
                 <span className={`inline-flex w-11 h-11 rounded-xl items-center justify-center mb-5 ${color}`}>
                   <Icon className="w-5 h-5" aria-hidden="true" />
                 </span>
                 <h3 className="font-bold text-slate-900 mb-2">{title}</h3>
                 <p className="text-slate-500 text-sm leading-relaxed">{desc}</p>
-              </div>
+              </Link>
             ))}
           </div>
         </div>
@@ -154,7 +153,7 @@ export default function Home() {
             See what a report catches
           </h2>
           <p className="text-center text-slate-500 max-w-2xl mx-auto mb-16">
-            Four real-world scenarios. Open any sample report to see exactly what you&apos;d get before buying.
+            Four illustrative scenarios. Open any sample report to see the kinds of findings a real report can show.
           </p>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {SAMPLE_REPORTS.map((ex) => (
@@ -204,7 +203,7 @@ export default function Home() {
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {[
-              { icon: DollarSign, t: 'Start for just $1', d: `Unlock your full vehicle history for ${REPORT_PRICE_LINE} — and cancel anytime.` },
+              { icon: DollarSign, t: 'Start for just $1', d: `Unlock a vehicle’s full history for ${REPORT_PRICE_LINE}.` },
               { icon: Clock, t: 'Results in moments', d: 'Enter a VIN, see the free vehicle preview right away, then unlock the full report online.' },
               { icon: Database, t: 'NMVTIS title data', d: 'Title and brand history from NMVTIS via an approved data provider, plus theft, lien, and odometer records.' },
               { icon: MapPin, t: 'All 50 states', d: 'Cross-state records catch salvage and flood titles that were washed across state lines.' },

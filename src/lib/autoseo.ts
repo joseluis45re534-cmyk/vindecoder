@@ -98,10 +98,29 @@ export const CONSOLIDATED_POSTS: Record<string, string> = {
   'free-autocheck-alternative-discover-comprehensive': '/autocheck-alternative',
   'carvinlookup-vs-vinaudit-a-comprehensive': '/compare/carvinlookup-vs-vinaudit',
   'vinaudit-comparison-choosing-the-right-option': '/vinaudit-alternative',
-  'vincheckup-comparison-which-service-is-right': '/blog/carvinlookup-vs-vincheckup-a-comprehensive',
-  'free-vincheckup-alternative-top-options': '/blog/vincheckup-alternatives-discover-the-best-vehicle',
-  'vin-decoder-mazda-unlocking-your-vehicle-s-history': '/blog/mazda-vin-decoder-unlocking-your-vehicle-s-secrets',
+  'vincheckup-comparison-which-service-is-right': '/compare',
+  'free-vincheckup-alternative-top-options': '/compare',
   'vehicle-vin-lookup-your-complete-guide-to-vin': '/blog/vehicle-vin-lookup-your-ultimate-guide-to-vin',
+  // Fabricated facts about CarVinLookup (a mobile app, service records, made-up
+  // prices, testimonials) — never serve these until rewritten in AutoSEO.
+  'carvinlookup-vs-vincheckup-a-comprehensive': '/compare',
+  'carvinlookup-vs-vindecoded-which-vin-decoder': '/compare',
+  'carvinlookup-vs-vinfreecheck-the-ultimate': '/compare',
+  'carvinlookup-vs-vininspect-the-ultimate-comparison': '/compare',
+  // Unsourced competitor price tables (CLAUDE.md: never invent a competitor's
+  // price/feature) — hidden until the tables are removed in AutoSEO.
+  'comparing-vehicle-history-services-a-comprehensive': '/compare',
+  'vin-search-your-ultimate-guide-to-vehicle': '/vin-check',
+  'vincheckup-alternatives-discover-the-best-vehicle': '/compare',
+  'car-history-report-by-vin-ultimate-guide': '/vin-check',
+  'vehicle-vin-check-everything-you-need-to-know': '/vin-check',
+  'vinfreecheck-alternatives-discover-the-best': '/compare',
+  // Same intent as an existing hand-written page (cannibalization).
+  'how-to-interpret-vehicle-history-reports': '/how-to/read-vin-report',
+  'vehicle-vin-decoder-unlocking-your-car-s-hidden': '/vin-decoder',
+  'decoder-vin-number-your-ultimate-guide-to-vehicle': '/vin-decoder',
+  'mazda-vin-decoder-unlocking-your-vehicle-s-secrets': '/vin-check/mazda',
+  'vin-decoder-mazda-unlocking-your-vehicle-s-history': '/vin-check/mazda',
 };
 
 export function consolidatedDestination(slug: string): string | undefined {
@@ -137,10 +156,44 @@ function fixSchemaNode(node: unknown): unknown {
   return out;
 }
 
+// Links inside the AutoSEO body HTML (its "Related articles" nav and in-text
+// links) bypass the listing filters, so fix them here: drop list items that
+// point at hidden posts, send links to retired posts straight to their
+// canonical page, unlink self-references and links to off-topic (404) posts,
+// and repoint the parked carvinlookup.com domain AutoSEO sometimes writes.
+const OWN_POST = /^(?:https?:\/\/(?:www\.)?carvinlookup\.us)?\/blog\/([a-z0-9-]+)\/?$/i;
+const postSlug = (href: string): string | undefined => OWN_POST.exec(href)?.[1];
+
+function sanitizeLinks(html: string, selfSlug: string): string {
+  return html
+    .replace(/<li>\s*<a\b[^>]*href="([^"]+)"[^>]*>[\s\S]*?<\/a>\s*<\/li>/gi, (li, href: string) => {
+      const slug = postSlug(href);
+      return slug && isHidden(slug) ? '' : li;
+    })
+    .replace(/<a\b([^>]*?)href="([^"]+)"([^>]*)>([\s\S]*?)<\/a>/gi, (m, pre: string, href: string, post: string, text: string) => {
+      if (/^https?:\/\/(?:www\.)?carvinlookup\.com\/?$/i.test(href)) return `<a${pre}href="${SITE_URL}/#vin-search"${post}>${text}</a>`;
+      const slug = postSlug(href);
+      if (!slug) return m;
+      if (slug === selfSlug || isOffTopic(slug)) return text;
+      const to = consolidatedDestination(slug);
+      if (!to) return m;
+      return to === `/blog/${selfSlug}` ? text : `<a${pre}href="${to}"${post}>${text}</a>`;
+    });
+}
+
+// AutoSEO also emits its own Organization node named after the domain. The
+// root layout already declares the #organization entity, so drop the duplicate.
+function isDuplicateOrg(node: unknown): boolean {
+  if (!node || typeof node !== 'object') return false;
+  const n = node as Record<string, unknown>;
+  const types = ([] as unknown[]).concat(n['@type']);
+  return types.includes('Organization') && !n['@id'] && String(n.url ?? '').replace(/\/$/, '') === SITE_URL;
+}
+
 function sanitizeArticle(a: ArticleFull): ArticleFull {
-  a.html = (a.html || '').replace(POWERED_BY, '');
+  a.html = sanitizeLinks((a.html || '').replace(POWERED_BY, ''), a.slug);
   if (a.seo) {
-    a.seo.jsonLdBlocks = (a.seo.jsonLdBlocks ?? []).map(fixSchemaNode);
+    a.seo.jsonLdBlocks = (a.seo.jsonLdBlocks ?? []).map(fixSchemaNode).filter((n) => !isDuplicateOrg(n));
     if (a.seo.jsonLd) {
       a.seo.jsonLd = a.seo.jsonLd.replace(
         /"author"\s*:\s*\{[^{}]*"@type"\s*:\s*"Person"[^{}]*\}/g,
@@ -193,16 +246,24 @@ export async function listArticles(opts: { page?: number; pageSize?: number; tag
   }
 }
 
-/** Every published article (no bodies), newest first — for llms.txt. Pages
- *  through the list API; never throws (returns what it has so far). */
-export async function listAllArticles(maxPages = 10): Promise<ArticleListItem[]> {
+/** Every published, visible article (no bodies), newest first, plus whether
+ *  every API call succeeded. Never throws. */
+export async function listAllArticlesWithStatus(maxPages = 10): Promise<{ articles: ArticleListItem[]; ok: boolean }> {
   const all: ArticleListItem[] = [];
+  const seen = new Set<string>();
+  let ok = true;
   for (let page = 1; page <= maxPages; page++) {
     const res = await listArticles({ page, pageSize: 50 });
-    all.push(...res.articles);
+    ok = ok && res.ok;
+    for (const a of res.articles) if (!seen.has(a.slug)) { seen.add(a.slug); all.push(a); }
     if (!res.ok || page >= res.totalPages) break;
   }
-  return all;
+  return { articles: all, ok };
+}
+
+/** Every published, visible article (no bodies) — for llms.txt. */
+export async function listAllArticles(maxPages = 10): Promise<ArticleListItem[]> {
+  return (await listAllArticlesWithStatus(maxPages)).articles;
 }
 
 /** One article WITH body. Returns null on 404 (→ notFound). Throws on transient

@@ -124,7 +124,7 @@ export default async function ModelVinCheckPage({
             Decode any {label} VIN and check title brands, salvage &amp; flood history, theft, liens, recalls, and odometer readings.
           </p>
           <SearchForm />
-          <p className="mt-5 text-sm text-slate-400">Free preview · Instant report · All 50 states</p>
+          <p className="mt-5 text-sm text-slate-400">Free preview · Full report online · All 50 states</p>
         </div>
       </section>
 
@@ -156,8 +156,9 @@ export default async function ModelVinCheckPage({
         </ol>
 
         <p>
-          You can also pull the original <Link href={`/window-sticker/${brand}/${model}`}>{label} window sticker</Link> by VIN,
-          or check <Link href={`/vin-check/${brand}`}>other {b.name} models</Link>.
+          Window-sticker lookup by VIN is launching soon — see what a{' '}
+          <Link href={`/window-sticker/${brand}/${model}`}>{label} window sticker</Link> shows, or check{' '}
+          <Link href={`/vin-check/${brand}`}>other {b.name} models</Link>.
         </p>
       </article>
 
@@ -221,7 +222,7 @@ export default async function ModelVinCheckPage({
       {/* CTA */}
       <section className="bg-gradient-to-br from-blue-700 to-blue-900 py-14 px-4 text-center">
         <h2 className="text-2xl sm:text-3xl font-extrabold text-white mb-3">Run your {label} VIN now</h2>
-        <p className="text-blue-100 mb-6">Free preview · full report in under a minute.</p>
+        <p className="text-blue-100 mb-6">Free preview · full report online right after checkout.</p>
         <Link href="/#vin-search" className="inline-flex items-center gap-2 bg-white text-blue-700 font-bold px-7 py-3.5 rounded-full hover:scale-105 active:scale-100 transition-transform">
           <Search className="w-4 h-4" aria-hidden="true" /> Check a {label} VIN
         </Link>

@@ -8,6 +8,8 @@
 // separate VINCheck tool, never as a source of our report.
 // No feature is promised that the product does not deliver.
 
+import { SRC } from '@/lib/sources';
+
 export type CheckIconKey =
   | 'salvage'
   | 'flood'
@@ -44,19 +46,7 @@ export interface CheckPage {
   resources: { label: string; href: string }[];
 }
 
-// Verified live 2026-11-24 (NHTSA pages via search index — nhtsa.gov blocks bots).
-const SRC = {
-  nmvtis: { label: 'NMVTIS — consumer information (U.S. Department of Justice)', href: 'https://vehiclehistory.bja.ojp.gov/nmvtis_consumers' },
-  nmvtisTips: { label: 'NMVTIS — tips for buying a used vehicle', href: 'https://vehiclehistory.bja.ojp.gov/nmvtis_buyingtips' },
-  nicb: { label: 'NICB VINCheck — free theft and salvage screen', href: 'https://www.nicb.org/vincheck' },
-  nhtsaRecalls: { label: 'NHTSA — check for recalls by VIN', href: 'https://www.nhtsa.gov/recalls' },
-  nhtsaOdometer: { label: 'NHTSA — odometer fraud', href: 'https://www.nhtsa.gov/vehicle-safety/odometer-fraud' },
-  vpic: { label: 'NHTSA vPIC — public VIN decoder', href: 'https://vpic.nhtsa.dot.gov/decoder/' },
-  cfr565: { label: '49 CFR Part 565 — federal VIN requirements (eCFR)', href: 'https://www.ecfr.gov/current/title-49/subtitle-B/chapter-V/part-565' },
-  dppa: { label: "Driver's Privacy Protection Act, 18 U.S.C. § 2721 (Cornell LII)", href: 'https://www.law.cornell.edu/uscode/text/18/2721' },
-  ftcDealer: { label: 'FTC — buying a used car from a dealer', href: 'https://consumer.ftc.gov/articles/buying-used-car-dealer' },
-  ftcUsed: { label: 'FTC — used cars consumer advice', href: 'https://consumer.ftc.gov/features/feature-0040-used-cars' },
-} as const;
+
 
 export const CHECK_PAGES: CheckPage[] = [
   {
@@ -70,7 +60,7 @@ export const CHECK_PAGES: CheckPage[] = [
     intro:
       'Find out whether a car was ever declared a total loss and branded salvage — in any state, not just the one on the title.',
     whatItIs:
-      'A salvage title check looks for a salvage, rebuilt, or junk brand on a vehicle title. An insurer applies a salvage brand when repair costs exceed a large share of the car value. Because sellers sometimes move a car across state lines to wash the brand off the paperwork, a multi-state check via NMVTIS is what actually catches it.',
+      'A salvage title check looks for a salvage, rebuilt, or junk brand on a vehicle title. A state brands the title salvage when an insurer declares the car a total loss, or when damage exceeds a state-set threshold. Because sellers sometimes move a car across state lines to wash the brand off the paperwork, a multi-state check via NMVTIS is what actually catches it.',
     reportShows: [
       'Salvage, rebuilt, reconstructed, and junk title brands',
       'The state and, where available, the date a brand was applied',
@@ -88,7 +78,7 @@ export const CHECK_PAGES: CheckPage[] = [
     ],
     related: ['flood-damage-check', 'accident-check', 'lien-check'],
     answer:
-      "To check whether a car has a salvage title, run its 17-character VIN through a history check that searches NMVTIS. NMVTIS collects title brands from state titling agencies plus total-loss and salvage reports from insurers and salvage yards, so a salvage, rebuilt, or junk brand shows up even if the car was later retitled in another state.",
+      "To check whether a car has a salvage title, run its 17-character VIN through a history check that searches NMVTIS. NMVTIS collects title brands from state titling agencies plus total-loss and salvage reports from insurers and salvage yards, so a salvage, rebuilt, or junk brand is designed to show up even if the car was later retitled in another state.",
     sections: [
       {
         h2: "Salvage vs. rebuilt vs. junk titles",
@@ -174,7 +164,7 @@ export const CHECK_PAGES: CheckPage[] = [
       'Reported open liens recorded against the vehicle',
       'Lienholder information where available',
       'Title records that indicate a loan was not released',
-      'Related title and ownership history',
+      'Title history (the state and date of each title record)',
     ],
     steps: [
       { name: 'Enter the VIN', text: 'Type the 17-character VIN into the search box.' },
@@ -222,7 +212,7 @@ export const CHECK_PAGES: CheckPage[] = [
     reportShows: [
       'Reported accidents and damage events',
       'Total-loss and salvage records reported by insurers and salvage yards (NMVTIS)',
-      'Airbag deployment and structural damage where reported',
+      'Damage details as recorded in each reported accident or total-loss record',
       'Title brands that follow a serious accident',
     ],
     steps: [
@@ -232,7 +222,7 @@ export const CHECK_PAGES: CheckPage[] = [
     ],
     faq: [
       { q: 'Will the report show every accident?', a: 'It shows accidents and damage that were reported to records providers. A crash repaired privately and never reported may not appear, so add a physical inspection.' },
-      { q: 'Can a car with a clean title have accidents?', a: 'Yes. A title is only branded when an insurer declares a total loss. Smaller repaired accidents can leave the title clean, which is why you check the history.' },
+      { q: 'Can a car with a clean title have accidents?', a: "Yes. A state brands a title only for specific events, usually an insurance total loss or damage above the state's threshold, so smaller repaired accidents can leave the title clean. That's why you check the history." },
     ],
     related: ['salvage-check', 'flood-damage-check', 'odometer-check'],
     answer:
@@ -272,7 +262,7 @@ export const CHECK_PAGES: CheckPage[] = [
       'Theft-related records reported for the VIN',
       'Unrecovered-theft flags where available',
       'Salvage and total-loss events that can accompany theft-recovery',
-      'Title and ownership history to cross-check the seller',
+      "Title history (state and date of each title record) to compare with the seller's paperwork",
     ],
     steps: [
       { name: 'Enter the VIN', text: 'Type the 17-character VIN into the search box.' },
@@ -315,7 +305,7 @@ export const CHECK_PAGES: CheckPage[] = [
     intro:
       'Odometer fraud is common and illegal. Check the reported mileage history before you trust the number on the dash.',
     whatItIs:
-      'An odometer check lines up reported mileage readings from title transfers, service records, and inspections. Because legitimate readings only ever increase, a later reading that is lower than an earlier one is a strong signal the odometer was rolled back.',
+      'An odometer check lines up the mileage readings reported over time, such as at title transfers and auction sales. Because legitimate readings only ever increase, a later reading that is lower than an earlier one is a strong signal the odometer was rolled back.',
     reportShows: [
       'Reported odometer readings with their dates',
       'Rollback and tampering alerts where a reading dropped',
@@ -333,7 +323,7 @@ export const CHECK_PAGES: CheckPage[] = [
     ],
     related: ['accident-check', 'salvage-check', 'vin-decoder'],
     answer:
-      "To check for odometer rollback, compare the car's current mileage with the readings recorded over time in its title and history records — a reading lower than an earlier one is a red flag. Federal law requires sellers to disclose mileage when ownership changes, and NHTSA estimates more than 450,000 vehicles are sold each year with false odometer readings.",
+      "To check for odometer rollback, compare the car's current mileage with the readings recorded over time in its title and history records — a reading lower than an earlier one is a red flag. Federal law requires sellers to disclose the mileage when ownership changes (for model-year 2011 and newer vehicles until they're 20 years old; older vehicles are exempt), and NHTSA estimates more than 450,000 vehicles are sold each year with false odometer readings.",
     sections: [
       {
         h2: "How odometer fraud works",
@@ -377,12 +367,12 @@ export const CHECK_PAGES: CheckPage[] = [
       { name: 'Check for open recalls', text: 'Review the recall section and ask the seller for proof any open recall was repaired.' },
     ],
     faq: [
-      { q: 'Are recall repairs free?', a: 'Yes. Manufacturers must fix safety recalls at no charge. The risk with a used car is an open recall that was never taken care of.' },
+      { q: 'Are recall repairs free?', a: 'Usually. Manufacturers must provide the safety-recall remedy free of charge, except for vehicles first sold more than 15 years before the recall notice. The risk with a used car is an open recall that was never taken care of.' },
       { q: 'Where does recall data come from?', a: 'Safety recall information originates with the National Highway Traffic Safety Administration (NHTSA), which tracks manufacturer recalls.' },
     ],
     related: ['salvage-check', 'accident-check', 'vin-decoder'],
     answer:
-      "To check a car for open safety recalls, enter its 17-character VIN in NHTSA's free recall lookup at nhtsa.gov/recalls, or run it through a history report that includes recall records. Recall repairs are free at an authorized dealer for most vehicles. Federal law doesn't require used-car sellers to fix open recalls before a sale, so check before you buy.",
+      "To check a car for open safety recalls, enter its 17-character VIN in NHTSA's free recall lookup at nhtsa.gov/recalls, or run it through a history report that includes recall records. Recall repairs are free at an authorized dealer for most vehicles. Except for rental-car companies, which must fix open recalls before selling a rental car, federal law doesn't require used-car sellers to repair open recalls before a sale, so check before you buy.",
     sections: [
       {
         h2: "How recall repairs work",
@@ -416,9 +406,9 @@ export const CHECK_PAGES: CheckPage[] = [
       'A VIN decoder reads the 17 characters of a Vehicle Identification Number to reveal the manufacturer, model year, plant, and build details defined by federal standard. Decoding tells you what the car should be; a history report tells you what happened to it.',
     reportShows: [
       'Make, manufacturer, and country of origin (WMI)',
-      'Model year and assembly plant',
+      'Model year and country of manufacture',
       'Body, engine, and build details from the VIN',
-      'A check-digit validation to catch typos and fake VINs',
+      'A format check (17 characters, no I, O, or Q) before the lookup',
     ],
     steps: [
       { name: 'Enter the VIN', text: 'Type the 17-character VIN into the search box.' },
@@ -436,7 +426,7 @@ export const CHECK_PAGES: CheckPage[] = [
       {
         h2: "How to read a VIN, character by character",
         body: [
-          "Positions 1–3 are the World Manufacturer Identifier (WMI). The first character shows where the car was built: 1, 4, or 5 for the United States, 2 for Canada, 3 for Mexico, J for Japan, K for South Korea, and W for Germany. Positions 4–8 describe the model, body, and engine. Position 9 is a check digit calculated from the other characters to catch typos and fake VINs.",
+          "Positions 1–3 are the World Manufacturer Identifier (WMI). The first character shows where the car was built: 1, 4, or 5 for the United States (some newer U.S.-built models start with 7), 2 for Canada, 3 for Mexico, J for Japan, K for South Korea, and W for Germany. Positions 4–8 describe the model, body, and engine. Position 9 is a check digit calculated from the other characters. It catches most typos and some made-up VINs, but a cloned or carefully forged VIN can still pass.",
           "Position 10 is the model year: A was 2010, and the codes run through Y (skipping I, O, Q, U, Z, and 0) before cycling through 1–9 — R is 2024, S is 2025, and T is 2026. Position 11 is the assembly plant, and 12–17 are the production sequence number. The letters I, O, and Q never appear in a VIN.",
         ],
       },
@@ -483,9 +473,9 @@ export const CHECK_PAGES: CheckPage[] = [
       "CarVinLookup's license plate lookup, which resolves a U.S. plate and state to the car's VIN, is launching soon. Until then, you can get the VIN straight from the car or its paperwork: it's at the lower-left corner of the windshield, on the driver-side door jamb label, and on the title, registration, and insurance card. Enter it above for the full history.",
     sections: [
       {
-        h2: "Why a plate lookup never shows the owner's name",
+        h2: "Why our plate lookup won't show the owner's name",
         body: [
-          "The federal Driver's Privacy Protection Act (DPPA) restricts access to personal information in state motor-vehicle records, such as names and addresses. Legitimate plate lookups identify the vehicle — year, make, model, and VIN — not the person. Be suspicious of any site that promises an owner's identity from a plate.",
+          "The federal Driver's Privacy Protection Act (DPPA) bars state DMVs from releasing personal information in motor-vehicle records, such as names and addresses, except for specific permitted uses like law enforcement, insurance claims, court proceedings, and licensed private investigators. A consumer plate lookup identifies the vehicle (year, make, model, and VIN), not the person. Be wary of any consumer site that promises an owner's identity from a plate.",
         ],
       },
     ],

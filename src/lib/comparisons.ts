@@ -25,7 +25,7 @@ export const COMPETITORS: Competitor[] = [
     known: 'One of the most recognized vehicle history brands in the United States, long the default report at many franchise dealerships.',
     bestFor: 'Shoppers who specifically want the brand a dealer already references by name.',
     switchAngle:
-      'You can confirm the exact same core records — title brands, theft, liens, and odometer history — starting from a low-cost trial, and see a free identity preview before you pay anything.',
+      'You can check the core records that matter — NMVTIS title brands, a theft check, liens, and odometer history — and see a free vehicle preview before you pay anything.',
   },
   {
     slug: 'autocheck',
@@ -33,7 +33,7 @@ export const COMPETITORS: Competitor[] = [
     known: 'A vehicle history report brand from Experian, often associated with auction buyers and its comparative scoring approach.',
     bestFor: 'Buyers who want a single numeric score to compare auction cars at a glance.',
     switchAngle:
-      'Instead of paying for a score, you get the underlying records that actually matter — NMVTIS title brands, a theft check, liens, and odometer readings — with a free preview first.',
+      'CarVinLookup shows the underlying records — NMVTIS title brands, a theft check, liens, and odometer readings — with a free vehicle preview first.',
   },
   {
     slug: 'bumper',
@@ -41,7 +41,7 @@ export const COMPETITORS: Competitor[] = [
     known: 'A subscription-based vehicle history and research service marketed around unlimited lookups.',
     bestFor: 'High-volume shoppers who run many reports every month.',
     switchAngle:
-      'If you are checking one car, you should not have to commit like a dealer. Start for a low trial price, see the free preview, and cancel anytime — no long-term lock-in to run a single report.',
+      "Start with a free vehicle preview, then unlock only the cars you're serious about — and cancel each one from your account when you're done.",
   },
   {
     slug: 'epicvin',
@@ -65,7 +65,7 @@ export const COMPETITORS: Competitor[] = [
     known: 'A vehicle history data provider that draws on NMVTIS title records.',
     bestFor: 'Developers and buyers comfortable with a data-first, no-frills report.',
     switchAngle:
-      'CarVinLookup packages the same class of official records into a clear, readable report, adds theft and lien checks, and lets you preview the vehicle for free first.',
+      'CarVinLookup presents NMVTIS title data alongside insurance, salvage, lien, and odometer records in one readable report, and lets you preview the vehicle for free first.',
   },
   {
     slug: 'carvertical',
@@ -99,7 +99,7 @@ export function getComparisonBySlug(slug: string): Competitor | undefined {
  */
 export const OUR_ADVANTAGES: { label: string; detail: string }[] = [
   { label: 'Free preview before you pay', detail: 'Confirm the year, make, model, and VIN at no cost before unlocking anything.' },
-  { label: 'Low-cost start', detail: 'Full report access starts from a {fee} trial — not a premium one-off fee.' },
+  { label: 'Low-cost start', detail: 'Unlock a vehicle for a {fee} trial, then a monthly plan you can cancel anytime.' },
   { label: 'U.S. title data', detail: 'Title brands from NMVTIS via an approved data provider, plus theft, lien, and odometer records.' },
   { label: 'Any U.S. VIN', detail: 'Search any 17-character VIN for cars titled in all 50 states. License-plate search is launching soon.' },
   { label: 'Instant online report', detail: 'The full history is generated online as soon as you unlock it — no waiting for an email.' },

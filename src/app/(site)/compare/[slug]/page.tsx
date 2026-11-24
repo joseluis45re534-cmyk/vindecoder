@@ -5,13 +5,12 @@ import { notFound } from 'next/navigation';
 import { Check, ShieldCheck, Search, ArrowRight } from 'lucide-react';
 import { getComparisonBySlug, COMPETITORS, comparisonSlug } from '@/lib/comparisons';
 import { SITE_URL } from '@/lib/site';
-import { TRIAL_PLAN, formatPrice } from '@/lib/pricing';
+import { reportPriceLine, trialFeeLabel } from '@/lib/pricing';
 import JsonLd from '@/components/JsonLd';
 import { breadcrumbLd, faqPageLd } from '@/lib/structured-data';
 
 export const runtime = 'edge';
 
-const fee = () => formatPrice(TRIAL_PLAN.trialFeeCents ?? 100);
 
 export async function generateMetadata({
   params,
@@ -37,7 +36,7 @@ const ROWS = [
   { feature: 'Open lien check', us: 'Yes', them: 'Varies' },
   { feature: 'Odometer history', us: 'Yes', them: 'Typically yes' },
   { feature: 'Search by license plate', us: 'Launching soon', them: 'Varies' },
-  { feature: 'Pricing model', us: `Low-cost start from a ${'{fee}'} trial`, them: 'Varies by provider' },
+  { feature: 'Pricing model', us: `${reportPriceLine()} (per vehicle)`, them: 'Varies by provider' },
   { feature: 'Cancel anytime', us: 'Yes', them: 'Varies' },
 ];
 
@@ -51,13 +50,12 @@ export default async function ComparePage({
   if (!c) notFound();
 
   const url = `${SITE_URL}/compare/${comparisonSlug(c.slug)}`;
-  const f = fee();
   const others = COMPETITORS.filter((x) => x.slug !== c.slug).slice(0, 6);
 
   const faq = [
-    { q: `Is CarVinLookup better than ${c.name}?`, a: `For a typical U.S. used-car purchase, CarVinLookup gives you the core records that matter — title brands, theft, liens, and odometer — built on NMVTIS title data, with a free preview and a low ${f} start. ${c.name} ${c.bestFor.charAt(0).toLowerCase() + c.bestFor.slice(1)}` },
+    { q: `Is CarVinLookup better than ${c.name}?`, a: `For a typical U.S. used-car purchase, CarVinLookup gives you the core records that matter — title brands, theft, liens, and odometer — built on NMVTIS title data, with a free preview and a ${reportPriceLine('short')} start (cancel anytime). ${c.name} ${c.bestFor.charAt(0).toLowerCase() + c.bestFor.slice(1)}` },
     { q: `Do CarVinLookup and ${c.name} use the same data?`, a: `Most U.S. history reports draw on NMVTIS title data plus other record sources. CarVinLookup combines NMVTIS title and brand data (via an approved NMVTIS data provider) with insurance, salvage, lien, odometer, and recall records, and always shows a free vehicle preview before you pay. ${c.name} describes its own sources on its site.` },
-    { q: `Which is cheaper?`, a: `CarVinLookup starts from a ${f} trial and shows a free preview first, so you never pay before confirming the vehicle. Competitor pricing changes — check ${c.name}'s site for current rates.` },
+    { q: `Which is cheaper?`, a: `CarVinLookup costs ${reportPriceLine()}, billed per vehicle, and the vehicle preview is free. Competitor pricing changes — check ${c.name}'s site for current rates.` },
   ];
 
   const schema = [
@@ -100,7 +98,7 @@ export default async function ComparePage({
         <div className="bg-white rounded-2xl border border-slate-200 shadow-lg p-6 sm:p-8">
           <p className="text-xs font-bold uppercase tracking-wide text-blue-600 mb-2">The short answer</p>
           <p className="text-slate-700 leading-relaxed">
-            {c.known} <strong className="text-slate-900">CarVinLookup</strong> is built for U.S. used-car buyers who want the records that decide a purchase — title brands, theft, liens, and odometer — built on NMVTIS title data, with a free preview before paying and full access from a {f} trial.
+            {c.known} <strong className="text-slate-900">CarVinLookup</strong> is built for U.S. used-car buyers who want the records that decide a purchase — title brands, theft, liens, and odometer — built on NMVTIS title data, with a free preview before paying and full access for {reportPriceLine()} (per vehicle) — trial.
           </p>
         </div>
       </section>
@@ -121,7 +119,7 @@ export default async function ComparePage({
               {ROWS.map((row) => (
                 <tr key={row.feature} className="border-b border-slate-100 last:border-0 align-top">
                   <td className="px-4 py-3 text-slate-700 font-medium">{row.feature}</td>
-                  <td className="px-4 py-3 text-slate-700">{row.us.replace('{fee}', f)}</td>
+                  <td className="px-4 py-3 text-slate-700">{row.us.replace('{fee}', trialFeeLabel())}</td>
                   <td className="px-4 py-3 text-slate-500">{row.them}</td>
                 </tr>
               ))}
@@ -194,7 +192,7 @@ export default async function ComparePage({
       <section className="bg-gradient-to-br from-blue-700 to-blue-900 py-14 px-4 text-center">
         <ShieldCheck className="w-8 h-8 text-blue-200 mx-auto mb-3" aria-hidden="true" />
         <h2 className="text-2xl sm:text-3xl font-extrabold text-white mb-3">Check a VIN now</h2>
-        <p className="text-blue-100 mb-6">Free preview · full report from {f}.</p>
+        <p className="text-blue-100 mb-6">Free preview · full report {reportPriceLine('short')} unless you cancel.</p>
         <Link href="/#vin-search" className="inline-flex items-center gap-2 bg-white text-blue-700 font-bold px-7 py-3.5 rounded-full hover:scale-105 active:scale-100 transition-transform">
           <Search className="w-4 h-4" aria-hidden="true" /> Run a VIN check
         </Link>

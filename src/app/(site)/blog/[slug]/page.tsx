@@ -6,6 +6,7 @@ import JsonLd from '@/components/JsonLd';
 import { getArticle, consolidatedDestination } from '@/lib/autoseo';
 import { CHECK_PAGES } from '@/lib/checks';
 import { SITE_URL } from '@/lib/site';
+import { OG_IMAGE } from '@/lib/seo';
 
 export const runtime = 'edge';
 export const dynamic = 'force-dynamic'; // always-fresh; AutoSEO fetched per request
@@ -55,28 +56,34 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   // Canonical comes straight from AutoSEO (built from our baseUrl). Only fall
   // back to composing it if the API returned null (shouldn't happen — we pass baseUrl).
   const canonical = a.seo.canonical || `${SITE_URL}/blog/${a.slug}`;
-  const ogImage = a.seo.ogImage || a.image || undefined;
+  // Social cards can't render SVG — keep AutoSEO's raster image, else our default.
+  const RASTER = /\.(jpe?g|png|webp|gif)(\?|$)/i;
+  const ogImage = [a.seo.ogImage, a.image].find((u) => u && RASTER.test(u)) ?? OG_IMAGE.url;
+  // AutoSEO meta titles are sometimes cut mid-phrase; prefer the full H1 when it
+  // fits, and always spell the brand correctly.
+  const brand = (t: string) => t.replace(/carvinlookup(?!\.us)/gi, 'CarVinLookup');
+  const seoTitle = brand(a.title.length <= 60 ? a.title : a.metaTitle || a.title);
 
   return {
     // `absolute` so AutoSEO's SEO title is used verbatim (no "| CarVinLookup" suffix).
-    title: { absolute: a.metaTitle || a.title },
+    title: { absolute: seoTitle },
     description: a.metaDescription || a.excerpt || undefined,
     alternates: { canonical },
     robots: a.seo.noindex ? { index: false, follow: true } : undefined,
     openGraph: {
       type: 'article',
-      title: a.metaTitle || a.title,
+      title: seoTitle,
       description: a.metaDescription || a.excerpt || undefined,
       url: canonical,
       publishedTime: a.publishedAt,
       modifiedTime: a.updatedAt || a.publishedAt,
-      images: ogImage ? [{ url: ogImage, alt: a.title }] : undefined,
+      images: [{ url: ogImage, alt: a.title }],
     },
     twitter: {
       card: 'summary_large_image',
-      title: a.metaTitle || a.title,
+      title: seoTitle,
       description: a.metaDescription || a.excerpt || undefined,
-      images: ogImage ? [ogImage] : undefined,
+      images: [ogImage],
     },
   };
 }

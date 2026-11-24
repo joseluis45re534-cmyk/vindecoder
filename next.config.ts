@@ -1,6 +1,11 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // Render <title>, description, canonical, robots and OG tags in <head> for
+  // EVERY user agent. Next 15.2+ streams metadata into <body> for clients not on
+  // its "HTML-limited bot" list — which includes Googlebot and AI crawlers like
+  // GPTBot, ClaudeBot and PerplexityBot that don't run JavaScript.
+  htmlLimitedBots: /.*/,
   images: {
     // AutoSEO serves article/OG images from its own domain — allow it (also for
     // any <img> usage; next/image would otherwise throw at runtime).

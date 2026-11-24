@@ -19,6 +19,9 @@ function pathFor(kind: Kind, slug: string): string {
   return `/auctions/${kind === 'damage' ? 'damage' : 'type'}/${slug}`;
 }
 
+// Identified by a HIN or a serial number, not a 17-character VIN.
+const NON_VIN = new Set(['boat', 'jet-ski', 'heavy-equipment']);
+
 const titleCase = (s: string) => s.replace(/\b\w/g, (c) => c.toUpperCase());
 
 export function auctionMetadata(kind: Kind, slug: string): Metadata {
@@ -89,18 +92,24 @@ export function AuctionCategoryPage({ kind, slug }: { kind: Kind; slug: string }
           <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-white mb-5 leading-tight">{h1}</h1>
           <p className="text-base sm:text-lg text-slate-300 mb-8 max-w-2xl mx-auto">{cat.body}</p>
           <SearchForm />
-          <p className="mt-5 text-sm text-slate-400">Check any auction VIN before you bid · Free preview</p>
+          <p className="mt-5 text-sm text-slate-400">
+            {NON_VIN.has(cat.slug)
+              ? 'CarVinLookup reports cover 17-character VINs. Boats (HIN) and equipment serial numbers aren’t supported.'
+              : 'Check any auction VIN before you bid · Free preview'}
+          </p>
         </div>
       </section>
 
       <article className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-14 prose-content">
         <h2>What {isDamage ? cat.name.toLowerCase() : `buying ${cat.name.toLowerCase()}`} means at auction</h2>
         <p>{cat.body}</p>
-        <p>
-          Auction cars are often sold as-is with limited disclosure, so the VIN history is your best protection. Before you
-          bid, run the VIN to check for {isDamage ? 'a matching title brand, prior' : ''} salvage, theft, lien, and odometer
-          records — the details a listing photo will not show you.
-        </p>
+        {!NON_VIN.has(cat.slug) && (
+          <p>
+            Auction cars are often sold as-is with limited disclosure, so the VIN history is your best protection. Before you
+            bid, run the VIN to check for {isDamage ? 'a matching title brand, prior' : ''} salvage, theft, lien, and odometer
+            records — the details a listing photo will not show you.
+          </p>
+        )}
       </article>
 
       <section className="bg-white border-y border-slate-100 py-14 px-4 sm:px-6 lg:px-8">

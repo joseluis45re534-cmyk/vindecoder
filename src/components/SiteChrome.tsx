@@ -130,7 +130,7 @@ export function SiteFooter() {
             <ul className="space-y-2.5 text-sm">
               <li><a href="/#vin-search" className="hover:text-white transition-colors">VIN check</a></li>
               <li><Link href="/vin-check" className="hover:text-white transition-colors">VIN check by brand</Link></li>
-              <li><Link href="/window-sticker" className="hover:text-white transition-colors">Window sticker lookup</Link></li>
+              <li><Link href="/window-sticker" className="hover:text-white transition-colors">Window sticker guide</Link></li>
               <li><Link href="/pricing" className="hover:text-white transition-colors">Pricing</Link></li>
               <li><a href="/#examples" className="hover:text-white transition-colors">Sample reports</a></li>
               <li><Link href="/compare" className="hover:text-white transition-colors">Compare providers</Link></li>
@@ -190,7 +190,7 @@ export function SiteFooter() {
             <p>© {new Date().getFullYear()} {SITE_NAME}. All rights reserved. NMVTIS title data via an approved NMVTIS data provider.</p>
             <p className="flex items-center gap-1.5">
               <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" aria-hidden="true" />
-              Secure checkout · Reports delivered instantly
+              Secure checkout · Report online after checkout
             </p>
           </div>
         </div>

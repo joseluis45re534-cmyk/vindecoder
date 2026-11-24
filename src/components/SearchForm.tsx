@@ -41,12 +41,16 @@ export default function SearchForm() {
             return;
         }
 
-        if (clean.length > 0 && clean.length <= 8 && !PLATE_SEARCH_LIVE) {
-            setNotice({
-                kind: 'plate',
-                text: 'License-plate search is launching soon. For now, enter the 17-character VIN — it is on the lower-left corner of the windshield, the driver-side door jamb, and the title or registration.',
-            });
-            return;
+        if (clean.length > 0 && clean.length <= 8) {
+            if (!PLATE_SEARCH_LIVE) {
+                setNotice({
+                    kind: 'plate',
+                    text: 'License-plate search is launching soon. For now, enter the 17-character VIN — it is on the lower-left corner of the windshield, the driver-side door jamb, and the title or registration.',
+                });
+                return;
+            }
+            // TODO(ClearVin): plate + state lookup (needs a state selector). Build
+            // this branch BEFORE flipping PLATE_SEARCH_LIVE.
         }
 
         setNotice({ kind: 'error', text: 'Please enter a valid 17-character VIN.' });
@@ -70,6 +74,8 @@ export default function SearchForm() {
                     autoComplete="off"
                     spellCheck={false}
                     maxLength={24}
+                    aria-invalid={notice?.kind === 'error' || undefined}
+                    aria-describedby={notice ? 'vin-notice' : undefined}
                 />
                 <button
                     type="submit"
@@ -86,9 +92,10 @@ export default function SearchForm() {
                     )}
                 </button>
             </form>
+            {/* Always-mounted live region so screen readers announce changes. */}
+            <div id="vin-notice" role={notice?.kind === 'error' ? 'alert' : 'status'} aria-live={notice?.kind === 'error' ? 'assertive' : 'polite'}>
             {notice && (
                 <p
-                    role="status"
                     className={
                         notice.kind === 'plate'
                             ? 'mt-4 text-sky-100 bg-sky-500/20 border border-sky-300/30 px-4 py-2.5 rounded-xl text-sm inline-block backdrop-blur text-left'
@@ -103,6 +110,7 @@ export default function SearchForm() {
                     )}
                 </p>
             )}
+            </div>
         </div>
     );
 }

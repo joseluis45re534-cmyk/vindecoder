@@ -221,12 +221,12 @@ export async function buildReportPdf(report: FullReport, generatedAtISO: string)
         }
     }
 
-    heading('Theft Records');
+    heading('Theft Check');
     {
         const theft = o(report.theft);
         const status = s(theft.status);
         if (status) paragraph(status, { color: theft.flagged ? DARK : GRAY, indent: 4 });
-        else paragraph('No active theft records found in the checked databases.', { color: GRAY, indent: 4 });
+        else paragraph('Theft check not available for this VIN. Run the free NICB VINCheck (nicb.org/vincheck) as an extra screen.', { color: GRAY, indent: 4 });
     }
 
     heading('Liens & Loans');
@@ -307,6 +307,13 @@ export async function buildReportPdf(report: FullReport, generatedAtISO: string)
 
     // Final-page footer.
     drawFooter(page, pageNo);
+
+    heading('NMVTIS Consumer Disclaimer');
+    paragraph(
+        'NMVTIS holds title and brand information reported by state titling agencies, plus total-loss and salvage reports from insurers and junk and salvage yards. Some states do not yet provide complete data, so NMVTIS does not contain information on every vehicle, and it does not include detailed repair history. A vehicle history report is not a substitute for an independent vehicle inspection.',
+        { color: GRAY, indent: 4 },
+    );
+    paragraph('Full disclaimer: vehiclehistory.bja.ojp.gov (NMVTIS Consumer Access Product Disclaimer).', { color: GRAY, indent: 4 });
 
     return pdf.save();
 }

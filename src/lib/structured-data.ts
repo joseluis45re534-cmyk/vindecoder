@@ -18,7 +18,7 @@ function offerDescription(): string {
   const fee = formatPrice(TRIAL_PLAN.trialFeeCents ?? 100);
   const monthly = formatPrice(TRIAL_PLAN.recurringCents ?? 2900);
   const days = TRIAL_PLAN.trialDays ?? 3;
-  return `${fee} today, then ${monthly}/month after a ${days}-day trial. Cancel anytime.`;
+  return `Per vehicle: ${fee} today for a ${days}-day trial, then ${monthly}/month unless you cancel. Cancel anytime.`;
 }
 
 export function organizationLd(): Json {
@@ -118,7 +118,6 @@ export function vinCheckHowToLd(): Json {
     name: 'How to run a VIN check on CarVinLookup',
     description:
       'Check a used vehicle’s history in three steps using its 17-character VIN.',
-    totalTime: 'PT1M',
     step: [
       {
         '@type': 'HowToStep',

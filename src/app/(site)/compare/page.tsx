@@ -3,7 +3,8 @@ import { pageMetadata } from '@/lib/seo';
 import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
 import { COMPETITORS, comparisonSlug } from '@/lib/comparisons';
-import { SITE_URL } from '@/lib/site';
+import { SITE_URL, CONTENT_REVISED, formatRevised } from '@/lib/site';
+import { reportPriceLine } from '@/lib/pricing';
 import JsonLd from '@/components/JsonLd';
 import { breadcrumbLd } from '@/lib/structured-data';
 
@@ -78,6 +79,31 @@ export default function CompareHub() {
               {c.name} alternative
             </Link>
           ))}
+        </div>
+      </section>
+
+      <section className="bg-white border-t border-slate-100 py-16 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-3xl mx-auto prose-content">
+          <h2>How vehicle history reports differ</h2>
+          <p>
+            Most U.S. vehicle history reports start from the same backbone — title and brand data reported to NMVTIS by
+            state titling agencies, insurers, and salvage yards — then add their own extra sources. The differences that
+            matter to a buyer are:
+          </p>
+          <ul>
+            <li><strong>Data sources:</strong> NMVTIS access, plus any insurance, auction, or service records a provider adds.</li>
+            <li><strong>Preview before paying:</strong> whether you can confirm the vehicle before you buy anything.</li>
+            <li><strong>Pricing model:</strong> a one-off report versus a subscription, and how easy it is to cancel.</li>
+            <li><strong>Coverage:</strong> U.S. VINs only, or imported and overseas vehicles too.</li>
+            <li><strong>Honesty about limits:</strong> no report sees every event, so look for clear disclaimers.</li>
+          </ul>
+          <p>
+            CarVinLookup shows a free vehicle preview first; unlocking a vehicle&apos;s full report costs {reportPriceLine()}{' '}
+            (billed per vehicle). See our <Link href="/data-sources">data sources</Link> and{' '}
+            <Link href="/pricing">pricing</Link>. Competitors change their prices, so check each provider&apos;s own site
+            for current rates.
+          </p>
+          <p className="text-xs text-slate-400">Last reviewed <time dateTime={CONTENT_REVISED}>{formatRevised()}</time></p>
         </div>
       </section>
     </main>

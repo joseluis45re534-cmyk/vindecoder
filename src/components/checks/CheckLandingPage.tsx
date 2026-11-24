@@ -10,7 +10,7 @@ import { getCheckPage, CHECK_PAGES, type CheckIconKey } from '@/lib/checks';
 import { getGuide } from '@/lib/how-to';
 import { US_STATES } from '@/lib/us-states';
 import { SITE_URL, CONTENT_REVISED, formatRevised } from '@/lib/site';
-import { TRIAL_PLAN, formatPrice } from '@/lib/pricing';
+import { reportPriceLine } from '@/lib/pricing';
 import JsonLd from '@/components/JsonLd';
 import { breadcrumbLd, faqPageLd } from '@/lib/structured-data';
 import SearchForm from '@/components/SearchForm';
@@ -27,7 +27,6 @@ const ICONS: Record<CheckIconKey, LucideIcon> = {
   plate: CreditCard,
 };
 
-const fee = () => formatPrice(TRIAL_PLAN.trialFeeCents ?? 100);
 
 // "VIN decoder" keeps its acronym; "Accident check" -> "an accident check".
 const lowerFirst = (s: string) => (/^[A-Z]{2}/.test(s) ? s : s.charAt(0).toLowerCase() + s.slice(1));
@@ -45,7 +44,6 @@ export function CheckLandingPage({ slug }: { slug: string }) {
 
   const Icon = ICONS[c.icon];
   const url = `${SITE_URL}/${c.slug}`;
-  const f = fee();
   // Link every other check (not just 3) so each check page is reachable from
   // all the others — the cluster's strongest internal-linking signal.
   const related = [
@@ -107,7 +105,7 @@ export function CheckLandingPage({ slug }: { slug: string }) {
           <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-white mb-5 leading-tight">{c.h1}</h1>
           <p className="text-base sm:text-lg text-slate-300 mb-8 max-w-2xl mx-auto">{c.intro}</p>
           <SearchForm />
-          <p className="mt-5 text-sm text-slate-400">Free preview · Full report from {f} · All 50 states</p>
+          <p className="mt-5 text-sm text-slate-400">Free preview · Full report {reportPriceLine('short')} unless you cancel · All 50 states</p>
         </div>
       </section>
 
@@ -117,7 +115,8 @@ export function CheckLandingPage({ slug }: { slug: string }) {
           <p className="text-xs font-bold uppercase tracking-widest text-blue-600 mb-2">Quick answer</p>
           <p className="text-slate-700 leading-relaxed">{c.answer}</p>
           <p className="text-xs text-slate-400 mt-4">
-            Last reviewed <time dateTime={CONTENT_REVISED}>{formatRevised()}</time> by the CarVinLookup team
+            Last reviewed <time dateTime={CONTENT_REVISED}>{formatRevised()}</time> by the{' '}
+            <Link href="/about" className="underline hover:text-slate-600">CarVinLookup team</Link>
           </p>
         </div>
 
@@ -270,7 +269,7 @@ export function CheckLandingPage({ slug }: { slug: string }) {
       {/* CTA */}
       <section className="bg-gradient-to-br from-blue-700 to-blue-900 py-14 px-4 text-center">
         <ShieldCheck className="w-8 h-8 text-blue-200 mx-auto mb-3" aria-hidden="true" />
-        <h2 className="text-2xl sm:text-3xl font-extrabold text-white mb-3">{c.h1} now</h2>
+        <h2 className="text-2xl sm:text-3xl font-extrabold text-white mb-3">{c.icon === 'plate' ? 'Check a car by VIN now' : `Run ${withArticle(c.name)} now`}</h2>
         <p className="text-blue-100 mb-6">Free vehicle preview · full report online in moments.</p>
         <Link href="/#vin-search" className="inline-flex items-center gap-2 bg-white text-blue-700 font-bold px-7 py-3.5 rounded-full hover:scale-105 active:scale-100 transition-transform">
           <Search className="w-4 h-4" aria-hidden="true" /> Check a VIN

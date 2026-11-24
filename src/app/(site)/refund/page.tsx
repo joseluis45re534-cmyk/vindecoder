@@ -51,7 +51,7 @@ export default function RefundPage() {
         <h2>Failed payments</h2>
         <p>
           If a monthly payment fails, our payment processor (Stripe) automatically retries it over several days. If it cannot
-          be collected, access is paused until billing is updated.
+          be collected, the subscription may be cancelled.
         </p>
 
         <h2>Questions</h2>

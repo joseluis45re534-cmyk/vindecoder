@@ -4,7 +4,7 @@ import { notFound } from 'next/navigation';
 import { Check, ShieldCheck, Search } from 'lucide-react';
 import { getUsState, US_STATES } from '@/lib/us-states';
 import { SITE_URL } from '@/lib/site';
-import { pageMetadata } from '@/lib/seo';
+import { pageMetadata, NOINDEX_FOLLOW } from '@/lib/seo';
 import JsonLd from '@/components/JsonLd';
 import { breadcrumbLd, faqPageLd } from '@/lib/structured-data';
 import SearchForm from '@/components/SearchForm';
@@ -26,6 +26,10 @@ export async function generateMetadata({
     description: `${s.name} plate-to-VIN search is launching soon. Until then, find the VIN on the car or its title and run a history check. Owner data stays private.`,
     path: `/license-plate-lookup/${s.slug}`,
     ogAlt: `${s.name} license plate lookup`,
+    // 51 near-identical templates for a feature that isn't live: keep them for
+    // users, out of the index until plate search ships with state-specific
+    // content (CLAUDE.md "Phased indexing"). The hub stays indexed.
+    robots: NOINDEX_FOLLOW,
   });
 }
 

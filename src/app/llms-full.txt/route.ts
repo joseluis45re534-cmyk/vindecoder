@@ -38,16 +38,17 @@ assembled from:
 
 License-plate search is launching soon and is not live yet.
 
-A free preview confirms the vehicle's identity (year, make, model). Full report
-access starts at ${fee} today — a ${days}-day trial that becomes ${monthly}/month
-unless you cancel (cancel anytime) — and reveals title brands, theft records, open
-liens, and odometer history.
+A free preview confirms the vehicle's identity (year, make, model). Unlocking a
+vehicle's full report costs ${fee} today for a ${days}-day trial, then
+${monthly}/month unless you cancel (cancel anytime). Billing is per vehicle: each
+vehicle unlocked starts its own trial subscription. The report shows title
+brands, a theft check, open liens, and odometer history.
 
 ## Core concepts (citable answers)
 
 ### What is a VIN?
 A Vehicle Identification Number is a unique 17-character code assigned to every
-car sold in the United States, standardized under FMVSS 115 / ISO 3779. Position
+car sold in the United States, defined by federal rule 49 CFR Part 565 (aligned with ISO 3779). Position
 1–3 identify the manufacturer and country, 4–8 describe the vehicle, position 9
 is a check digit, position 10 is the model year, position 11 is the plant, and
 12–17 are the serial number. The letters I, O, and Q are never used.
@@ -97,7 +98,8 @@ Full detail: ${SITE_URL}/data-sources
 
 ## Pricing
 
-- Full report access — ${fee} today, then ${monthly}/month after a ${days}-day trial. Cancel anytime.
+- Full report for one vehicle — ${fee} today for a ${days}-day trial, then ${monthly}/month unless you cancel.
+- Billed per vehicle: each vehicle unlocked starts its own trial subscription. Cancel anytime.
 - A free vehicle-identity preview is always shown before any charge.
 - Payment via Stripe. Subscriptions are managed (and cancelled) through the Stripe customer portal.
 
@@ -108,19 +110,13 @@ Full detail: ${SITE_URL}/data-sources
 3. Review the free vehicle preview
 4. Unlock the full history report
 
-## Editorial guides
+## How-to guides — quick answers
 
-CarVinLookup publishes practical, original buying guides:
-${posts.map((p) => `- ${p.title}: ${SITE_URL}/blog/${p.slug}`).join('\n')}
+${guides.map((g) => `### ${g.title}\n${SITE_URL}/how-to/${g.slug}${g.answer ? `\n${g.answer}` : ''}`).join('\n\n')}
 
-## How-to guides
+## Specialty checks (by VIN) — quick answers
 
-Step-by-step instructions for used-car buyers:
-${guides.map((g) => `- ${g.title}: ${SITE_URL}/how-to/${g.slug}`).join('\n')}
-
-## Specialty checks (by VIN)
-
-${checks.map((c) => `- ${c.h1}: ${SITE_URL}/${c.slug}`).join('\n')}
+${checks.map((c) => `### ${c.h1}\n${SITE_URL}/${c.slug}\n${c.answer}`).join('\n\n')}
 
 ## Window sticker lookup
 
@@ -145,6 +141,11 @@ ${COMPETITORS.map((c) => `- ${c.name} alternative: ${SITE_URL}/${c.slug}-alterna
 - VIN & title glossary (definitions for every term above): ${SITE_URL}/glossary
 - Data sources & methodology: ${SITE_URL}/data-sources
 - Sample reports: ${SITE_URL}/#examples
+
+## Blog posts
+
+CarVinLookup also publishes buying guides on its blog:
+${posts.map((p) => `- ${p.title}: ${SITE_URL}/blog/${p.slug}`).join('\n')}
 
 ## Contact / brand
 
