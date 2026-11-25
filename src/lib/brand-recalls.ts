@@ -21,6 +21,13 @@ export interface ModelRecalls {
 export const BRAND_RECALLS: Record<string, ModelRecalls[]> = {
   "ford": [
     {
+      "model": "Mustang",
+      "campaigns": 28,
+      "byOthers": 0,
+      "topComponent": "Electrical System",
+      "latest": "2026-08-25"
+    },
+    {
       "model": "Ranger",
       "campaigns": 23,
       "byOthers": 0,
@@ -85,6 +92,13 @@ export const BRAND_RECALLS: Record<string, ModelRecalls[]> = {
       "latest": "2025-06-27"
     },
     {
+      "model": "Rogue",
+      "campaigns": 20,
+      "byOthers": 0,
+      "topComponent": "Fuel System, Gasoline",
+      "latest": "2026-02-12"
+    },
+    {
       "model": "Sentra",
       "campaigns": 8,
       "byOthers": 0,
@@ -120,25 +134,17 @@ export const BRAND_RECALLS: Record<string, ModelRecalls[]> = {
       "byOthers": 0,
       "topComponent": "Electrical System",
       "latest": "2026-07-01"
+    },
+    {
+      "model": "M3",
+      "campaigns": 4,
+      "byOthers": 0,
+      "topComponent": "Seat Belts",
+      "latest": "2023-02-23"
     }
   ],
   "mercedes-benz": [],
-  "audi": [
-    {
-      "model": "A6",
-      "campaigns": 15,
-      "byOthers": 0,
-      "topComponent": "Electrical System",
-      "latest": "2025-12-20"
-    },
-    {
-      "model": "A3",
-      "campaigns": 11,
-      "byOthers": 0,
-      "topComponent": "Air Bags",
-      "latest": "2024-04-03"
-    }
-  ],
+  "audi": [],
   "volkswagen": [
     {
       "model": "Jetta",
@@ -454,6 +460,13 @@ export const BRAND_RECALLS: Record<string, ModelRecalls[]> = {
       "latest": "2022-03-31"
     },
     {
+      "model": "Encore",
+      "campaigns": 2,
+      "byOthers": 0,
+      "topComponent": "",
+      "latest": "2020-10-29"
+    },
+    {
       "model": "Envision",
       "campaigns": 3,
       "byOthers": 0,
@@ -526,6 +539,13 @@ export const BRAND_RECALLS: Record<string, ModelRecalls[]> = {
     }
   ],
   "land-rover": [
+    {
+      "model": "Discovery",
+      "campaigns": 13,
+      "byOthers": 0,
+      "topComponent": "Electrical System",
+      "latest": "2026-09-17"
+    },
     {
       "model": "Defender",
       "campaigns": 17,

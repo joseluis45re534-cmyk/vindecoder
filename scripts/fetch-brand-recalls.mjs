@@ -112,21 +112,64 @@ const BRANDS = [...brandsSrc.matchAll(/slug: '([^']+)', name: '([^']+)'[^\n]*?mo
 })).filter((b) => !ONLY || ONLY.has(b.slug));
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+// Same-day response cache on disk (node_modules/.cache — never committed): when
+// NHTSA has an outage and a run aborts, re-running resumes from where it stopped
+// instead of starting over. A new day starts a fresh cache, so data stays current.
+const CACHE_DIR = path.join(process.cwd(), 'node_modules', '.cache', 'fetch-brand-recalls');
+const CACHE_FILE = path.join(CACHE_DIR, `${new Date().toISOString().slice(0, 10)}.jsonl`);
+fs.mkdirSync(CACHE_DIR, { recursive: true });
 const cache = new Map();
+if (fs.existsSync(CACHE_FILE)) {
+  for (const line of fs.readFileSync(CACHE_FILE, 'utf8').split('\n')) {
+    if (!line) continue;
+    try { const { u, j } = JSON.parse(line); cache.set(u, j); } catch { /* torn last line from an abort */ }
+  }
+  console.error(`resuming with ${cache.size} cached NHTSA responses from ${CACHE_FILE}`);
+}
+const remember = (u, j) => { cache.set(u, j); fs.appendFileSync(CACHE_FILE, `${JSON.stringify({ u, j })}\n`); };
+
+// Politeness: at most CONCURRENCY requests in flight AND at least MIN_GAP_MS
+// between request starts (~3/s — the rate a sequential run reaches when NHTSA
+// is fast). Unthrottled parallel bursts got the client blocked (HTTP 403); this
+// only overlaps requests while NHTSA is slow.
+const CONCURRENCY = Math.max(1, Number(process.env.CONCURRENCY) || 6);
+const MIN_GAP_MS = 350;
+let inFlight = 0;
+let nextStart = 0;
+const waiters = [];
+async function acquire() {
+  while (inFlight >= CONCURRENCY) await new Promise((r) => waiters.push(r));
+  inFlight++;
+  const at = Math.max(Date.now(), nextStart);
+  nextStart = at + MIN_GAP_MS;
+  if (at > Date.now()) await sleep(at - Date.now());
+}
+function release() {
+  inFlight--;
+  waiters.shift()?.();
+}
+
 async function getJson(url, tries = 8) {
   if (cache.has(url)) return cache.get(url);
   for (let i = 0; i < tries; i++) {
+    let status = 0;
+    let body;
+    await acquire();
     try {
       const res = await fetch(url, { headers: UA, signal: AbortSignal.timeout(60000) });
-      if (res.ok) { const j = await res.json(); cache.set(url, j); await sleep(150); return j; }
-      if (res.status === 400 || res.status === 404) { cache.set(url, null); return null; }
-      // 403/429 = being throttled; 5xx = NHTSA's gateway is struggling (it has
-      // outages of 504s). Either way, back off hard instead of retrying quickly.
-      if (res.status === 403 || res.status === 429 || res.status >= 500) { await sleep(15000 * (i + 1)); continue; }
-    } catch { /* timeout / network — retry */ }
-    await sleep(5000 * (i + 1));
+      status = res.status;
+      if (res.ok) body = await res.json();
+    } catch { status = 0; /* timeout / network — retry */ } finally {
+      release();
+    }
+    if (body !== undefined) { remember(url, body); return body; }
+    if (status === 400 || status === 404) { remember(url, null); return null; }
+    // 403/429 = being throttled; 5xx = NHTSA's gateway is struggling (it has
+    // outages of 504s). Either way, back off hard instead of retrying quickly.
+    await sleep((status === 403 || status === 429 || status >= 500 ? 15000 : 5000) * (i + 1));
   }
-  throw new Error(`NHTSA request failed after retries (aborting, no file written): ${url}`);
+  throw new Error(`NHTSA request failed after retries (aborting, no file written — re-run to resume from the cache): ${url}`);
 }
 
 const key = (s) => String(s).toUpperCase().replace(/[^A-Z0-9]/g, '');
@@ -136,8 +179,9 @@ const byVehicle = (make, model, year) =>
 
 async function campaignsAllYears(make, model) {
   const all = new Map();
-  // Sequential on purpose: parallel bursts get the client blocked (HTTP 403).
-  for (const y of YEARS) for (const c of await byVehicle(make, model, y)) if (c.id && !all.has(c.id)) all.set(c.id, c);
+  // Years in parallel; the acquire() limiter above keeps the overall rate polite.
+  const perYear = await Promise.all(YEARS.map((y) => byVehicle(make, model, y)));
+  for (const list of perYear) for (const c of list) if (c.id && !all.has(c.id)) all.set(c.id, c);
   return all;
 }
 
@@ -167,8 +211,10 @@ for (const b of BRANDS) {
     // Variant names NHTSA uses for this model, from the campaigns' own vehicle lists…
     const variants = new Set();
     const perf = audiPerf(b.slug, model);
-    for (const id of exact.keys()) {
-      const rec = await getJson(`${API}/recalls/campaignNumber?campaignNumber=${id}`);
+    const recs = await Promise.all(
+      [...exact.keys()].map((id) => getJson(`${API}/recalls/campaignNumber?campaignNumber=${id}`).then((rec) => ({ id, rec }))),
+    );
+    for (const { id, rec } of recs) {
       // A campaign number NHTSA just returned must resolve; a failure here would hide variants.
       if (!rec) throw new Error(`Campaign ${id} lookup failed (aborting, no file written)`);
       for (const r of rec.results || []) {
@@ -188,8 +234,11 @@ for (const b of BRANDS) {
     const mKey = key(model);
     const bKey = key(baseName(model));
     let catalogueRows = 0;
-    for (const y of YEARS) {
-      const list = await getJson(`${API}/products/vehicle/models?modelYear=${y}&make=${encodeURIComponent(b.name)}&issueType=r&max=500`);
+    const catalogue = await Promise.all(
+      YEARS.map((y) => getJson(`${API}/products/vehicle/models?modelYear=${y}&make=${encodeURIComponent(b.name)}&issueType=r&max=500`)),
+    );
+    for (const [yi, list] of catalogue.entries()) {
+      const y = YEARS[yi];
       const products = list?.results || [];
       if (products.length >= 500) throw new Error(`Product catalogue may be truncated: ${b.name} ${y} returned ${products.length} rows — raise max (no file written)`);
       catalogueRows += products.length;
