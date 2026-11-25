@@ -52,6 +52,7 @@ export function CheckLandingPage({ slug }: { slug: string }) {
   ].filter((x): x is NonNullable<typeof x> => Boolean(x));
   const guides = c.guides.map((g) => getGuide(g)).filter((g): g is NonNullable<typeof g> => Boolean(g));
   const verb = c.icon === 'decoder' || c.icon === 'plate' ? 'use' : 'run';
+  const reviewed = c.reviewed ?? CONTENT_REVISED;
 
   const schema = [
     {
@@ -61,8 +62,8 @@ export function CheckLandingPage({ slug }: { slug: string }) {
       name: c.h1,
       url,
       description: c.metaDescription,
-      dateModified: CONTENT_REVISED,
-      lastReviewed: CONTENT_REVISED,
+      dateModified: reviewed,
+      lastReviewed: reviewed,
       isPartOf: { '@id': `${SITE_URL}/#website` },
       about: { '@id': `${SITE_URL}/#service` },
       publisher: { '@id': `${SITE_URL}/#organization` },
@@ -115,7 +116,7 @@ export function CheckLandingPage({ slug }: { slug: string }) {
           <p className="text-xs font-bold uppercase tracking-widest text-blue-600 mb-2">Quick answer</p>
           <p className="text-slate-700 leading-relaxed">{c.answer}</p>
           <p className="text-xs text-slate-400 mt-4">
-            Last reviewed <time dateTime={CONTENT_REVISED}>{formatRevised()}</time> by the{' '}
+            Last reviewed <time dateTime={reviewed}>{formatRevised(reviewed)}</time> by the{' '}
             <Link href="/about" className="underline hover:text-slate-600">CarVinLookup team</Link>
           </p>
         </div>

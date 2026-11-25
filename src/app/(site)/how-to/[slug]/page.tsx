@@ -43,6 +43,7 @@ export default async function HowToGuidePage({
     .filter((g): g is NonNullable<typeof g> => Boolean(g));
 
   const sources = (guide.sources ?? []).map((k) => SRC[k]);
+  const reviewed = guide.reviewed ?? CONTENT_REVISED;
   const schema = [
     {
       '@context': 'https://schema.org',
@@ -51,8 +52,8 @@ export default async function HowToGuidePage({
       name: guide.title,
       url,
       description: guide.description,
-      dateModified: CONTENT_REVISED,
-      lastReviewed: CONTENT_REVISED,
+      dateModified: reviewed,
+      lastReviewed: reviewed,
       isPartOf: { '@id': `${SITE_URL}/#website` },
       publisher: { '@id': `${SITE_URL}/#organization` },
       ...(sources.length ? { citation: sources.map((s) => s.href) } : {}),
@@ -96,7 +97,7 @@ export default async function HowToGuidePage({
             <p className="text-xs font-bold uppercase tracking-widest text-blue-600 mb-2">Quick answer</p>
             <p className="text-slate-700 leading-relaxed">{guide.answer}</p>
             <p className="text-xs text-slate-400 mt-4">
-              Last reviewed <time dateTime={CONTENT_REVISED}>{formatRevised()}</time> by the{' '}
+              Last reviewed <time dateTime={reviewed}>{formatRevised(reviewed)}</time> by the{' '}
               <Link href="/about" className="underline hover:text-slate-600">CarVinLookup team</Link>
             </p>
           </div>

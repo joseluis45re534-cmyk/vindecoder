@@ -66,14 +66,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   const guides: MetadataRoute.Sitemap = allGuides().map((g) => ({
     url: `${SITE_URL}/how-to/${g.slug}`,
-    lastModified: now,
+    lastModified: g.reviewed ? new Date(`${g.reviewed}T00:00:00Z`) : now,
     changeFrequency: "monthly",
     priority: 0.6,
   }));
 
   const checks: MetadataRoute.Sitemap = allCheckPages().map((c) => ({
     url: `${SITE_URL}/${c.slug}`,
-    lastModified: now,
+    lastModified: c.reviewed ? new Date(`${c.reviewed}T00:00:00Z`) : now,
     changeFrequency: "monthly",
     priority: 0.8,
   }));
