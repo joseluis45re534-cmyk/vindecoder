@@ -20,6 +20,7 @@ export interface Env {
     // exposed via NEXT_PUBLIC_* for the browser client.
     NEXT_PUBLIC_SUPABASE_URL?: string;
     NEXT_PUBLIC_SUPABASE_ANON_KEY?: string;
+    // Server-only secret: lets /admin/users list accounts (src/lib/supabase/admin.ts).
     SUPABASE_SERVICE_ROLE_KEY?: string;
     ANTHROPIC_API_KEY?: string;
     ANTHROPIC_MODEL?: string;

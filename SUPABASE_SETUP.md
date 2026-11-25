@@ -41,6 +41,8 @@ owns identity; D1 owns data.
 
 ## Files
 - `src/lib/supabase/{client,server,middleware}.ts` — Supabase clients.
+- `src/lib/supabase/admin.ts` — service-role client (server-only). `/admin/users`
+  uses it to list accounts; the D1 `users` table is legacy and no longer written.
 - `src/components/auth/AuthForm.tsx`, `/login`, `/register`, `/auth/callback`.
 - `src/middleware.ts` — `/account` gate. `src/app/api/account/me` — header session.
 - `src/lib/account.ts` — D1 reports/orders by email.

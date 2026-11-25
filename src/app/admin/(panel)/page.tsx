@@ -24,7 +24,7 @@ export default async function AdminDashboard() {
   const cards = [
     { label: 'Revenue (paid)', value: formatPrice(s.revenueCents), icon: DollarSign, color: 'text-emerald-600 bg-emerald-50' },
     { label: 'Orders', value: String(s.orders), icon: ShoppingCart, color: 'text-blue-600 bg-blue-50' },
-    { label: 'Users', value: String(s.users), icon: UsersIcon, color: 'text-violet-600 bg-violet-50' },
+    { label: 'Users', value: s.users === null ? '—' : String(s.users), icon: UsersIcon, color: 'text-violet-600 bg-violet-50' },
     { label: 'Pageviews', value: s.pageviews.toLocaleString(), icon: Eye, color: 'text-sky-600 bg-sky-50' },
   ];
 
