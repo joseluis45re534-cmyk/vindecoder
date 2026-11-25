@@ -34,6 +34,11 @@ export const SITE_TAGLINE = 'U.S. Vehicle History Reports by VIN';
 // ONLY when evergreen page content materially changes — never use new Date().
 export const CONTENT_REVISED = '2026-11-24';
 
+/** True for a real YYYY-MM-DD date (guards per-page `reviewed` values). */
+export function isIsoDate(s: unknown): s is string {
+  return typeof s === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(s) && !Number.isNaN(Date.parse(`${s}T00:00:00Z`));
+}
+
 /** "November 24, 2026" — human form of CONTENT_REVISED for visible dates. */
 export function formatRevised(iso: string = CONTENT_REVISED): string {
   return new Date(`${iso}T12:00:00Z`).toLocaleDateString('en-US', {

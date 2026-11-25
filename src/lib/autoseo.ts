@@ -134,15 +134,23 @@ const COMPETITOR_SLUGS = COMPETITORS.map((c) => c.slug);
 
 function patternDestination(slug: string): string | undefined {
   const s = slug.toLowerCase();
-  if (s.includes('clearvin')) return '/compare';
-  // The competitor named FIRST in the slug ("vinaudit-vs-carfax" -> vinaudit).
-  const competitor = COMPETITOR_SLUGS.map((c) => ({ c, i: s.search(new RegExp(`(^|-)${c}(-|$)`)) }))
-    .filter((x) => x.i >= 0)
-    .sort((a, b) => a.i - b.i)[0]?.c;
-  if (s.startsWith('carvinlookup-vs-')) return competitor ? `/compare/${comparisonSlug(competitor)}` : '/compare';
-  if (competitor && /(^|-)(alternatives?|vs|versus|comparison|compare)(-|$)/.test(s)) {
-    return /(^|-)alternatives?(-|$)/.test(s) ? `/${competitor}-alternative` : `/compare/${comparisonSlug(competitor)}`;
+  if (/(^|-)clearvin(-|$)/.test(s)) return '/compare';
+  // 1) slug starts with "<competitor>-vs/-versus/-comparison/-compare" (bumper is an
+  //    everyday word, so only explicit vs/versus count for it).
+  for (const c of COMPETITOR_SLUGS) {
+    const kinds = c === 'bumper' ? 'vs|versus' : 'vs|versus|comparison|compare';
+    if (new RegExp(`^${c}-(${kinds})(-|$)`).test(s)) return `/compare/${comparisonSlug(c)}`;
   }
+  // 2) "<competitor>-alternative(s)" anywhere (e.g. best-autocheck-alternatives-2027).
+  for (const c of COMPETITOR_SLUGS) {
+    if (new RegExp(`(^|-)${c}-alternatives?(-|$)`).test(s)) return `/${c}-alternative`;
+  }
+  // 3) "…-vs-<competitor>" (e.g. carvinlookup-vs-carfax-…).
+  for (const c of COMPETITOR_SLUGS) {
+    if (new RegExp(`-vs-${c}(-|$)`).test(s)) return `/compare/${comparisonSlug(c)}`;
+  }
+  // 4) AutoSEO's self-comparison template against anyone else.
+  if (s.startsWith('carvinlookup-vs-')) return '/compare';
   return undefined;
 }
 

@@ -34,7 +34,7 @@ export interface HowToGuide {
   /** Authority sources (keys of SRC in lib/sources.ts) — verified live. */
   sources?: (keyof typeof SRC)[];
   /** YYYY-MM-DD this guide was last re-reviewed (defaults to CONTENT_REVISED). */
-  reviewed?: string;
+  reviewed?: `${number}-${number}-${number}`;
 }
 
 export const HOW_TO_GUIDES: HowToGuide[] = [

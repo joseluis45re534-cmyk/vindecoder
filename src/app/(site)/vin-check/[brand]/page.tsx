@@ -47,20 +47,15 @@ export default async function BrandPage({
   }).filter((b, i, arr) => b.slug !== brand.slug && arr.findIndex((x) => x.slug === b.slug) === i);
 
   // Verified NHTSA vPIC manufacturer codes (scripts/fetch-brand-wmis.mjs).
-  // Codes used only by this make first, then North American plants (what U.S.
-  // buyers mostly see), then the rest.
+  // North American regions first (what U.S. buyers mostly see), then by code.
+  // Shared codes are NOT pushed back — many brands' main prefixes are shared.
   const NA = ['United States', 'Canada', 'Mexico'];
-  const rank = (c: string) => (NA.includes(c) ? NA.indexOf(c) : NA.length);
+  const rank = (r: string) => (NA.includes(r) ? NA.indexOf(r) : NA.length);
   const wmis = [...(BRAND_WMIS[brand.slug] ?? [])].sort(
-    (a, b) =>
-      Number(a.sharedWith.length > 0) - Number(b.sharedWith.length > 0) ||
-      rank(a.country) - rank(b.country) ||
-      a.country.localeCompare(b.country) ||
-      a.wmi.localeCompare(b.wmi),
+    (a, b) => rank(a.region) - rank(b.region) || a.region.localeCompare(b.region) || a.wmi.localeCompare(b.wmi),
   );
-  const exclusive = wmis.filter((w) => w.sharedWith.length === 0);
-  const examples = (exclusive.length ? exclusive : wmis).slice(0, 3).map((w) => w.wmi);
-  const countries = [...new Set(wmis.map((w) => w.country))];
+  const examples = wmis.slice(0, 3).map((w) => w.wmi);
+  const regions = [...new Set(wmis.map((w) => w.region).filter(Boolean))];
   const listJoin = (a: string[]) => (a.length < 2 ? a.join('') : `${a.slice(0, -1).join(', ')} and ${a[a.length - 1]}`);
   const WMI_ROWS = 15;
   // Verified NHTSA recall campaigns for popular models (scripts/fetch-brand-recalls.mjs).
@@ -70,10 +65,10 @@ export default async function BrandPage({
   const faq = [
     { q: `Is the ${brand.name} VIN check free?`, a: `You get a free preview of the vehicle's identity. The full ${brand.name} history report — title brands, a theft check, liens, and odometer readings — is a paid unlock.` },
     ...(examples.length
-      ? [{ q: `What do ${brand.name} VINs start with?`, a: `${brand.name} VINs begin with a three-character manufacturer code (WMI) such as ${examples.join(', ')}. NHTSA lists ${wmis.length} codes for ${brand.name}${countries.length ? `, covering vehicles built in ${listJoin(countries)}` : ''}.` }]
+      ? [{ q: `What do ${brand.name} VINs start with?`, a: `${brand.name} VINs begin with a three-character World Manufacturer Identifier (WMI). Codes NHTSA's vPIC database registers to ${brand.name} include ${examples.join(', ')}; the table on this page lists the car, SUV and truck codes we found — not every code — so decode the full VIN to confirm the make.` }]
       : []),
     ...(recalls.length
-      ? [{ q: `How many recalls does the ${brand.name} ${recalls[0].model} have?`, a: `NHTSA lists ${recalls[0].campaigns} recall campaign${recalls[0].campaigns === 1 ? '' : 's'} for the ${brand.name} ${recalls[0].model} across model years ${recallFrom}–${recallTo}${recalls[0].topComponent ? `, most often in NHTSA's "${recalls[0].topComponent}" component category` : ''}. That counts campaigns, not affected cars — check a specific car's open recalls with its VIN.` }]
+      ? [{ q: `How many recall campaigns cover the ${recallFrom}–${recallTo} ${brand.name} ${recalls[0].model}?`, a: `NHTSA's recall database lists ${recalls[0].campaigns} recall campaign${recalls[0].campaigns === 1 ? '' : 's'} covering ${recallFrom}–${recallTo} ${brand.name} ${recalls[0].model} model years${recalls[0].byOthers ? ` (${recalls[0].byOthers} filed by other companies, such as conversion or equipment makers)` : ''}${recalls[0].topComponent ? `; the most common component category is "${recalls[0].topComponent}"` : ''}. That counts campaigns, not affected cars, and a model sold for only part of that period has fewer model years counted. Check a specific car's open recalls with its VIN.` }]
       : []),
     { q: `Where is the VIN on a ${brand.name}?`, a: `Look at the lower-left corner of the windshield (visible from outside), the label on the driver-side door jamb, and the title, registration, or insurance card. All of them should show the same 17 characters.` },
   ];
@@ -143,7 +138,7 @@ export default async function BrandPage({
             <span className="block bg-gradient-to-r from-blue-400 to-sky-300 bg-clip-text text-transparent mt-1">& Decoder</span>
           </h1>
           <p className="text-base sm:text-lg text-slate-300 mb-8 max-w-2xl mx-auto">
-            {brand.blurb} Decode any {brand.name} VIN, then check its title, liens, and odometer history.
+            {brand.blurb} Decode any {brand.name} VIN, then check its title, liens, and odometer readings.
           </p>
           <SearchForm />
           <p className="mt-5 text-sm text-slate-400">Free preview · Full report online · All 50 states</p>
@@ -153,34 +148,33 @@ export default async function BrandPage({
       <article className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-14 prose-content">
         <h2>About {brand.name} VINs</h2>
         <p>
-          {brand.name} was founded in {brand.founded} ({brand.country}). {brand.blurb} Every {brand.name} sold in the United
-          States carries a unique 17-character Vehicle Identification Number (VIN).{' '}
-          {examples.length > 0 ? (
+          {brand.name} was founded in {brand.founded} ({brand.country}). Every {brand.name} sold in the United States
+          carries a unique 17-character Vehicle Identification Number (VIN).{' '}
+          {examples.length > 0 && (
             <>
-              NHTSA lists {wmis.length} manufacturer code{wmis.length === 1 ? '' : 's'} for {brand.name} — for example{' '}
-              <strong>{examples.join(', ')}</strong> — where the first three characters (the World Manufacturer Identifier)
-              encode the manufacturer and the country the vehicle was built in.
+              Codes NHTSA&apos;s vPIC database registers to {brand.name} include <strong>{examples.join(', ')}</strong>.{' '}
             </>
-          ) : (
-            <>The first three characters (the World Manufacturer Identifier) encode the manufacturer and country of origin.</>
-          )} Decoding the VIN confirms the model year, plant, engine, and trim — and lets you
-          pull the car&apos;s full history before you buy.
+          )}
+          The first three characters (the World Manufacturer Identifier) identify the manufacturer; the plant that built
+          the car is the VIN&apos;s 11th character. Decoding the VIN confirms what the car should be — and lets you pull its
+          full history before you buy.
         </p>
 
         {wmis.length > 0 && (
           <>
             <h2>{brand.name} VIN prefixes (WMI codes)</h2>
             <p>
-              The first three characters of a VIN — the World Manufacturer Identifier — show who built the vehicle and in
-              which country. NHTSA&apos;s vPIC database lists these codes for {brand.name}
-              {countries.length > 0 ? `, covering vehicles built in ${listJoin(countries)}` : ''}:
+              The first three characters of a VIN — the World Manufacturer Identifier — identify the manufacturer, and the
+              first character shows the region the code is registered to (usually, but not always, where the car was
+              built). NHTSA&apos;s vPIC database registers the car, SUV, and truck codes below to {brand.name} — not every
+              code the brand has used{regions.length > 0 ? `, with codes registered in ${listJoin(regions)}` : ''}:
             </p>
             <div className="not-prose overflow-x-auto my-6">
               <table className="w-full text-sm border border-slate-200 rounded-xl overflow-hidden">
                 <thead className="bg-slate-50 text-slate-500 text-left">
                   <tr>
                     <th scope="col" className="px-4 py-2.5 font-semibold">WMI</th>
-                    <th scope="col" className="px-4 py-2.5 font-semibold">Built in</th>
+                    <th scope="col" className="px-4 py-2.5 font-semibold">WMI region</th>
                     <th scope="col" className="px-4 py-2.5 font-semibold">Vehicle type</th>
                     <th scope="col" className="px-4 py-2.5 font-semibold">Also registered to</th>
                   </tr>
@@ -189,7 +183,7 @@ export default async function BrandPage({
                   {wmis.slice(0, WMI_ROWS).map((w) => (
                     <tr key={w.wmi} className="border-t border-slate-100">
                       <td className="px-4 py-2 font-mono font-bold text-slate-900">{w.wmi}</td>
-                      <td className="px-4 py-2 text-slate-700">{w.country}</td>
+                      <td className="px-4 py-2 text-slate-700">{w.region || '—'}</td>
                       <td className="px-4 py-2 text-slate-700">{w.vehicleType}</td>
                       <td className="px-4 py-2 text-slate-500">{w.sharedWith.length ? w.sharedWith.join(', ') : '—'}</td>
                     </tr>
@@ -197,10 +191,11 @@ export default async function BrandPage({
                 </tbody>
               </table>
             </div>
-            {wmis.length > WMI_ROWS && <p>…plus {wmis.length - WMI_ROWS} more {brand.name} codes in vPIC.</p>}
+            {wmis.length > WMI_ROWS && <p>…plus {wmis.length - WMI_ROWS} more codes in this list.</p>}
             <p className="text-sm text-slate-500">
-              A code registered to several makes belongs to their parent manufacturer — positions 4–8 of the VIN identify the
-              actual model. Source:{' '}
+              vPIC lists a shared code under every make it has been used for; the code is registered to the company that
+              built those vehicles — often a parent company, sometimes a contract builder — and positions 4–8 of the VIN
+              identify the model. Regions follow ISO 3780. Source:{' '}
               <a href="https://vpic.nhtsa.dot.gov/decoder/" target="_blank" rel="noopener noreferrer">NHTSA vPIC</a>, retrieved{' '}
               {formatRevised(BRAND_WMIS_RETRIEVED)}. Try a VIN in the <Link href="/vin-decoder">free VIN decoder</Link>.
             </p>
@@ -211,10 +206,10 @@ export default async function BrandPage({
           <>
             <h2>NHTSA safety recalls for popular {brand.name} models</h2>
             <p>
-              Unique recall campaigns NHTSA lists for model years {recallFrom}–{recallTo}. The count shows how often a model
-              was recalled, not whether a particular car was repaired — check any VIN free at{' '}
-              <a href="https://www.nhtsa.gov/recalls" target="_blank" rel="noopener noreferrer">nhtsa.gov/recalls</a> or with our{' '}
-              <Link href="/recalls">recall check</Link>.
+              Recall campaigns NHTSA lists for {recallFrom}–{recallTo} model years of each model. A count doesn&apos;t show how
+              many cars were affected or whether a particular car was repaired. Check any VIN free at{' '}
+              <a href="https://www.nhtsa.gov/recalls" target="_blank" rel="noopener noreferrer">nhtsa.gov/recalls</a>; our
+              full report also lists recalls (see our <Link href="/recalls">recall check</Link>).
             </p>
             <div className="not-prose overflow-x-auto my-6">
               <table className="w-full text-sm border border-slate-200 rounded-xl overflow-hidden">
@@ -230,7 +225,7 @@ export default async function BrandPage({
                   {recalls.map((r) => (
                     <tr key={r.model} className="border-t border-slate-100">
                       <td className="px-4 py-2 font-semibold text-slate-900">{brand.name} {r.model}</td>
-                      <td className="px-4 py-2 text-slate-700">{r.campaigns}</td>
+                      <td className="px-4 py-2 text-slate-700">{r.campaigns}{r.byOthers ? ` (${r.byOthers} by other companies)` : ''}</td>
                       <td className="px-4 py-2 text-slate-700">{r.topComponent || '—'}</td>
                       <td className="px-4 py-2 text-slate-500">{r.latest ? formatRevised(r.latest) : '—'}</td>
                     </tr>
@@ -239,9 +234,10 @@ export default async function BrandPage({
               </table>
             </div>
             <p className="text-sm text-slate-500">
-              Source: NHTSA recalls data, retrieved {formatRevised(BRAND_RECALLS_RETRIEVED)}. Models NHTSA files under several
-              names (for example hybrid or trim variants) are left out rather than estimated, so this is not a ranking of every
-              {' '}{brand.name} model.
+              Source: NHTSA recalls data, retrieved {formatRevised(BRAND_RECALLS_RETRIEVED)}. Counts cover campaigns filed under
+              each model&apos;s own name; a model NHTSA also files under hybrid, EV, or trim names with extra campaigns is left
+              out rather than undercounted, so this is not a list of every {brand.name} model. A component is named only when
+              it leads outright.
             </p>
           </>
         )}

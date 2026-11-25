@@ -46,7 +46,7 @@ export interface CheckPage {
   resources: { label: string; href: string }[];
   /** YYYY-MM-DD this page's content was last re-reviewed (defaults to CONTENT_REVISED).
    *  Set it per page so one edit doesn't re-date every page. */
-  reviewed?: string;
+  reviewed?: `${number}-${number}-${number}`;
 }
 
 

@@ -1,5 +1,5 @@
 import type { MetadataRoute } from "next";
-import { SITE_URL, CONTENT_REVISED as CONTENT_REVISED_ISO } from "@/lib/site";
+import { SITE_URL, CONTENT_REVISED as CONTENT_REVISED_ISO, isIsoDate } from "@/lib/site";
 import { getBlogSitemap } from "@/lib/autoseo";
 import { allGuides } from "@/lib/how-to";
 import { COMPETITORS, comparisonSlug } from "@/lib/comparisons";
@@ -66,14 +66,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   const guides: MetadataRoute.Sitemap = allGuides().map((g) => ({
     url: `${SITE_URL}/how-to/${g.slug}`,
-    lastModified: g.reviewed ? new Date(`${g.reviewed}T00:00:00Z`) : now,
+    lastModified: isIsoDate(g.reviewed) ? new Date(`${g.reviewed}T00:00:00Z`) : now,
     changeFrequency: "monthly",
     priority: 0.6,
   }));
 
   const checks: MetadataRoute.Sitemap = allCheckPages().map((c) => ({
     url: `${SITE_URL}/${c.slug}`,
-    lastModified: c.reviewed ? new Date(`${c.reviewed}T00:00:00Z`) : now,
+    lastModified: isIsoDate(c.reviewed) ? new Date(`${c.reviewed}T00:00:00Z`) : now,
     changeFrequency: "monthly",
     priority: 0.8,
   }));

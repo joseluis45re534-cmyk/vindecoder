@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { ArrowLeft, CheckCircle2, ShieldCheck, Search, ExternalLink } from 'lucide-react';
 import { getGuide, HOW_TO_GUIDES } from '@/lib/how-to';
-import { SITE_URL, CONTENT_REVISED, formatRevised } from '@/lib/site';
+import { SITE_URL, CONTENT_REVISED, formatRevised, isIsoDate } from '@/lib/site';
 import { SRC } from '@/lib/sources';
 import JsonLd from '@/components/JsonLd';
 import { howToLd, breadcrumbLd, faqPageLd } from '@/lib/structured-data';
@@ -43,7 +43,7 @@ export default async function HowToGuidePage({
     .filter((g): g is NonNullable<typeof g> => Boolean(g));
 
   const sources = (guide.sources ?? []).map((k) => SRC[k]);
-  const reviewed = guide.reviewed ?? CONTENT_REVISED;
+  const reviewed = isIsoDate(guide.reviewed) ? guide.reviewed : CONTENT_REVISED;
   const schema = [
     {
       '@context': 'https://schema.org',

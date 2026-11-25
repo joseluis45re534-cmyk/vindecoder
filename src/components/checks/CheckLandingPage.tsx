@@ -9,7 +9,7 @@ import {
 import { getCheckPage, CHECK_PAGES, type CheckIconKey } from '@/lib/checks';
 import { getGuide } from '@/lib/how-to';
 import { US_STATES } from '@/lib/us-states';
-import { SITE_URL, CONTENT_REVISED, formatRevised } from '@/lib/site';
+import { SITE_URL, CONTENT_REVISED, formatRevised, isIsoDate } from '@/lib/site';
 import { reportPriceLine } from '@/lib/pricing';
 import JsonLd from '@/components/JsonLd';
 import { breadcrumbLd, faqPageLd } from '@/lib/structured-data';
@@ -52,7 +52,7 @@ export function CheckLandingPage({ slug }: { slug: string }) {
   ].filter((x): x is NonNullable<typeof x> => Boolean(x));
   const guides = c.guides.map((g) => getGuide(g)).filter((g): g is NonNullable<typeof g> => Boolean(g));
   const verb = c.icon === 'decoder' || c.icon === 'plate' ? 'use' : 'run';
-  const reviewed = c.reviewed ?? CONTENT_REVISED;
+  const reviewed = isIsoDate(c.reviewed) ? c.reviewed : CONTENT_REVISED;
 
   const schema = [
     {
