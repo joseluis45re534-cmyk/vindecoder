@@ -40,7 +40,7 @@ const TERMS: Term[] = [
   {
     term: 'WMI (World Manufacturer Identifier)',
     definition:
-      'The first three characters of a VIN, identifying the country, manufacturer, and vehicle type. VINs starting with "1", "4", or "5" typically indicate a vehicle built in the United States.',
+      'The first three characters of a VIN, identifying the manufacturer, the vehicle type, and the country the code is registered in — VINs starting with "1", "4", or "5" (or some newer "7"s) carry U.S.-registered codes. That is not necessarily where the car was built; the 11th character names the actual assembly plant.',
     related: { label: 'How to read a VIN', href: '/how-to/read-vin-report' },
   },
   {

@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { pageMetadata } from '@/lib/seo';
+import { pageMetadata, NOINDEX_FOLLOW } from '@/lib/seo';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { listAllArticlesWithStatus } from '@/lib/autoseo';
@@ -15,11 +15,16 @@ function pageNumber(raw?: string): number {
 // page 1 — canonicalizing it to /blog tells Google to ignore those posts' links).
 export async function generateMetadata({ searchParams }: { searchParams: Promise<{ page?: string }> }): Promise<Metadata> {
   const page = pageNumber((await searchParams).page);
+  // With no publishable posts (every AutoSEO post hidden), the index is an empty
+  // shell: keep it out of search results until real posts exist (the sitemap
+  // drops it too). An API outage (ok=false) does not flip this.
+  const { articles, ok } = await listAllArticlesWithStatus();
   return pageMetadata({
     title: page > 1 ? `VIN & Used-Car Buying Guides – Page ${page}` : 'VIN & Used-Car Buying Guides',
     description:
       'Practical guides on VIN checks, salvage and flood titles, odometer fraud, and buying a used car safely in the United States.',
     path: page > 1 ? `/blog?page=${page}` : '/blog',
+    ...(ok && articles.length === 0 ? { robots: NOINDEX_FOLLOW } : {}),
   });
 }
 
@@ -59,9 +64,12 @@ export default async function BlogIndex({ searchParams }: { searchParams: Promis
             <p className="text-lg font-semibold text-slate-700">
               {ok ? 'New guides are on the way.' : 'Our guides are loading — please check back shortly.'}
             </p>
-            <p className="mt-2 text-sm">
-              {ok ? 'Check back soon for VIN and used-car buying guides.' : ''}
-            </p>
+            {ok && (
+              <p className="mt-2 text-sm">
+                Meanwhile, our <Link href="/how-to" className="text-blue-600 hover:underline">step-by-step how-to guides</Link>{' '}
+                cover VIN checks, title brands, and buying a used car safely.
+              </p>
+            )}
           </div>
         ) : (
           <>

@@ -7,6 +7,7 @@ import { SITE_URL, SITE_NAME } from '@/lib/site';
 import JsonLd from '@/components/JsonLd';
 import { breadcrumbLd, faqPageLd } from '@/lib/structured-data';
 import SearchForm from '@/components/SearchForm';
+import { An, an } from '@/lib/brands';
 
 export const runtime = 'edge';
 
@@ -20,7 +21,7 @@ export async function generateMetadata({
   if (!found) return { title: 'Window sticker not found' };
   const label = `${found.make.name} ${found.model.name}`;
   const title = `${label} Window Sticker by VIN`;
-  const description = `What's on a ${label} window sticker (Monroney label) — MSRP, options, fuel economy — and how to get one by VIN. Sticker lookup is launching soon.`;
+  const description = `What's on ${an(label)} ${label} window sticker (Monroney label) — MSRP, options, fuel economy — and how to get one by VIN. Sticker lookup is launching soon.`;
   const url = `${SITE_URL}/window-sticker/${make}/${model}`;
   return {
     title,
@@ -58,8 +59,8 @@ export default async function StickerModelPage({
   const siblings = found.make.models.filter((m) => m.slug !== found.model.slug).slice(0, 8);
 
   const faq = [
-    { q: `How do I get a ${label} window sticker?`, a: `Ask the seller first — some owners keep the original. A ${found.make.name} dealer can sometimes print the build sheet from the VIN. CarVinLookup's VIN-based window sticker lookup is launching soon; today you can enter the VIN for a free vehicle preview.` },
-    { q: `What is on a ${label} window sticker?`, a: `A Monroney window sticker lists the as-built MSRP, standard and optional equipment, EPA fuel-economy estimates, warranty information, and the vehicle's build and destination details.` },
+    { q: `How do I get ${an(label)} ${label} window sticker?`, a: `Ask the seller first — some owners keep the original. ${An(found.make.name)} ${found.make.name} dealer can sometimes print the build sheet from the VIN. CarVinLookup's VIN-based window sticker lookup is launching soon; today you can enter the VIN for a free vehicle preview.` },
+    { q: `What is on ${an(label)} ${label} window sticker?`, a: `A Monroney window sticker lists the as-built MSRP, standard and optional equipment, EPA fuel-economy estimates, warranty information, and the vehicle's build and destination details.` },
     { q: `Is the window sticker lookup free?`, a: `The vehicle preview is free. Window sticker lookup is launching soon; the full ${label} history report (title, theft, lien, and odometer) is available now as a paid unlock.` },
   ];
 
@@ -70,7 +71,7 @@ export default async function StickerModelPage({
       '@id': url,
       name: `${label} Window Sticker`,
       url,
-      description: `What a ${label} window sticker shows and how to get one by VIN.`,
+      description: `What ${an(label)} ${label} window sticker shows and how to get one by VIN.`,
       isPartOf: { '@id': `${SITE_URL}/#website` },
       about: { '@type': 'Product', name: label, brand: { '@type': 'Brand', name: found.make.name } },
     },
@@ -106,7 +107,7 @@ export default async function StickerModelPage({
             {label} <span className="bg-gradient-to-r from-blue-400 to-sky-300 bg-clip-text text-transparent">window sticker</span>
           </h1>
           <p className="text-base sm:text-lg text-slate-300 mb-8 max-w-2xl mx-auto">
-            What a {label} window sticker (Monroney label) shows, and how to get one. Our VIN-based sticker lookup is launching soon — enter the VIN now for a free vehicle preview.
+            What {an(label)} {label} window sticker (Monroney label) shows, and how to get one. Our VIN-based sticker lookup is launching soon — enter the VIN now for a free vehicle preview.
           </p>
           <SearchForm />
           <p className="mt-5 text-sm text-slate-400">Free preview · By VIN · All model years</p>
@@ -115,11 +116,11 @@ export default async function StickerModelPage({
 
       {/* What's on it */}
       <article className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-14 prose-content">
-        <h2>What is on a {label} window sticker?</h2>
+        <h2>What is on {an(label)} {label} window sticker?</h2>
         <p>
           The window sticker — officially the Monroney label — is the information sheet the manufacturer attaches to a new
           vehicle. Pulling it by VIN recreates the exact build of a specific {label}, which is invaluable when you are buying
-          used and want to know what the car originally came with. A {label} window sticker typically shows:
+          used and want to know what the car originally came with. {An(label)} {label} window sticker typically shows:
         </p>
       </article>
 
@@ -144,7 +145,7 @@ export default async function StickerModelPage({
 
       {/* How to get it */}
       <section className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-14">
-        <h2 className="text-2xl font-extrabold text-slate-900 mb-6">How to get a {label} window sticker by VIN</h2>
+        <h2 className="text-2xl font-extrabold text-slate-900 mb-6">How to get {an(label)} {label} window sticker by VIN</h2>
         <ol className="space-y-6">
           {[
             { n: 'Find the VIN', t: `Locate the ${label}'s 17-character VIN on the windshield, driver door jamb, title, or registration.` },

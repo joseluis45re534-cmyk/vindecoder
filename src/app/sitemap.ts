@@ -24,7 +24,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${SITE_URL}/`, lastModified: now, changeFrequency: "weekly", priority: 1 },
     { url: `${SITE_URL}/vin-check`, lastModified: now, changeFrequency: "weekly", priority: 0.9 },
     { url: `${SITE_URL}/pricing`, lastModified: now, changeFrequency: "monthly", priority: 0.8 },
-    { url: `${SITE_URL}/blog`, lastModified: now, changeFrequency: "weekly", priority: 0.7 },
     { url: `${SITE_URL}/how-to`, lastModified: now, changeFrequency: "weekly", priority: 0.7 },
     { url: `${SITE_URL}/window-sticker`, lastModified: now, changeFrequency: "weekly", priority: 0.7 },
     { url: `${SITE_URL}/auctions`, lastModified: now, changeFrequency: "monthly", priority: 0.6 },
@@ -63,6 +62,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     changeFrequency: "weekly",
     priority: 0.6,
   }));
+  // The /blog index only when it lists something (it is noindex while empty).
+  if (posts.length) posts.unshift({ url: `${SITE_URL}/blog`, lastModified: now, changeFrequency: "weekly", priority: 0.7 });
 
   const guides: MetadataRoute.Sitemap = allGuides().map((g) => ({
     url: `${SITE_URL}/how-to/${g.slug}`,

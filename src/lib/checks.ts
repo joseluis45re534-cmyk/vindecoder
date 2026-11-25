@@ -408,7 +408,7 @@ export const CHECK_PAGES: CheckPage[] = [
     whatItIs:
       'A VIN decoder reads the 17 characters of a Vehicle Identification Number to reveal the manufacturer, model year, and build details defined by federal standard. Decoding tells you what the car should be; a history report tells you what happened to it.',
     reportShows: [
-      'Make, manufacturer, and country of origin (WMI)',
+      'Make, manufacturer, and country of origin',
       'Model year',
       'Body, engine, and build details from the VIN',
       'A format check (17 characters, no I, O, or Q) before the lookup',
@@ -429,7 +429,7 @@ export const CHECK_PAGES: CheckPage[] = [
       {
         h2: "How to read a VIN, character by character",
         body: [
-          "Positions 1–3 are the World Manufacturer Identifier (WMI). The first character shows where the car was built: 1, 4, or 5 for the United States (some newer U.S.-built models start with 7), 2 for Canada, 3 for Mexico, J for Japan, K for South Korea, and W for Germany. Positions 4–8 describe the model, body, and engine. Position 9 is a check digit calculated from the other characters. It catches most typos and some made-up VINs, but a cloned or carefully forged VIN can still pass.",
+          "Positions 1–3 are the World Manufacturer Identifier (WMI). The first character (sometimes two) shows the country the code is registered in — not necessarily where the car was built: 1, 4, or 5 for the United States (some newer U.S. codes start with 7), 2 for Canada, 3 for Mexico, J for Japan, K for South Korea, and W for Germany. Position 11 names the actual assembly plant. Positions 4–8 describe the model, body, and engine. Position 9 is a check digit calculated from the other characters. It catches most typos and some made-up VINs, but a cloned or carefully forged VIN can still pass.",
           "Position 10 is the model year: A was 2010, and the codes run through Y (skipping I, O, Q, U, Z, and 0) before cycling through 1–9 — R is 2024, S is 2025, and T is 2026. Position 11 is the assembly plant, and 12–17 are the production sequence number. The letters I, O, and Q never appear in a VIN.",
         ],
       },
@@ -443,6 +443,7 @@ export const CHECK_PAGES: CheckPage[] = [
     sources: [SRC.vpic, SRC.cfr565],
     guides: ['check-vin-number', 'decode-wmi', 'find-motorcycle-vin'],
     resources: [{ href: "/glossary", label: "VIN, WMI, and check digit defined" }, { href: "/vin-check", label: "VIN check by brand" }],
+    reviewed: '2026-11-25',
   },
   {
     slug: 'license-plate-lookup',

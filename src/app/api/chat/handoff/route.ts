@@ -3,6 +3,8 @@ import { eq } from 'drizzle-orm';
 import { getEnv } from '@/lib/cf';
 import { getDb } from '@/db';
 import { chatSessions, chatMessages } from '@/db/schema';
+import { allowRequest } from '@/lib/report-cache';
+import { clientIp, ipBucket } from '@/lib/ip';
 
 export const runtime = 'edge';
 
@@ -17,6 +19,20 @@ export async function POST(request: Request) {
   const env = await getEnv();
   if (!env.DB) {
     return NextResponse.json({ ok: false, available: false }, { status: 503 });
+  }
+
+  // Per-IP cap on escalations (session/visitor IDs are client-supplied). Fails open on limiter errors.
+  let allowed = true;
+  try {
+    allowed = await allowRequest(env, `chat-handoff:${ipBucket(clientIp(request))}`, 10);
+  } catch (err) {
+    console.error('chat handoff rate-limit error:', err);
+  }
+  if (!allowed) {
+    return NextResponse.json(
+      { ok: false, error: 'Too many requests right now — please use the contact page and we’ll reply by email.' },
+      { status: 429 },
+    );
   }
 
   const db = getDb(env as { DB: D1Database });

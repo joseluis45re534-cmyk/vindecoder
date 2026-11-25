@@ -9,6 +9,8 @@ import JsonLd from '@/components/JsonLd';
 import { breadcrumbLd, faqPageLd } from '@/lib/structured-data';
 import SearchForm from '@/components/SearchForm';
 
+// "an Alabama", "an Ohio" — but "a Utah" (it starts with a "you" sound).
+const an = (state: string) => (/^[AEIO]/.test(state) ? 'an' : 'a');
 export const runtime = 'edge';
 
 export async function generateMetadata({
@@ -52,8 +54,8 @@ export default async function StatePlatePage({
 
   const faq = [
     { q: `Can I look up a car by license plate in ${s.name}?`, a: `Plate-to-VIN search for ${s.name} (${s.abbr}) plates is launching soon. Right now, run the check with the 17-character VIN — it's on the windshield, the driver-side door jamb, and the title or registration — to get the full history: title brands, theft, liens, and odometer.` },
-    { q: `Can I find the owner of a ${s.name} plate?`, a: `No. The federal Driver's Privacy Protection Act (DPPA) protects personal information tied to a motor-vehicle record. A lookup identifies the vehicle and its VIN, not the owner's name or address.` },
-    { q: `Is a ${s.name} VIN check free?`, a: `You see a free preview of the vehicle's identity first. The full history report is a paid unlock, and it works for vehicles titled in ${s.name} and every other state.` },
+    { q: `Can I find the owner of ${an(s.name)} ${s.name} plate?`, a: `No. The federal Driver's Privacy Protection Act (DPPA) protects personal information tied to a motor-vehicle record. A lookup identifies the vehicle and its VIN, not the owner's name or address.` },
+    { q: `Is ${an(s.name)} ${s.name} VIN check free?`, a: `You see a free preview of the vehicle's identity first. The full history report is a paid unlock, and it works for vehicles titled in ${s.name} and every other state.` },
   ];
 
   const schema = [
@@ -104,15 +106,15 @@ export default async function StatePlatePage({
       </section>
 
       <article className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-14 prose-content">
-        <h2>How a {s.name} license plate lookup works</h2>
+        <h2>How {an(s.name)} {s.name} license plate lookup works</h2>
         <p>
-          A license plate is a pointer to a vehicle&apos;s records. A plate lookup resolves a {s.name} plate and the state to the
+          A license plate is a pointer to a vehicle&apos;s records. A plate lookup resolves {an(s.name)} {s.name} plate and the state to the
           17-character VIN, and from there you get the same history report you would by entering the VIN directly. Because plates
           are only unique within a state, the state matters. Our plate-to-VIN search is launching soon — until then, the VIN is
           the fastest route.
         </p>
 
-        <h2>Where to find the VIN on a {s.name} car</h2>
+        <h2>Where to find the VIN on {an(s.name)} {s.name} car</h2>
         <p>
           You don&apos;t need a plate lookup to get the VIN. Look at the lower-left corner of the windshield from outside the car,
           or on the label inside the driver-side door jamb. It is also printed on the {s.name} title, the registration card, and
@@ -184,7 +186,7 @@ export default async function StatePlatePage({
 
       <section className="bg-gradient-to-br from-blue-700 to-blue-900 py-14 px-4 text-center">
         <ShieldCheck className="w-8 h-8 text-blue-200 mx-auto mb-3" aria-hidden="true" />
-        <h2 className="text-2xl sm:text-3xl font-extrabold text-white mb-3">Check a {s.name} car by VIN</h2>
+        <h2 className="text-2xl sm:text-3xl font-extrabold text-white mb-3">Check {an(s.name)} {s.name} car by VIN</h2>
         <p className="text-blue-100 mb-6">Free preview · full history by VIN · plate search launching soon.</p>
         <Link href="/#vin-search" className="inline-flex items-center gap-2 bg-white text-blue-700 font-bold px-7 py-3.5 rounded-full hover:scale-105 active:scale-100 transition-transform">
           <Search className="w-4 h-4" aria-hidden="true" /> Check a VIN

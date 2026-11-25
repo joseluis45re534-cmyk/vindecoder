@@ -68,8 +68,7 @@ ${guides.map((g) => `- ${g.title}: ${SITE_URL}/how-to/${g.slug}`).join('\n')}
 
 - VIN check (home): ${SITE_URL}/
 - Pricing: ${SITE_URL}/pricing
-- Blog (buying guides): ${SITE_URL}/blog
-- How-to guides: ${SITE_URL}/how-to
+${posts.length ? `- Blog (buying guides): ${SITE_URL}/blog\n` : ''}- How-to guides: ${SITE_URL}/how-to
 - Window sticker guide (VIN-based sticker lookup launching soon): ${SITE_URL}/window-sticker
 - Salvage auction guide: ${SITE_URL}/auctions
 - Compare providers: ${SITE_URL}/compare
@@ -89,11 +88,7 @@ ${COMPETITORS.map((c) => `- ${c.name} alternative: ${SITE_URL}/${c.slug}-alterna
 - Data sources & methodology: ${SITE_URL}/data-sources
 - Sample reports: ${SITE_URL}/#examples
 
-## Blog posts
-
-${posts.map((p) => `- ${p.title}: ${SITE_URL}/blog/${p.slug}`).join('\n')}
-
-## Full content
+${posts.length ? `## Blog posts\n\n${posts.map((p) => `- ${p.title}: ${SITE_URL}/blog/${p.slug}`).join('\n')}\n\n` : ''}## Full content
 
 - ${SITE_URL}/llms-full.txt
 `;

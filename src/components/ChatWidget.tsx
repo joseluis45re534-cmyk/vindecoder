@@ -26,14 +26,17 @@ export default function ChatWidget() {
   const sessionId = useRef('');
   const scrollRef = useRef<HTMLDivElement>(null);
 
+  // localStorage throws (SecurityError) when the browser blocks site data — the
+  // chat must keep working, and must never take the whole page down with it.
   useEffect(() => {
-    let v = localStorage.getItem(LS_VISITOR);
+    let v = '';
+    try { v = localStorage.getItem(LS_VISITOR) || ''; } catch { /* storage blocked */ }
     if (!v) {
       v = crypto.randomUUID();
-      localStorage.setItem(LS_VISITOR, v);
+      try { localStorage.setItem(LS_VISITOR, v); } catch { /* storage blocked */ }
     }
     visitorId.current = v;
-    sessionId.current = localStorage.getItem(LS_SESSION) || '';
+    try { sessionId.current = localStorage.getItem(LS_SESSION) || ''; } catch { sessionId.current = ''; }
   }, []);
 
   // Let any "Chat with us" button on the site open the widget.
@@ -49,7 +52,7 @@ export default function ChatWidget() {
 
   const persistSession = (sid: string) => {
     sessionId.current = sid;
-    localStorage.setItem(LS_SESSION, sid);
+    try { localStorage.setItem(LS_SESSION, sid); } catch { /* storage blocked — session lasts this page view */ }
   };
 
   const poll = useCallback(async () => {
@@ -96,6 +99,14 @@ export default function ChatWidget() {
         body: JSON.stringify({ sessionId: sessionId.current || undefined, visitorId: visitorId.current, text, history }),
       });
       const data = (await res.json()) as { sessionId?: string; persisted?: boolean; status?: typeof status; reply?: string | null };
+      if (res.status === 429) {
+        // Rate-limited: nothing was saved. Take the bubble back, keep the draft,
+        // and show the notice as a footer note (a bubble would vanish on the next poll).
+        setMessages((m) => m.slice(0, -1));
+        setInput(text);
+        setNote(data.reply || 'Too many messages right now — please try again later.');
+        return;
+      }
       if (data.sessionId) persistSession(data.sessionId);
       if (data.persisted) setPersisted(true);
       if (data.status) setStatus(data.status);
@@ -119,7 +130,11 @@ export default function ChatWidget() {
         setNote("Live agents aren't available right now — please use the contact page and we'll reply by email.");
         return;
       }
-      const data = (await res.json()) as { ok?: boolean; sessionId?: string };
+      const data = (await res.json()) as { ok?: boolean; sessionId?: string; error?: string };
+      if (res.status === 429) {
+        setNote(data.error || 'Too many requests right now — please use the contact page.');
+        return;
+      }
       if (data.ok) {
         if (data.sessionId) persistSession(data.sessionId);
         setPersisted(true);

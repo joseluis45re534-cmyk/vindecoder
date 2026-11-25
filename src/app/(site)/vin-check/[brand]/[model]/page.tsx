@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { ShieldCheck, FileText, AlertTriangle, Gauge, Search } from 'lucide-react';
-import { getBrand } from '@/lib/brands';
+import { getBrand, an } from '@/lib/brands';
 import { getStickerMake, getStickerModel } from '@/lib/window-stickers';
 import { SITE_URL, SITE_NAME } from '@/lib/site';
 import JsonLd from '@/components/JsonLd';
@@ -67,7 +67,7 @@ export default async function ModelVinCheckPage({
   const faq = [
     { q: `Is the ${label} VIN check free?`, a: `You get a free preview of the ${label}'s identity — year, make, model, and VIN validation. The full history report (title brands, theft, liens, odometer) is a paid unlock.` },
     { q: `What should I check on a used ${label}?`, a: `Confirm the title is clean in every state, the odometer readings only increase, there are no open liens or theft records, and any safety recalls were repaired. ${b.watchFor}` },
-    { q: `Can I check a ${label} by license plate?`, a: `Not yet — license-plate search is launching soon. For now, enter the 17-character VIN; it's on the windshield, the driver-side door jamb, and the title or registration.` },
+    { q: `Can I check ${an(label)} ${label} by license plate?`, a: `Not yet — license-plate search is launching soon. For now, enter the 17-character VIN; it's on the windshield, the driver-side door jamb, and the title or registration.` },
   ];
 
   const schema = [
@@ -133,13 +133,13 @@ export default async function ModelVinCheckPage({
         <p>
           The {label} is a popular used buy, which means a wide range of conditions on the market — from clean, well-kept
           examples to cars hiding a branded title or an odometer problem. Before you commit, decode the VIN to confirm the car
-          is genuinely a {label}, then pull its history to see what happened to this specific vehicle.
+          is genuinely {an(label)} {label}, then pull its history to see what happened to this specific vehicle.
         </p>
 
-        <h2>What to watch for on a {b.name}</h2>
+        <h2>What to watch for on {an(b.name)} {b.name}</h2>
         <p>{b.watchFor} Beyond the mechanicals, the records that matter most are the ones a seller cannot see at a glance: a <strong>salvage or flood title</strong> applied in another state, an <strong>open lien</strong>, an <strong>odometer rollback</strong>, or a <strong>theft record</strong>.</p>
 
-        <h2>What is included in a {label} report</h2>
+        <h2>What is included in {an(label)} {label} report</h2>
         <ul>
           <li><strong>Title &amp; brand history</strong> — salvage, rebuilt, junk, and flood titles across all 50 states (NMVTIS).</li>
           <li><strong>Theft check</strong> — a theft-risk flag for the VIN from our data provider.</li>
@@ -148,7 +148,7 @@ export default async function ModelVinCheckPage({
           <li><strong>Recalls &amp; specs</strong> — open safety recalls plus the full {label} decode.</li>
         </ul>
 
-        <h2>How to check a {label} VIN</h2>
+        <h2>How to check {an(label)} {label} VIN</h2>
         <ol>
           <li>Find the 17-character VIN on the windshield, driver-side door jamb, title, or registration.</li>
           <li>Enter the VIN in the search box above.</li>
@@ -224,7 +224,7 @@ export default async function ModelVinCheckPage({
         <h2 className="text-2xl sm:text-3xl font-extrabold text-white mb-3">Run your {label} VIN now</h2>
         <p className="text-blue-100 mb-6">Free preview · full report online right after checkout.</p>
         <Link href="/#vin-search" className="inline-flex items-center gap-2 bg-white text-blue-700 font-bold px-7 py-3.5 rounded-full hover:scale-105 active:scale-100 transition-transform">
-          <Search className="w-4 h-4" aria-hidden="true" /> Check a {label} VIN
+          <Search className="w-4 h-4" aria-hidden="true" /> Check {an(label)} {label} VIN
         </Link>
       </section>
     </main>

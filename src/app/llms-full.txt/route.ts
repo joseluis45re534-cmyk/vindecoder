@@ -142,12 +142,7 @@ ${COMPETITORS.map((c) => `- ${c.name} alternative: ${SITE_URL}/${c.slug}-alterna
 - Data sources & methodology: ${SITE_URL}/data-sources
 - Sample reports: ${SITE_URL}/#examples
 
-## Blog posts
-
-CarVinLookup also publishes buying guides on its blog:
-${posts.map((p) => `- ${p.title}: ${SITE_URL}/blog/${p.slug}`).join('\n')}
-
-## Contact / brand
+${posts.length ? `## Blog posts\n\nCarVinLookup also publishes buying guides on its blog:\n${posts.map((p) => `- ${p.title}: ${SITE_URL}/blog/${p.slug}`).join('\n')}\n\n` : ''}## Contact / brand
 
 - Name: CarVinLookup
 - Country served: United States

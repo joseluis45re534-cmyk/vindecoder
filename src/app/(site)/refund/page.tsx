@@ -1,17 +1,19 @@
 import type { Metadata } from 'next';
 import { pageMetadata } from '@/lib/seo';
 import Link from 'next/link';
-import { TRIAL_PLAN, formatPrice } from '@/lib/pricing';
+import { TRIAL_PLAN, formatPrice, reportPriceLine } from '@/lib/pricing';
+import { formatRevised } from '@/lib/site';
 
 export const runtime = 'edge';
 
 export const metadata: Metadata = pageMetadata({
   title: 'Refund & Cancellation Policy',
-  description:
-    'How CarVinLookup billing works — the $1 trial, the recurring monthly subscription, how to cancel anytime, and our refund terms.',
+  description: `How CarVinLookup billing works (${reportPriceLine('short')}), how to cancel anytime, and our refund terms.`,
   path: '/refund',
 });
 
+// Set by hand when this policy changes — never computed at render time.
+const UPDATED = '2026-11-25';
 const FEE = formatPrice(TRIAL_PLAN.trialFeeCents ?? 100);
 const MONTHLY = formatPrice(TRIAL_PLAN.recurringCents ?? 2900);
 const DAYS = TRIAL_PLAN.trialDays ?? 3;
@@ -21,7 +23,9 @@ export default function RefundPage() {
     <main className="min-h-screen bg-white">
       <article className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-16 prose-content">
         <h1 className="text-4xl font-extrabold text-slate-900 mb-6 tracking-tight">Refund &amp; Cancellation Policy</h1>
-        <p>Last updated: {new Date().getFullYear()}</p>
+        <p>
+          Last updated: <time dateTime={UPDATED}>{formatRevised(UPDATED)}</time>
+        </p>
         <p>
           This policy explains exactly how billing works for a CarVinLookup report, how to cancel, and when refunds apply.
           We aim to be completely transparent so there are no surprises.
@@ -37,8 +41,8 @@ export default function RefundPage() {
 
         <h2>How to cancel</h2>
         <p>
-          You can cancel at any time — there are no cancellation fees. Use the <strong>&quot;Manage or cancel subscription&quot;</strong>
-          link shown after checkout (it opens the secure Stripe customer portal), or email us and we will cancel it for you.
+          You can cancel at any time — there are no cancellation fees. Use the{' '}
+          <strong>&quot;Manage or cancel subscription&quot;</strong> link shown after checkout (it opens the secure Stripe customer portal), or email us and we will cancel it for you.
           Cancelling before the {DAYS}-day trial ends means you are only ever charged the {FEE} trial fee and never the {MONTHLY} monthly amount.
         </p>
 

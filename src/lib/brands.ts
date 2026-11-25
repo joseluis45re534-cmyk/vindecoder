@@ -3,6 +3,11 @@
 // models, common used-buying issues) so the pages are differentiated, not
 // thin duplicates — the durable way to win long-tail "[brand] vin check" queries.
 
+/** "a" or "an" before a brand or model name: "an Audi", "a Ford". Right for every name in BRANDS. */
+export const an = (name: string) => (/^[aeiou]/i.test(name) ? 'an' : 'a');
+/** Sentence-start form: "An Audi dealer…". */
+export const An = (name: string) => (an(name) === 'an' ? 'An' : 'A');
+
 export interface Brand {
   slug: string;
   name: string;

@@ -8,6 +8,7 @@ import { pageMetadata, NOINDEX_FOLLOW } from '@/lib/seo';
 import JsonLd from '@/components/JsonLd';
 import { breadcrumbLd } from '@/lib/structured-data';
 import SearchForm from '@/components/SearchForm';
+import { an } from '@/lib/brands';
 
 export const runtime = 'edge';
 
@@ -21,7 +22,7 @@ export async function generateMetadata({
   if (!m) return { title: 'Make not found' };
   return pageMetadata({
     title: `${m.name} Window Sticker Lookup by VIN`,
-    description: `What's on a ${m.name} window sticker (Monroney label) and how to get one by VIN. Sticker lookup is launching soon — decode a ${m.name} VIN free today.`,
+    description: `What's on ${an(m.name)} ${m.name} window sticker (Monroney label) and how to get one by VIN. Sticker lookup is launching soon — decode ${an(m.name)} ${m.name} VIN free today.`,
     path: `/window-sticker/${m.slug}`,
     ogAlt: `${m.name} window sticker`,
     // Thin templated tier (~100 words/page): kept live for users, out of the
@@ -79,7 +80,7 @@ export default async function StickerMakePage({
             {m.name} window sticker lookup
           </h1>
           <p className="text-base sm:text-lg text-slate-300 mb-8 max-w-2xl mx-auto">
-            Window sticker lookup by VIN is launching soon. Enter a {m.name} VIN now for a free vehicle preview and the full title, theft, lien, and odometer history.
+            Window sticker lookup by VIN is launching soon. Enter {an(m.name)} {m.name} VIN now for a free vehicle preview and the full title, theft, lien, and odometer history.
           </p>
           <SearchForm />
         </div>

@@ -113,16 +113,16 @@ export const HOW_TO_GUIDES: HowToGuide[] = [
     readingMinutes: 4,
     totalTime: 'PT3M',
     intro:
-      'The World Manufacturer Identifier is the first three characters of every VIN. Decoding it tells you where a car was made and by whom.',
+      'The World Manufacturer Identifier is the first three characters of every VIN. Decoding it tells you who made the car and the country its code is registered in.',
     takeaways: [
       'Characters 1–3 of a VIN are the WMI: region, country, and manufacturer.',
-      'The first character alone tells you the region — 1, 4, and 5 (plus some newer 7s) are the United States.',
-      'The WMI confirms origin but not history — pair it with a full report.',
+      'The first character tells you the region the code is registered in — 1, 4, and 5 (plus some newer 7s) are the United States. That is not necessarily where the car was built; position 11 names the plant.',
+      'The WMI identifies the maker, not the car’s history — pair it with a full report.',
     ],
     steps: [
       { name: 'Isolate the first three characters', text: 'Write out the VIN and separate positions 1, 2, and 3 — that block is the WMI.' },
       { name: 'Read the region from character 1', text: '1, 4, and 5 (and some newer 7s) = United States; 2 = Canada; 3 = Mexico; J = Japan; K = South Korea; S–Z = Europe.' },
-      { name: 'Identify the manufacturer', text: 'Characters 2 and 3 narrow it to a specific maker (for example, 1HG = Honda built in the USA).' },
+      { name: 'Identify the manufacturer', text: 'Characters 2 and 3 narrow it to a specific maker (for example, 1HG is a Honda code registered in the United States).' },
       { name: 'Cross-check the badge', text: 'If the WMI says one manufacturer and the badges say another, treat it as a serious red flag for a cloned VIN.' },
     ],
     faq: [
@@ -131,8 +131,9 @@ export const HOW_TO_GUIDES: HowToGuide[] = [
     ],
     related: ['check-vin-number', 'read-vin-report', 'find-motorcycle-vin'],
     answer:
-      "The World Manufacturer Identifier (WMI) is the first three characters of a VIN. The first character shows where the vehicle was built — 1, 4, or 5 (and some newer 7s) for the United States, 2 for Canada, 3 for Mexico, J for Japan, K for South Korea, W for Germany — and the three characters together identify the manufacturer. NHTSA's free vPIC tool decodes them.",
+      "The World Manufacturer Identifier (WMI) is a VIN's first three characters and identifies the manufacturer. Its first character (sometimes two) shows the country the code is registered in — not necessarily where the vehicle was built: 1, 4, or 5 (and some newer 7s) for the United States, 2 Canada, 3 Mexico, J Japan, K South Korea, W Germany. NHTSA's free vPIC tool decodes it.",
     sources: ['vpic', 'cfr565'],
+    reviewed: '2026-11-25',
   },
   {
     slug: 'find-license-plate-vin',

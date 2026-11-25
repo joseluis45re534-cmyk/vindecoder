@@ -6,6 +6,25 @@ const nextConfig: NextConfig = {
   // its "HTML-limited bot" list — which includes Googlebot and AI crawlers like
   // GPTBot, ClaudeBot and PerplexityBot that don't run JavaScript.
   htmlLimitedBots: /.*/,
+  poweredByHeader: false,
+  // Security headers for every response the app (Pages Function) serves. The
+  // static public/_headers file only reaches static assets, never HTML pages.
+  // No HSTS "preload": submitting the domain to browser preload lists is a
+  // deliberate, hard-to-undo owner decision.
+  async headers() {
+    return [
+      {
+        source: "/:path*",
+        headers: [
+          { key: "Strict-Transport-Security", value: "max-age=63072000; includeSubDomains" },
+          { key: "X-Content-Type-Options", value: "nosniff" },
+          { key: "X-Frame-Options", value: "SAMEORIGIN" },
+          { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+          { key: "Permissions-Policy", value: "geolocation=(), microphone=(), camera=()" },
+        ],
+      },
+    ];
+  },
   images: {
     // AutoSEO serves article/OG images from its own domain — allow it (also for
     // any <img> usage; next/image would otherwise throw at runtime).

@@ -101,7 +101,7 @@ export const CONSOLIDATED_POSTS: Record<string, string> = {
   'vinaudit-comparison-choosing-the-right-option': '/vinaudit-alternative',
   'vincheckup-comparison-which-service-is-right': '/compare',
   'free-vincheckup-alternative-top-options': '/compare',
-  'vehicle-vin-lookup-your-complete-guide-to-vin': '/blog/vehicle-vin-lookup-your-ultimate-guide-to-vin',
+  'vehicle-vin-lookup-your-complete-guide-to-vin': '/vin-decoder', // was -> the "ultimate guide" post, now hidden too (no chain)
   // Fabricated facts about CarVinLookup (a mobile app, service records, made-up
   // prices, testimonials) — never serve these until rewritten in AutoSEO.
   'carvinlookup-vs-vincheckup-a-comprehensive': '/compare',
@@ -116,6 +116,15 @@ export const CONSOLIDATED_POSTS: Record<string, string> = {
   'car-history-report-by-vin-ultimate-guide': '/vin-check',
   'vehicle-vin-check-everything-you-need-to-know': '/vin-check',
   'vinfreecheck-alternatives-discover-the-best': '/compare',
+  // Invented people and anecdotes presented as real (named "testimonials",
+  // "case studies" of buyers, an off-topic healthcare case study), plus
+  // unsourced competitor prices/figures — found live 2026-11-25. Hidden until
+  // rewritten without them in AutoSEO (CLAUDE.md: never fabricate reviews or stats).
+  'vin-check-with-pictures-a-complete-guide': '/vin-check',
+  'free-vin-look-up-uncover-vehicle-history-easily': '/vin-check',
+  'vehicle-vin-lookup-your-ultimate-guide-to-vin': '/vin-decoder',
+  'vindecoded-alternatives-the-best-options': '/compare',
+  'vininspect-alternatives-discover-the-best-vehicle': '/compare',
   // Same intent as an existing hand-written page (cannibalization).
   'how-to-interpret-vehicle-history-reports': '/how-to/read-vin-report',
   'vehicle-vin-decoder-unlocking-your-car-s-hidden': '/vin-decoder',
@@ -141,9 +150,11 @@ function patternDestination(slug: string): string | undefined {
     const kinds = c === 'bumper' ? 'vs|versus' : 'vs|versus|comparison|compare';
     if (new RegExp(`^${c}-(${kinds})(-|$)`).test(s)) return `/compare/${comparisonSlug(c)}`;
   }
-  // 2) "<competitor>-alternative(s)" anywhere (e.g. best-autocheck-alternatives-2027).
+  // 2) "<competitor>-alternative(s)" or "alternatives-to-<competitor>" anywhere
+  //    (e.g. best-autocheck-alternatives-2027, top-alternatives-to-carfax).
   for (const c of COMPETITOR_SLUGS) {
     if (new RegExp(`(^|-)${c}-alternatives?(-|$)`).test(s)) return `/${c}-alternative`;
+    if (new RegExp(`(^|-)alternatives?-to-${c}(-|$)`).test(s)) return `/${c}-alternative`;
   }
   // 3) "…-vs-<competitor>" (e.g. carvinlookup-vs-carfax-…).
   for (const c of COMPETITOR_SLUGS) {
@@ -151,6 +162,14 @@ function patternDestination(slug: string): string | undefined {
   }
   // 4) AutoSEO's self-comparison template against anyone else.
   if (s.startsWith('carvinlookup-vs-')) return '/compare';
+  // 5) The same templates for VIN sites we have no page for (vininspect-,
+  //    vindecoded-alternatives…, vindecoded-comparison-…), which carried unsourced
+  //    price tables. Only a site-like name counts — one word of 6+ characters
+  //    containing vin/fax/check/auto/bumper — so "best-alternative-fuel-…" or
+  //    "affordable-alternatives-…" posts are left alone.
+  const SITE = '(?=[a-z0-9]{6,}-)[a-z0-9]*(?:vin|fax|check|auto|bumper)[a-z0-9]*';
+  if (new RegExp(`^(?:(?:free|best|top)-)?${SITE}-alternatives?(?:-|$)`).test(s)) return '/compare';
+  if (new RegExp(`^${SITE}-(?:comparison|compare|vs|versus)(?:-|$)`).test(s)) return '/compare';
   return undefined;
 }
 
