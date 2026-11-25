@@ -15,9 +15,7 @@ export const reports = sqliteTable('reports', {
     created_at: text('created_at').default(sql`CURRENT_TIMESTAMP`),
 });
 
-/** LEGACY — accounts from the retired custom D1 auth. Nothing writes here any
- *  more: accounts live in Supabase Auth (SUPABASE_SETUP.md), and /admin/users
- *  lists them from there. Don't read or count accounts from this table. */
+/** Customers / registered users. */
 export const users = sqliteTable('users', {
     id: text('id').primaryKey(),
     email: text('email').notNull().unique(),

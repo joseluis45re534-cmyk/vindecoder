@@ -1,9 +1,7 @@
-import type { User } from '@supabase/supabase-js';
 import { getEnv } from '@/lib/cf';
-import { getDb, type Env } from '@/db';
-import { orders, events, posts, lookups } from '@/db/schema';
+import { getDb } from '@/db';
+import { orders, users, events, posts, lookups } from '@/db/schema';
 import { desc, like, or, eq, and, sql, type SQL } from 'drizzle-orm';
-import { createAdminClient } from '@/lib/supabase/admin';
 
 // Each loader tries D1; if the binding/table isn't there yet (local dev or
 // pre-migration), it returns representative demo data so the panel renders.
@@ -38,115 +36,37 @@ export async function loadOrders(): Promise<{ rows: OrderRow[]; live: boolean }>
   }
 }
 
-// ── Accounts (Supabase Auth) ──
-// Sign-up, login and email confirmation run on Supabase, so that is where the
-// accounts live. The D1 `users` table belongs to the retired custom auth and
-// nothing writes to it any more — never list or count accounts from it.
-
 export interface UserRow {
   id: string;
   email: string;
   name: string | null;
-  confirmed: boolean; //          clicked the link in the confirmation email
-  createdAt: string | null; //    'YYYY-MM-DD HH:MM' UTC, like the D1 timestamps
-  lastSignInAt: string | null;
-  paidOrders: number | null; //   paid D1 orders under this email; null = D1 unreadable
-}
-
-export interface UsersResult {
-  rows: UserRow[];
-  total: number; //  every account in Supabase (rows stop at the page cap)
-  live: boolean;
-  error?: string; // why live accounts couldn't be shown
+  role: string | null;
+  created_at: string | null;
 }
 
 const DEMO_USERS: UserRow[] = [
-  { id: 'u_001', email: 'marcus.t@example.com', name: 'Marcus T.', confirmed: true, createdAt: '2026-06-10 14:02', lastSignInAt: '2026-06-10 14:20', paidOrders: 1 },
-  { id: 'u_002', email: 'alyssa.r@example.com', name: 'Alyssa R.', confirmed: true, createdAt: '2026-06-10 08:51', lastSignInAt: '2026-06-10 09:03', paidOrders: 1 },
-  { id: 'u_003', email: 'dan.k@example.com', name: 'Dan K.', confirmed: false, createdAt: '2026-06-09 18:30', lastSignInAt: null, paidOrders: 0 },
+  { id: 'u_001', email: 'marcus.t@example.com', name: 'Marcus T.', role: 'customer', created_at: '2026-06-10' },
+  { id: 'u_002', email: 'alyssa.r@example.com', name: 'Alyssa R.', role: 'customer', created_at: '2026-06-10' },
+  { id: 'u_003', email: 'dan.k@example.com', name: 'Dan K.', role: 'customer', created_at: '2026-06-09' },
+  { id: 'u_admin', email: 'owner@carvinlookup.com', name: 'Owner', role: 'admin', created_at: '2026-05-01' },
 ];
 
-const USERS_PER_PAGE = 1000;
-const MAX_USER_PAGES = 5; // lists up to 5,000 accounts
-
-// Supabase returns ISO timestamps (…T…Z); show them like the D1 ones.
-function utcMinute(iso: string | null | undefined): string | null {
-  if (!iso) return null;
-  const t = Date.parse(iso);
-  return Number.isNaN(t) ? null : new Date(t).toISOString().slice(0, 16).replace('T', ' ');
-}
-
-// Paid D1 orders per lower-cased email, or null when D1 can't be read (so the
-// page shows "—" instead of a misleading 0).
-async function paidOrdersByEmail(env: Partial<Env>): Promise<Map<string, number> | null> {
-  if (!env.DB) return null;
+export async function loadUsers(): Promise<{ rows: UserRow[]; live: boolean }> {
   try {
+    const env = await getEnv();
+    if (!env.DB) throw new Error('no db');
     const db = getDb(env as { DB: D1Database });
-    const rows = await db
-      .select({ email: orders.email, n: sql<number>`count(*)` })
-      .from(orders)
-      .where(eq(orders.status, 'paid'))
-      .groupBy(orders.email);
-    const counts = new Map<string, number>();
-    for (const r of rows) {
-      if (!r.email) continue;
-      const email = r.email.trim().toLowerCase();
-      counts.set(email, (counts.get(email) ?? 0) + Number(r.n));
-    }
-    return counts;
+    const rows = await db.select().from(users).orderBy(desc(users.created_at)).limit(200);
+    return { rows: rows as unknown as UserRow[], live: true };
   } catch {
-    return null;
-  }
-}
-
-export async function loadUsers(): Promise<UsersResult> {
-  const env = await getEnv();
-  const supabase = createAdminClient(env);
-  if (!supabase) {
-    return {
-      rows: DEMO_USERS,
-      total: DEMO_USERS.length,
-      live: false,
-      error: 'Supabase isn’t configured here (NEXT_PUBLIC_SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY is missing), so these rows are demo data.',
-    };
-  }
-  try {
-    const accounts: User[] = [];
-    let total = 0;
-    for (let page = 1; page <= MAX_USER_PAGES; page++) {
-      const { data, error } = await supabase.auth.admin.listUsers({ page, perPage: USERS_PER_PAGE });
-      if (error) throw error;
-      accounts.push(...data.users);
-      total = data.total;
-      if (!data.nextPage) break;
-    }
-    accounts.sort((a, b) => (Date.parse(b.created_at) || 0) - (Date.parse(a.created_at) || 0));
-    const paid = await paidOrdersByEmail(env);
-    const rows = accounts.map((u): UserRow => {
-      const email = (u.email || '').trim().toLowerCase();
-      const name = typeof u.user_metadata?.name === 'string' ? u.user_metadata.name.trim() : '';
-      return {
-        id: u.id,
-        email: email || '(no email)',
-        name: name || null,
-        confirmed: Boolean(u.email_confirmed_at),
-        createdAt: utcMinute(u.created_at),
-        lastSignInAt: utcMinute(u.last_sign_in_at),
-        paidOrders: paid ? (paid.get(email) ?? 0) : null,
-      };
-    });
-    return { rows, total: Math.max(total, rows.length), live: true };
-  } catch (err) {
-    console.error('[admin] loading Supabase accounts failed:', err);
-    const message = err instanceof Error ? err.message : String(err);
-    return { rows: [], total: 0, live: false, error: `Couldn’t load accounts from Supabase: ${message}` };
+    return { rows: DEMO_USERS, live: false };
   }
 }
 
 export interface DashboardStats {
   revenueCents: number;
   orders: number;
-  users: number | null; // Supabase accounts; null when they couldn't be loaded
+  users: number;
   pageviews: number;
   conversion: number;
   live: boolean;
@@ -154,7 +74,7 @@ export interface DashboardStats {
 }
 
 export async function loadDashboard(): Promise<DashboardStats> {
-  const [{ rows: orderRows, live }, accounts] = await Promise.all([loadOrders(), loadUsers()]);
+  const { rows: orderRows, live } = await loadOrders();
   const paid = orderRows.filter((o) => o.status === 'paid');
   const revenueCents = paid.reduce((s, o) => s + o.amount_cents, 0);
   let pageviews = 4820;
@@ -171,7 +91,7 @@ export async function loadDashboard(): Promise<DashboardStats> {
   return {
     revenueCents,
     orders: paid.length,
-    users: accounts.live ? accounts.total : null,
+    users: (await loadUsers()).rows.length,
     pageviews,
     conversion: pageviews ? (paid.length / pageviews) * 100 : 0,
     live,
