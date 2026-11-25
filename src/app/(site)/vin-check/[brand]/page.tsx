@@ -57,6 +57,7 @@ export default async function BrandPage({
   const examples = wmis.slice(0, 3).map((w) => w.wmi);
   const regions = [...new Set(wmis.map((w) => w.region).filter(Boolean))];
   const listJoin = (a: string[]) => (a.length < 2 ? a.join('') : `${a.slice(0, -1).join(', ')} and ${a[a.length - 1]}`);
+  const place = (r: string) => (r.startsWith('United ') ? `the ${r}` : r); // "the United States"
   const WMI_ROWS = 15;
   // Verified NHTSA recall campaigns for popular models (scripts/fetch-brand-recalls.mjs).
   const recalls = [...(BRAND_RECALLS[brand.slug] ?? [])].sort((a, b) => b.campaigns - a.campaigns);
@@ -65,7 +66,7 @@ export default async function BrandPage({
   const faq = [
     { q: `Is the ${brand.name} VIN check free?`, a: `You get a free preview of the vehicle's identity. The full ${brand.name} history report — title brands, a theft check, liens, and odometer readings — is a paid unlock.` },
     ...(examples.length
-      ? [{ q: `What do ${brand.name} VINs start with?`, a: `${brand.name} VINs begin with a three-character World Manufacturer Identifier (WMI). Codes NHTSA's vPIC database registers to ${brand.name} include ${examples.join(', ')}; the table on this page lists the car, SUV and truck codes we found — not every code — so decode the full VIN to confirm the make.` }]
+      ? [{ q: `What do ${brand.name} VINs start with?`, a: `${brand.name} VINs begin with a three-character World Manufacturer Identifier (WMI). Codes NHTSA's vPIC database registers to ${brand.name} include ${examples.join(', ')} (not every code) — decode the full VIN to confirm the make.` }]
       : []),
     ...(recalls.length
       ? [{ q: `How many recall campaigns cover the ${recallFrom}–${recallTo} ${brand.name} ${recalls[0].model}?`, a: `NHTSA's recall database lists ${recalls[0].campaigns} recall campaign${recalls[0].campaigns === 1 ? '' : 's'} covering ${recallFrom}–${recallTo} ${brand.name} ${recalls[0].model} model years${recalls[0].byOthers ? ` (${recalls[0].byOthers} filed by other companies, such as conversion or equipment makers)` : ''}${recalls[0].topComponent ? `; the most common component category is "${recalls[0].topComponent}"` : ''}. That counts campaigns, not affected cars, and a model sold for only part of that period has fewer model years counted. Check a specific car's open recalls with its VIN.` }]
@@ -149,25 +150,22 @@ export default async function BrandPage({
         <h2>About {brand.name} VINs</h2>
         <p>
           {brand.name} was founded in {brand.founded} ({brand.country}). Every {brand.name} sold in the United States
-          carries a unique 17-character Vehicle Identification Number (VIN).{' '}
+          carries a unique 17-character Vehicle Identification Number (VIN): its first three characters are the World
+          Manufacturer Identifier (WMI), and its 11th identifies the assembly plant.
           {examples.length > 0 && (
             <>
-              Codes NHTSA&apos;s vPIC database registers to {brand.name} include <strong>{examples.join(', ')}</strong>.{' '}
+              {' '}Codes NHTSA&apos;s vPIC database registers to {brand.name} include <strong>{examples.join(', ')}</strong>.
             </>
           )}
-          The first three characters (the World Manufacturer Identifier) identify the manufacturer; the plant that built
-          the car is the VIN&apos;s 11th character. Decoding the VIN confirms what the car should be — and lets you pull its
-          full history before you buy.
         </p>
 
         {wmis.length > 0 && (
           <>
             <h2>{brand.name} VIN prefixes (WMI codes)</h2>
             <p>
-              The first three characters of a VIN — the World Manufacturer Identifier — identify the manufacturer, and the
-              first character shows the region the code is registered to (usually, but not always, where the car was
-              built). NHTSA&apos;s vPIC database registers the car, SUV, and truck codes below to {brand.name} — not every
-              code the brand has used{regions.length > 0 ? `, with codes registered in ${listJoin(regions)}` : ''}:
+              NHTSA&apos;s vPIC database registers these car, SUV, and truck codes to {brand.name} (not every code the brand
+              has used). Their leading characters show the country each is registered in
+              {regions.length > 0 ? ` (${listJoin(regions.map(place))})` : ''} — usually, not always, where the car was built.
             </p>
             <div className="not-prose overflow-x-auto my-6">
               <table className="w-full text-sm border border-slate-200 rounded-xl overflow-hidden">
@@ -193,11 +191,10 @@ export default async function BrandPage({
             </div>
             {wmis.length > WMI_ROWS && <p>…plus {wmis.length - WMI_ROWS} more codes in this list.</p>}
             <p className="text-sm text-slate-500">
-              vPIC lists a shared code under every make it has been used for; the code is registered to the company that
-              built those vehicles — often a parent company, sometimes a contract builder — and positions 4–8 of the VIN
-              identify the model. Regions follow ISO 3780. Source:{' '}
+              A shared code is registered to the company that built those vehicles (often a parent company); VIN positions
+              4–8 identify the model. Regions follow ISO 3780. Source:{' '}
               <a href="https://vpic.nhtsa.dot.gov/decoder/" target="_blank" rel="noopener noreferrer">NHTSA vPIC</a>, retrieved{' '}
-              {formatRevised(BRAND_WMIS_RETRIEVED)}. Try a VIN in the <Link href="/vin-decoder">free VIN decoder</Link>.
+              {formatRevised(BRAND_WMIS_RETRIEVED)}. Try the <Link href="/vin-decoder">free VIN decoder</Link>.
             </p>
           </>
         )}
@@ -206,10 +203,10 @@ export default async function BrandPage({
           <>
             <h2>NHTSA safety recalls for popular {brand.name} models</h2>
             <p>
-              Recall campaigns NHTSA lists for {recallFrom}–{recallTo} model years of each model. A count doesn&apos;t show how
-              many cars were affected or whether a particular car was repaired. Check any VIN free at{' '}
-              <a href="https://www.nhtsa.gov/recalls" target="_blank" rel="noopener noreferrer">nhtsa.gov/recalls</a>; our
-              full report also lists recalls (see our <Link href="/recalls">recall check</Link>).
+              Recall campaigns NHTSA lists for {recallFrom}–{recallTo} model years — a campaign count, not how many cars were
+              affected or fixed. Check a specific VIN free at{' '}
+              <a href="https://www.nhtsa.gov/recalls" target="_blank" rel="noopener noreferrer">nhtsa.gov/recalls</a>; our{' '}
+              <Link href="/recalls">full report lists recalls</Link> too.
             </p>
             <div className="not-prose overflow-x-auto my-6">
               <table className="w-full text-sm border border-slate-200 rounded-xl overflow-hidden">
@@ -235,9 +232,8 @@ export default async function BrandPage({
             </div>
             <p className="text-sm text-slate-500">
               Source: NHTSA recalls data, retrieved {formatRevised(BRAND_RECALLS_RETRIEVED)}. Counts cover campaigns filed under
-              each model&apos;s own name; a model NHTSA also files under hybrid, EV, or trim names with extra campaigns is left
-              out rather than undercounted, so this is not a list of every {brand.name} model. A component is named only when
-              it leads outright.
+              each model&apos;s own name; models NHTSA also files under hybrid, EV, or trim names with extra campaigns are left
+              out, not undercounted. A component is named only when it leads outright.
             </p>
           </>
         )}
