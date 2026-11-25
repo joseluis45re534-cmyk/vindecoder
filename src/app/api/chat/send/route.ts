@@ -4,7 +4,7 @@ import { getEnv } from '@/lib/cf';
 import { getDb } from '@/db';
 import { chatSessions, chatMessages } from '@/db/schema';
 import { callChatBot, MAX_BOT_MESSAGES, type ApiMessage, type ApiRole } from '@/lib/chat';
-import { allowRequest } from '@/lib/report-cache';
+import { allowRequestAtomic } from '@/lib/rate-limit';
 import { clientIp, ipBucket } from '@/lib/ip';
 
 export const runtime = 'edge';
@@ -91,8 +91,8 @@ export async function POST(request: Request) {
   let allowed = true;
   try {
     allowed = human
-      ? await allowRequest(env, `chat-human:${ip}`, HUMAN_MESSAGES_PER_IP_HOUR)
-      : await allowRequest(env, `chat:${ip}`, CHAT_MESSAGES_PER_IP_HOUR);
+      ? await allowRequestAtomic(env, 'chat-human', ip, HUMAN_MESSAGES_PER_IP_HOUR)
+      : await allowRequestAtomic(env, 'chat', ip, CHAT_MESSAGES_PER_IP_HOUR);
   } catch (err) {
     console.error('chat rate-limit error:', err);
   }

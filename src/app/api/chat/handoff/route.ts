@@ -3,7 +3,7 @@ import { eq } from 'drizzle-orm';
 import { getEnv } from '@/lib/cf';
 import { getDb } from '@/db';
 import { chatSessions, chatMessages } from '@/db/schema';
-import { allowRequest } from '@/lib/report-cache';
+import { allowRequestAtomic } from '@/lib/rate-limit';
 import { clientIp, ipBucket } from '@/lib/ip';
 
 export const runtime = 'edge';
@@ -24,7 +24,7 @@ export async function POST(request: Request) {
   // Per-IP cap on escalations (session/visitor IDs are client-supplied). Fails open on limiter errors.
   let allowed = true;
   try {
-    allowed = await allowRequest(env, `chat-handoff:${ipBucket(clientIp(request))}`, 10);
+    allowed = await allowRequestAtomic(env, 'chat-handoff', ipBucket(clientIp(request)), 10);
   } catch (err) {
     console.error('chat handoff rate-limit error:', err);
   }

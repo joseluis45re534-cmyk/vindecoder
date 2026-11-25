@@ -21,6 +21,15 @@ const GA_EVENT: Partial<Record<TrackEvent, string>> = {
   purchase: 'purchase',
 };
 
+// Fields allowed through to Google Analytics; everything else (vin, reportId,
+// email, session ids…) stays first-party.
+const GA_SAFE_KEYS = ['value', 'currency', 'method'] as const;
+function gaSafe(meta?: Record<string, unknown>): Record<string, unknown> {
+  const out: Record<string, unknown> = {};
+  for (const k of GA_SAFE_KEYS) if (meta && k in meta) out[k] = meta[k];
+  return out;
+}
+
 export function track(name: TrackEvent, meta?: Record<string, unknown>): void {
   try {
     if (typeof window === 'undefined') return;
@@ -37,9 +46,10 @@ export function track(name: TrackEvent, meta?: Record<string, unknown>): void {
       keepalive: true,
     }).catch(() => {});
 
-    // Forward to GA4 (no-op if gtag isn't loaded / GA not configured).
+    // Forward to GA4 (no-op if gtag isn't loaded / GA not configured). Only
+    // non-identifying fields go to Google — never the VIN, report id or email.
     if (name !== 'pageview' && GA_EVENT[name]) {
-      window.gtag?.('event', GA_EVENT[name] as string, meta || {});
+      window.gtag?.('event', GA_EVENT[name] as string, gaSafe(meta));
     }
   } catch {
     /* analytics must never break the page */

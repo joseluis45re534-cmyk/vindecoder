@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { getEnv } from '@/lib/cf';
 import { getDb } from '@/db';
 import { contactMessages } from '@/db/schema';
-import { allowRequest } from '@/lib/report-cache';
+import { allowRequestAtomic } from '@/lib/rate-limit';
 
 export const runtime = 'edge';
 
@@ -16,7 +16,7 @@ export async function POST(request: Request) {
     request.headers.get('cf-connecting-ip') ||
     request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
     'unknown';
-  if (!(await allowRequest(env, `contact:${ip}`, 8))) {
+  if (!(await allowRequestAtomic(env, 'contact', ip, 8))) {
     return NextResponse.json({ error: 'Too many messages — please try again later.' }, { status: 429 });
   }
 

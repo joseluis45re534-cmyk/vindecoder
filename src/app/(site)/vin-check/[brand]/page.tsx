@@ -100,11 +100,15 @@ export default async function BrandPage({
     const s = startCounts.get(w.wmi.slice(0, 2)) ?? { n: 0, best: NA.length };
     startCounts.set(w.wmi.slice(0, 2), { n: s.n + 1, best: Math.min(s.best, rank(w.region)) });
   }
-  const commonStarts = [...startCounts.entries()]
+  const repeated = [...startCounts.entries()]
     .filter(([, s]) => s.n >= 2)
-    .sort((a, b) => b[1].n - a[1].n || a[1].best - b[1].best || a[0].localeCompare(b[0]))
-    .slice(0, 3)
-    .map(([p]) => p);
+    .sort((a, b) => b[1].n - a[1].n || a[1].best - b[1].best || a[0].localeCompare(b[0]));
+  // Top three, but never split a tie: starts exactly as common as the third
+  // are named too (up to five); past that, only the strictly more common ones.
+  const cut = repeated[2]?.[1].n ?? 0;
+  const withTies = repeated.filter(([, s]) => s.n >= cut);
+  const commonStarts = (withTies.length <= 5 ? withTies : repeated.filter(([, s]) => s.n > cut)).map(([p]) => p);
+  const allOneStart = commonStarts.length === 1 && startCounts.get(commonStarts[0])?.n === own.length;
   const exampleCodes = own.slice(0, 3).map((w) => w.wmi); // own codes, North American first
   const oneCode = wmis.length === 1;
   const TYPES = [['Passenger Car', 'car'], ['SUV / MPV', 'SUV'], ['Truck', 'truck']] as const;
@@ -123,11 +127,16 @@ export default async function BrandPage({
     ? own.length
       ? { lead: `The ${typeWords[0]} code NHTSA's vPIC database lists under ${brand.name} is `, list: wmis[0].wmi }
       : null
-    : commonStarts.length
-      ? { lead: `The codes NHTSA's vPIC database lists under ${brand.name} most often begin with `, list: joinWith(commonStarts, 'or') }
-      : exampleCodes.length
-        ? { lead: `Codes NHTSA's vPIC database lists under ${brand.name} include `, list: listJoin(exampleCodes) }
-        : null;
+    : allOneStart
+      ? { lead: `All of ${brand.name}'s own codes in NHTSA's vPIC database begin with `, list: commonStarts[0] }
+      : commonStarts.length
+        ? {
+            lead: `The most common ${commonStarts.length === 1 ? 'start' : 'starts'} among ${brand.name}'s own codes in NHTSA's vPIC database ${commonStarts.length === 1 ? 'is' : 'are'} `,
+            list: listJoin(commonStarts),
+          }
+        : exampleCodes.length
+          ? { lead: `${brand.name}'s own codes in NHTSA's vPIC database include `, list: listJoin(exampleCodes) }
+          : null;
   const startsLine = starts ? starts.lead + starts.list : null;
   // Verified NHTSA recall campaigns for popular models (scripts/fetch-brand-recalls.mjs).
   const recalls = [...(BRAND_RECALLS[brand.slug] ?? [])].sort((a, b) => b.campaigns - a.campaigns);
@@ -253,8 +262,9 @@ export default async function BrandPage({
             )}
             <p className="text-sm text-slate-500">
               vPIC can list one code under several makes, and not every listed make has necessarily used it. Each code is
-              registered to one company (often a parent group); codes registered to a company other than {brand.name}&apos;s
-              maker or its group are listed last. VIN positions 4–8 describe the model. Regions follow ISO 3780. Source:{' '}
+              registered to one company. {brand.name}&apos;s own codes are those registered to its maker, its group, or a
+              joint venture building for it; codes registered to any other company are listed last. VIN positions 4–8
+              describe the model. Regions follow ISO 3780. Source:{' '}
               <a href="https://vpic.nhtsa.dot.gov/decoder/" target="_blank" rel="noopener noreferrer">NHTSA vPIC</a>, retrieved{' '}
               {formatRevised(BRAND_WMIS_RETRIEVED)}. Try the <Link href="/vin-decoder">free VIN decoder</Link>.
             </p>

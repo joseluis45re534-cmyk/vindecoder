@@ -49,7 +49,7 @@ export default function RefundPage() {
         <h2>Refunds</h2>
         <ul>
           <li>The {FEE} trial fee is non-refundable, as it unlocks immediate access to your report.</li>
-          <li>Cancelling stops all <em>future</em> monthly charges; we do not bill you again once cancelled.</li>
+          <li>Cancelling a vehicle&apos;s subscription stops its <em>future</em> monthly charges; we don&apos;t bill that subscription again once it&apos;s cancelled.</li>
           <li>If you were charged in error, charged after cancelling, or could not access your report, contact us within <strong>30 days</strong> of the charge and we will review it in good faith and issue a refund where warranted.</li>
         </ul>
 

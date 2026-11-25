@@ -40,8 +40,8 @@ export default function PrivacyPage() {
           <li><strong>Messages you send us</strong> through the support chat or the contact form.</li>
           <li>
             <strong>Your IP address and approximate location</strong> (country). We use the IP address to rate-limit
-            previews, the support chat, the contact form, and sign-in attempts, and we store it in hashed form with each
-            VIN lookup.
+            previews, the support chat, the contact form, and sign-in attempts (the preview limit keeps the IP address
+            itself in its counter; the others keep only a hash), and we store a hashed version with each VIN lookup.
           </li>
           <li>
             <strong>Usage data</strong>: the pages you view, the page you came from, your country, and the VIN for lookups,
@@ -64,7 +64,8 @@ export default function PrivacyPage() {
             <strong>Our vehicle-data provider</strong> receives the VIN you enter in order to return that vehicle&apos;s
             records (see <Link href="/data-sources">Data Sources</Link>). Vehicle photos and make logos load from
             third-party image hosts (such as retail.photos.vin, goodcar.com, and auction sites); those hosts see your IP
-            address and the image address, which can include the VIN.
+            address and the image address, which can include the VIN. The sample-report photos on our home page load from
+            images.unsplash.com.
           </li>
           <li>
             <strong>Google</strong> provides the &ldquo;Add as a preferred source&rdquo; button in our footer. Its script

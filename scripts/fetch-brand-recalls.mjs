@@ -113,17 +113,18 @@ const BRANDS = [...brandsSrc.matchAll(/slug: '([^']+)', name: '([^']+)'[^\n]*?mo
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const cache = new Map();
-async function getJson(url, tries = 6) {
+async function getJson(url, tries = 8) {
   if (cache.has(url)) return cache.get(url);
   for (let i = 0; i < tries; i++) {
     try {
-      const res = await fetch(url, { headers: UA, signal: AbortSignal.timeout(45000) });
+      const res = await fetch(url, { headers: UA, signal: AbortSignal.timeout(60000) });
       if (res.ok) { const j = await res.json(); cache.set(url, j); await sleep(150); return j; }
       if (res.status === 400 || res.status === 404) { cache.set(url, null); return null; }
-      // 403/429 = being throttled: back off hard instead of retrying quickly.
-      if (res.status === 403 || res.status === 429) { await sleep(15000 * (i + 1)); continue; }
-    } catch { /* retry */ }
-    await sleep(2000 * (i + 1));
+      // 403/429 = being throttled; 5xx = NHTSA's gateway is struggling (it has
+      // outages of 504s). Either way, back off hard instead of retrying quickly.
+      if (res.status === 403 || res.status === 429 || res.status >= 500) { await sleep(15000 * (i + 1)); continue; }
+    } catch { /* timeout / network — retry */ }
+    await sleep(5000 * (i + 1));
   }
   throw new Error(`NHTSA request failed after retries (aborting, no file written): ${url}`);
 }

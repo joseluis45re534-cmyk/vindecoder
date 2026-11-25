@@ -91,7 +91,8 @@ export default function ChatWidget() {
     setNote('');
     setSending(true);
     const history = messages.map((m) => ({ role: m.role, content: m.content }));
-    setMessages((m) => [...m, { role: 'user', content: text }]);
+    const mine: Msg = { role: 'user', content: text };
+    setMessages((m) => [...m, mine]);
     try {
       const res = await fetch('/api/chat/send', {
         method: 'POST',
@@ -102,7 +103,8 @@ export default function ChatWidget() {
       if (res.status === 429) {
         // Rate-limited: nothing was saved. Take the bubble back, keep the draft,
         // and show the notice as a footer note (a bubble would vanish on the next poll).
-        setMessages((m) => m.slice(0, -1));
+        // Remove this exact bubble (by identity) — a poll may have changed the list meanwhile.
+        setMessages((m) => m.filter((x) => x !== mine));
         setInput(text);
         setNote(data.reply || 'Too many messages right now — please try again later.');
         return;

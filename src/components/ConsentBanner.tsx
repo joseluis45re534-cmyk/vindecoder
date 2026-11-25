@@ -55,7 +55,7 @@ export default function ConsentBanner() {
           <Cookie className="w-5 h-5" aria-hidden="true" />
         </span>
         <p className="text-sm text-slate-600 leading-relaxed flex-1">
-          We use analytics cookies to understand traffic and improve CarVinLookup. You can accept or decline —
+          We use Google analytics and advertising cookies to measure traffic and our ads. You can accept or decline —
           essential site features work either way. See our{' '}
           <Link href="/cookies" className="font-semibold text-primary hover:underline">cookie policy</Link>.
         </p>

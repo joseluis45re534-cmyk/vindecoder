@@ -30,17 +30,22 @@ export default function GoogleAnalytics() {
       first.current = false; // the initial page_view is sent by gtag('config')
       return;
     }
+    // No query string (the post-checkout URL carries the Stripe session_id that
+    // unlocks a paid report) and no VIN in /report/<VIN> paths.
+    const safePath = pathname.replace(/^\/report\/[^/]+/, '/report/vin');
     window.gtag?.('event', 'page_view', {
-      page_path: pathname,
-      page_location: window.location.href,
+      page_path: safePath,
+      page_location: window.location.origin + safePath,
       page_title: document.title,
     });
   }, [pathname]);
 
   if (!GA_ID) return null;
 
-  const config = [`gtag('config', '${GA_ID}');`];
-  if (ADS_ID) config.push(`gtag('config', '${ADS_ID}');`);
+  // Same rule for the initial page_view that gtag('config') sends.
+  const SAFE_LOCATION = `location.origin + location.pathname.replace(/^\\/report\\/[^\\/]+/, '/report/vin')`;
+  const config = [`gtag('config', '${GA_ID}', { page_location: ${SAFE_LOCATION} });`];
+  if (ADS_ID) config.push(`gtag('config', '${ADS_ID}', { page_location: ${SAFE_LOCATION} });`);
 
   return (
     <>

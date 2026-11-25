@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getEnv } from '@/lib/cf';
 import { createSession, sessionCookie, adminSecret, adminPassword, timingSafeEqual } from '@/lib/auth';
-import { allowRequest } from '@/lib/report-cache';
+import { allowRequestAtomic } from '@/lib/rate-limit';
 
 export const runtime = 'edge';
 
@@ -13,7 +13,7 @@ export async function POST(request: Request) {
         request.headers.get('cf-connecting-ip') ||
         request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
         'unknown';
-    if (!(await allowRequest(env, `admin-login:${ip}`, 10))) {
+    if (!(await allowRequestAtomic(env, 'admin-login', ip, 10))) {
         return NextResponse.json({ error: 'Too many attempts — try again later.' }, { status: 429 });
     }
 
